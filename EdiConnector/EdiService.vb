@@ -42,6 +42,8 @@ Public Class EdiService
     Protected Overrides Sub OnStart(ByVal args() As String)
 
         'ReadSettings
+        Connect_to_Sap()
+
 
     End Sub
 
