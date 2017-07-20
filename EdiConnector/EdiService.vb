@@ -252,18 +252,6 @@ Public Class EdiService
 
     End Function
 
-    Public Function View_log() As Integer
-
-        If File.Exists(applicationPath & "\log.txt") = True Then
-            Using frm As New Form3()
-                frm.ShowDialog()
-            End Using
-        End If
-
-        Return 0
-
-    End Function
-
     Public Function Disconnect_to_Sap() As Integer
 
         If cmp.Connected = True Then
