@@ -3,6 +3,9 @@ Imports SAPbobsCOM
 
 Module mod_var
 
+    'Service Log
+    Public myLog As New EventLog()
+
     'connections
     Public cn As New SqlConnection
     Public cmp As New Company

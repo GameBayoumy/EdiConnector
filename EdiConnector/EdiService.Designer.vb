@@ -33,7 +33,6 @@ Partial Class EdiService
         End If
 
         ' Create an EventLog instance and assign its source.
-        Dim myLog As New EventLog()
         myLog.Source = "EdiSource"
 
         ' Write an informational entry to the event log.    

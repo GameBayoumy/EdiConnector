@@ -243,10 +243,7 @@ Public Class EdiService
 
     Public Function Log(ByVal sType As String, ByVal msg As String, ByVal FunctionSender As String) As Integer
 
-        Using fs As New StreamWriter(applicationPath & "\log.txt", True)
-            fs.WriteLine(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg)
-            fs.Close()
-        End Using
+        myLog.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg)
 
         Return 0
 
