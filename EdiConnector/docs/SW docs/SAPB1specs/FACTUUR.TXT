@@ -1,0 +1,70 @@
+Specification for message: Invoice
+Last changed at: 29-08-2006
+
+Pos Len Datatype Tabel      Veld            Description
+--------------------------------------------------------------------------------
+  1   1 String                              ID:0
+  2  13 String   Fact_kop   K_EANCODE       partner van het EDI-bericht                                                     
+ 15   1 Logic    Fact_kop   FAKTEST         Test indicator                                                                  
+ 16  14 String   Fact_kop   KNAAM           Naam partner van het EDI-bericht                                                
+ 30   3 String   Fact_kop   F_SOORT         factuursoort, 380: normaal, 384: credit, 83: bonusfactuur (lvb)                 
+ 33  12 String   Fact_kop   FAKT_NUM        factuurnummer                                                                   
+ 45   8 Date     Fact_kop   FAKT_DATUM      factuurdatum. Formaat: JJJJMMDD                                                 
+ 53   8 Date     Fact_kop   AFL_DATUM       afleverdatum. Formaat: JJJJMMDD                                                 
+ 61  35 String   Fact_kop   RFFIV           Factuurnummer te corrigeren factuur                                             
+ 96  35 String   Fact_kop   K_ORDERNR       ordernummer afnemer (dhz: ipv ordernummer mag ook "TELEFOON" of "FAX" voorkomen)
+131   8 Date     Fact_kop   K_ORDDAT        orderdatum als k_ordernr = "TELEFOON" of "FAX"                                  
+139  35 String   Fact_kop   PAKBONNR        Verzendberichtnummer (orde nr)                                                           
+174  35 String   Fact_kop   RFFCDN          reclamatienr.                                                                   
+209  35 String   Fact_kop   RFFALO          ontvangstnr.                                                                    
+244  35 String   Fact_kop   RFFVN           Ordernummer leverancier                                                         
+279   8 Date     Fact_kop   RFFVNDAT        orderdatum. Formaat: JJJJMMDD                                                   
+287  13 String   Fact_kop   NAD_BY          eancode koper                                                                   
+300  13 String   Fact_kop   A_EANCODE       eancode afleveradres                                                            
+313  13 String   Fact_kop   F_EANCODE       eancode factuuradres                                                            
+326  13 String   Fact_kop   NAD_SF          eancode haaladres                                                               
+339  13 String   Fact_kop   NAD_SU          Afwijkend Eancode supplier, Als leeg wordt Eigen Ean genomen                    
+352  13 String   Fact_kop   NAD_UC          eancode eindbestemming                                                          
+365  13 String   Fact_kop   NAD_PE          eancode ontvanger van betaling                                                  
+378  15 String   Fact_kop   OBNUMMER        BTW-registratienummer koper                                                     
+393   1 Logic    Fact_kop   ACT             Accijnsvrije levering                                                          
+394   3 String   Fact_kop   CUX             valuta (voor internationale verkoop (xml vertal tabel))                                            
+397   3 Numeric  Fact_kop   DAGEN           Betalingskorting, aantal dagen                                                  
+400   8 Numeric  Fact_kop   KORTPERC        Betalingskorting, Percentage                                                    
+408   9 Numeric  Fact_kop   KORTBEDR        Betalingskorting, bedrag                                                        
+417  13 String   Fact_kop   ONTVANGER       Identificatie van uzelf in het EDI-bericht    (dimensio)                                   
+  1   1 String                              ID:1
+  2   1 String   Alc_kop    SOORT           A (toeslag) of C (korting)                                                      
+  3   3 String   Alc_kop    QUAL            Soort korting/toeslag. Zie codelijst Toeslagen/kortingen Factuurregel   (xml vertal tabel)        
+  6   9 Numeric  Alc_kop    BEDRAG          bedrag                                                                          
+ 15   1 String   Alc_kop    BTWSOORT        Btwcode. Zie codelijst Btwcodes                                                 
+ 16   1 Logic    Alc_kop    FOOTMOA         Korting/toeslag op factuur footniveau (niet gevuld=false)                       
+ 17   1 Logic    Alc_kop    NOTINCALC       Korting/toeslag geen onderdeel van BTW-grondslag                                
+  1   1 String                              ID:2
+  2  14 String   Fact_reg   DEUAC           EAN-artikelcode                                                                 
+ 16   9 String   Fact_reg   DEARTNR         artikelcode leverancier                                                         
+ 25  70 String   Fact_reg   DEARTOM         Artikel omschrijving. Zie opmerkingen                                           
+ 95   5 Numeric  Fact_reg   AANTAL          Geleverd aantal                                                                 
+100   9 Numeric  Fact_reg   FAANTAL         te factureren aantal                                                            
+109   3 String   Fact_reg   ARTEENHEID      Geleverd aantal eenheid als niet per stuk. Zie codelijst Eenheden  (xml tabel zoals the delivery)             
+112   3 String   Fact_reg   FEENHEID        Prijs eenheid als niet per stuk. Zie codelijst Eenheden                         
+115  11 Numeric  Fact_reg   NETTOBEDR       Nettoregelbedrag. Zie opmerkingen  (price * factuur aantal) - korting  + toeslag                                            
+126  10 Numeric  Fact_reg   PRIJS           prijs   (4 dec na coma)                                                                        
+136   9 Numeric  Fact_reg   FREKEN          Aantal eenheden binnen prijs (bijv. prijs per 100 liter)                        
+145   1 String   Fact_reg   BTWSOORT        Btwcode artikel (vertal tabel)                                                                 
+146  10 String   Fact_reg   PV              promotionele variant  ()                                                          
+156  35 String   Fact_reg   ORDER           Ordernummer                                                                     
+191   6 String   Fact_reg   REGELID         Regelidentificatie                                                               
+197  35 String   Fact_reg   INVO            Factuurnummer                                                                   
+232  35 String   Fact_reg   DESA            Verzendberichtnummer                                                            
+267  10 Numeric  Fact_reg   PRIAAA          nettoprijs. Voor buitenland                                                     
+277  20 String   Fact_reg   PIAPB           Artikelnummer afnemende partij                                                   
+  1   1 String                              ID:3
+  2   1 String   Alc_reg    SOORT           A (toeslag) of C (korting)                                                      
+  3   3 String   Alc_reg    QUAL            Soort. Zie codelijst Toeslagen/kortingen Factuur                                
+  6   9 Numeric  Alc_reg    BEDRAG          bedrag                                                                          
+ 15   1 String   Alc_reg    BTWSOORT        Btwcode. Zie codelijst Btwcodes                                                 
+ 16   5 Numeric  Alc_reg    PERC            Percentage te gebruiken als alternatief voor bedrag                             
+ 21   1 Logic    Alc_reg    LTOTAL          Als True: bedrag of perc onafhankelijk van gefactureerd aantal                  
+ 22   1 Logic    Alc_reg    FOOTMOA         Korting/toeslag op factuur footniveau (niet gevuld=false)                       
+ 23   1 Logic    Alc_reg    NOTINCALC       Korting/toeslag geen onderdeel van BTW-grondslag                                

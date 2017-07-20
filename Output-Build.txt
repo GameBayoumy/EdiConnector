@@ -1,0 +1,3 @@
+﻿------ Build started: Project: TestEdiConnector, Configuration: Release x86 ------
+  TestEdiConnector -> C:\Users\Administrator\Documents\Visual Studio 2010\Projects\EdiConnector\TestEdiConnector\bin\Release\TestEdiConnector.exe
+========== Build: 1 succeeded or up-to-date, 0 failed, 0 skipped ==========

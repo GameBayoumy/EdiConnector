@@ -1,0 +1,60 @@
+Specification for message: Despatch advice
+Last changed at: 29-08-2006
+
+
+deas_kop  = ODLN
+
+Pos Len Datatype Tabel      Veld            Description
+--------------------------------------------------------------------------------
+ 15   1 Logic    Desa_kop   PBTEST          Test indicator UDF  = J/N 1/spatie                                                              
+ 16  14 String   Desa_kop   KNAAM           Naam partner van het EDI-bericht  - KNAAM UDF                                              
+ 30  35 String   Desa_kop   BGM             pakbonnummer  - SAP DocNum                                                                  
+ 65   8 Date     Desa_kop   DTM_137         pakbondatum. Formaat: JJJJMMDD  - SAP taxDate     
+                                           
+ 73   8 Date     Desa_kop   DTM_2           gewenste leverdatum. Formaat: JJJJMMDD    -  UDF                                      
+ 81   5 String   Desa_kop   TIJD_2          gewenste levertijd. Formaat: UU:MM  (spatie spatie : spatie spatie)        -  UDF                                         
+ 86   8 Date     Desa_kop   DTM_17          geplande leverdatum. Formaat: JJJJMMDD                  -  UDF                            
+ 94   5 String   Desa_kop   TIJD_17         geplande levertijd. Formaat: UU:MM         -  UDF                                         
+ 99   8 Date     Desa_kop   DTM_64          vroegste leverdatum. Formaat: JJJJMMDD       -  UDF                                       
+107   5 String   Desa_kop   TIJD_64         vroegste levertijd. Formaat: UU:MM          -  UDF                                        
+112   8 Date     Desa_kop   DTM_63          laatste leverdatum. Formaat: JJJJMMDD       -  UDF                                        
+120   5 String   Desa_kop   TIJD_63         laatste levertijd. Formaat: UU:MM        -  UDF
+
+                                           
+125   8 Date     Desa_kop   BH_DAT          haaldatum. Formaat: JJJJMMDD         -  UDF                                               
+133   5 String   Desa_kop   BH_TIJD         haaltijd. Formaat: UU:MM            -  UDF                                                
+138  35 String   Desa_kop   RFF             Ordernummer afnemer  - UDF U_BGM van de Order                                                            
+173  35 String   Desa_kop   RFFVN           Ordernummer leverancier   UDF _ Uref                                                       
+208  13 String   Desa_kop   BH_EAN          eancode haaladres        UDF - BH_EAN                                                       
+221  13 String   Desa_kop   NAD_BY          eancode koperadres     - UDF                                                          
+234  13 String   Desa_kop   NAD_DP          eancode afleveradres     - UDF                                                             
+247  13 String   Desa_kop   NAD_SU          Afwijkend Eancode supplier, Als leeg wordt Eigen Ean genomen              - UDF               
+260  13 String   Desa_kop   NAD_UC          eancode eindbestemming         - UDF                                                           
+273   1 String   Desa_kop   DESATYPE        Zie Codelijst Pakbon berichtstructuren - UDF  altijd 4  ****  (4 altijd voor albertijn ) 1 alles art 2 = artikl + lastderag 3 arti lastdrag p/stuk 4 verpakking                                     
+274  13 String   Desa_kop   ONTVANGER       Identificatie van uzelf in het EDI-bericht (K_EANCODE VAN  ORDER)  DUS ook van pakbon                                     
+  1   1 String                              ID:1
+  2  14 String   Desa_reg   DEUAC           EAN-artikelcode  - SAP Codebar                                                                 
+ 16  14 String   Desa_reg   OLDUAC          EAN-artikelcode oorspronkelijk besteld artikel (leeg voor albertijn) UDF OLDUAC                                 
+ 30   9 String   Desa_reg   DEARTNR         artikelcode leverancier - UDF DEARTNR                                                        
+ 39  35 String   Desa_reg   DEARTOM         Artikelomschrijving. Zie opmerkingen -  UDF DEARTOM                                           
+ 74  10 String   Desa_reg   PIA             promotionele variant  - UDF - PIA                                                          
+ 84  35 String   Desa_reg   BATCH           Batchnummer (leeg laten)     - UDF BATCH                                                                
+119  17 Numeric  Desa_reg   QTY             te leveren aantal - SAP quantity                                                               
+
+
+136   3 String   Desa_reg   ARTEENHEID      eenheid te leveren aantal als niet per stuk. Zie codelijst Eenheden (xml vertal tabel)    - UDF ARTEENHEID   - UDF met selectie van waarde + required 
+				            Eenhedentabel - controlleren de waarde met xml     
+139   6 String   Desa_reg   RFFONID         orderregelidentificatie - UDF RFFONID 
+                                                         
+145  35 String   Desa_reg   RFFONORD        ordernummer voor regelidentificatie, (dhz):     - UDF RFFONORD
+                    
+180   8 Date     Desa_reg   DTM_23E         THT-datum. Formaat: JJJJMMDD      - UDF DTM_23E 
+                                               
+188   1 Logic    Desa_reg   TGTDATUM        LVB -> True: DTM_23E TGT-datum (QQQ=361) False: DTM_23E THT-datum (QQQ=23E)  - UDF  -   TGTDATUM          
+189   6 Numeric  Desa_reg   GEWICHT         Inhoud/Hoeveelheid      - UDF       GEWICHT                                                            
+195   3 String   Desa_reg   FEENHEID        Inhoud/Hoeveelheid eenheid als niet per stuk. Zie codelijst Eenheden  - UDF  FEENHEID          
+198  17 Numeric  Desa_reg   QTY_AFW         Afwijkende hoeveelheid                                                           
+215   3 String   Desa_reg   REDEN           Reden afwijkende hoeveelheid. Zie codelijst Reden                               
+218   3 String   Desa_reg   GINTYPE         Code soort verzendeenheid (SORT IDENTIFICER xml vertal tabel)                                                       
+221  19 String   Desa_reg   GINID           Verzendeenheid identifcatie                                                     
+240  35 String   Desa_reg   BATCH           artikelcode afnemer (alleen in gebruik bij Hornbach)

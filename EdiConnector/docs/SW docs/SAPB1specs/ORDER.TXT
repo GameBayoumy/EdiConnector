@@ -1,0 +1,63 @@
+Specification for message: Order
+Last changed at: 29-08-2006
+
+Pos Len Datatype Tabel      Veld            Description
+--------------------------------------------------------------------------------
+  1   1 String                              ID:0
+  2  13 String   Ord_kop    K_EANCODE       partner van het EDI-bericht  (Alber Hijn) - variable                                                   
+ 15   1 Logic    Ord_kop    TEST            Test indicator (spatie productie - 1 test)                                                                  
+ 16  14 String   Ord_kop    KNAAM           naam partner van het EDI-bericht (delivery en invoice referentie)                                                
+ 30  35 String   Ord_kop    BGM             ordernummer   (moet unieke in ORDR)      in een tweede regel ook (visible = false)                                                            
+ 65   8 Date     Ord_kop    K_ORDDAT        orderdatum                                                                      
+ 73   8 Date     Ord_kop    DTM_2           gewenste leverdatum. Formaat: JJJJMMDD                                          
+ 81   5 String   Ord_kop    TIJD_2          gewenste levertijd. Formaat: UU:MM                                              
+ 86   8 Date     Ord_kop    DTM_17          geplande leverdatum. Formaat: JJJJMMDD                                          
+ 94   5 String   Ord_kop    TIJD_17         geplande levertijd. Formaat: UU:MM                                              
+ 99   8 Date     Ord_kop    DTM_64          vroegste leverdatum. Formaat: JJJJMMDD                                          
+107   5 String   Ord_kop    TIJD_64         vroegste levertijd. Formaat: UU:MM                                              
+112   8 Date     Ord_kop    DTM_63          laatste leverdatum. Formaat: JJJJMMDD                                           
+120   5 String   Ord_kop    TIJD_63         laatste levertijd. Formaat: UU:MM                                               
+125  35 String   Ord_kop    RFF_BO          Raamordernummer                                                                
+160  35 String   Ord_kop    RFF_CR          Klantreferentienummer                                                           
+195  35 String   Ord_kop    RFF_PD          Actienummer                                                                     
+230  35 String   Ord_kop    RFFCT           Contractnummer                                                                  
+265   8 Date     Ord_kop    DTMCT           Contractdatum. Formaat: JJJJMMDD                                                
+273   1 Bitfield Ord_kop    FLAGS           Winkelinstallatie                                                               
+274   1 Bitfield Ord_kop    FLAGS           Geheellevering                                                                  
+275   1 Bitfield Ord_kop    FLAGS           Nul-order                                                                       
+276   1 Bitfield Ord_kop    FLAGS           Aperak gevraagd                                                                 
+277   1 Bitfield Ord_kop    FLAGS           Crossdock order                                                                 
+278   1 Bitfield Ord_kop    FLAGS           Raamorder                                                                       
+279   1 Bitfield Ord_kop    FLAGS           Geimproviseerde order                                                           
+280   1 Bitfield Ord_kop    FLAGS           Accijnsvrije levering                                                           
+281   1 Bitfield Ord_kop    FLAGS           Spoed                                                                           
+282   1 Bitfield Ord_kop    FLAGS           Backhauling - ophalen                                                                    
+283   1 Bitfield Ord_kop    FLAGS           Bevest. met regels                                                              
+284  70 String   Ord_kop    FTXDSI          Tekst voor pakbon - niet naar de delibery note                                                               
+354  13 String   Ord_kop    NAD_BY          eancode koperadres      1                                                             
+367  13 String   Ord_kop    NAD_DP          eancode afleveradres    2                                                        
+380  13 String   Ord_kop    NAD_IV          eancode factuuradres    3                                                        
+393  13 String   Ord_kop    NAD_SF          eancode haaladres                                                               
+406  13 String   Ord_kop    NAD_SU          eancode leverancier                                                             
+419  13 String   Ord_kop    NAD_UC          eancode eindbestemming                                                          
+432  13 String   Ord_kop    NAD_BCO         eancode inkoopcombinatie afnemer                                                
+445  13 String   Ord_kop    ONTVANGER       Identificatie van uzelf in het EDI-bericht                                      
+  1   1 String                              ID:1
+  2  14 String   Ord_reg    DEUAC           EAN-artikelcode                                                                 
+ 16  17 Numeric  Ord_reg    QTY             Besteld aantal                                                                  
+ 33  35 String   Ord_reg    LEVARTCODE      Leveranciersartikelcode                                                         
+ 68  35 String   Ord_reg    DEARTOM         Artikelomschrijving                                                             
+103  38 String   Ord_reg    KLEUR           Ofwel RAL+kleurcode, PMS+kleurcode, ofwel ZZZ+kleurcode                         
+141  20 Numeric  Ord_reg    LENGTE          Lengte in meters                                                                
+161  20 Numeric  Ord_reg    BREEDTE         Breedte in meters                                                               
+181  20 Numeric  Ord_reg    HOOGTE          Hoogte in meters                                                                
+201   3 String   Ord_reg    CUX             Valutacode (alleen bij inkomend)                                                
+204  10 String   Ord_reg    PIA             Promotionele variant                                                            
+214  35 String   Ord_reg    RFFLI1          Ordernummer voor orderregel identificatie                                       
+249   6 String   Ord_reg    RFFLI2          Orderregel identificatie                                                        
+255   8 Date     Ord_reg    DTM_2           gewenste afleverdatum. Formaat: JJJJMMDD                                        
+263   6 String   Ord_reg    LINNR           Regelnummer (alleen inkomend)                                                   
+269  12 Numeric  Ord_reg    PRI             Voorprijs       = UDF                                                                 
+
+altijd . (punt)
+alle teken
