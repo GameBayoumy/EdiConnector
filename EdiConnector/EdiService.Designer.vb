@@ -1,7 +1,7 @@
 ﻿Imports System.ServiceProcess
 
 <Global.Microsoft.VisualBasic.CompilerServices.DesignerGenerated()> _
-Partial Class EdiService
+Partial Class EdiConnectorService
     Inherits System.ServiceProcess.ServiceBase
 
     'UserService overrides dispose to clean up the component list.
@@ -28,7 +28,7 @@ Partial Class EdiService
         '
         '   ServicesToRun = New System.ServiceProcess.ServiceBase () {New Service1, New MySecondUserService}
         '
-        ServicesToRun = New System.ServiceProcess.ServiceBase() {New EdiService}
+        ServicesToRun = New System.ServiceProcess.ServiceBase() {New EdiConnectorService}
 
         System.ServiceProcess.ServiceBase.Run(ServicesToRun)
     End Sub
@@ -41,17 +41,17 @@ Partial Class EdiService
     ' Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        Me.EventLog1 = New System.Diagnostics.EventLog
+        Me.EventLog1 = New System.Diagnostics.EventLog()
         CType(Me.EventLog1, System.ComponentModel.ISupportInitialize).BeginInit()
         '
         'EventLog1
         '
         Me.EventLog1.Log = "Application"
-        Me.EventLog1.Source = "EdiService"
+        Me.EventLog1.Source = "EdiConnectorService"
         '
-        'MyService
+        'EdiConnectorService
         '
-        Me.ServiceName = "EdiService"
+        Me.ServiceName = "EdiConnectorService"
         CType(Me.EventLog1, System.ComponentModel.ISupportInitialize).EndInit()
 
     End Sub

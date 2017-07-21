@@ -34,7 +34,7 @@
         '
         Me.ServiceInstaller1.Description = "EdiConnector"
         Me.ServiceInstaller1.DisplayName = "EdiConnector Service"
-        Me.ServiceInstaller1.ServiceName = "EdiService"
+        Me.ServiceInstaller1.ServiceName = "EdiConnectorService"
         '
         'ProjectInstaller
         '

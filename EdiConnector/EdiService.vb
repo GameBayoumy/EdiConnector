@@ -4,7 +4,7 @@ Imports System.IO
 Imports System.Net
 Imports System.Threading
 
-Public Class EdiService
+Public Class EdiConnectorService
 
     Private applicationPath As String = My.Application.Info.DirectoryPath
     Private stopping As Boolean
@@ -100,6 +100,7 @@ Public Class EdiService
         ' Periodically check if the service is stopping.
         Do While Not Me.stopping
             ' Perform main service function here...
+            Me.EventLog1.WriteEntry("EdiService Tick.")
 
             Thread.Sleep(2000)  ' Simulate some lengthy operations.
         Loop
