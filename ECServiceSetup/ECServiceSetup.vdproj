@@ -15,14 +15,14 @@
     {
         "Entry"
         {
-        "MsmKey" = "8:_BEAA287904AA49CBA913ED81B3EBE4BE"
+        "MsmKey" = "8:_68C71B49FD604A46A440D221C9C9CDBF"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_BEAA287904AA49CBA913ED81B3EBE4BE"
+        "OwnerKey" = "8:_68C71B49FD604A46A440D221C9C9CDBF"
         "MsmSig" = "8:_UNDEFINED"
         }
     }
@@ -43,6 +43,27 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+                "Items"
+                {
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Net.Client.3.5"
+                    {
+                    "Name" = "8:.NET Framework 3.5 SP1 Client Profile"
+                    "ProductCode" = "8:Microsoft.Net.Client.3.5"
+                    }
+                    "{EDC2488A-8267-493A-A98E-7D9C3B36CDF3}:Microsoft.Windows.Installer.3.1"
+                    {
+                    "Name" = "8:Windows Installer 3.1"
+                    "ProductCode" = "8:Microsoft.Windows.Installer.3.1"
+                    }
+                }
+            }
         }
         "Release"
         {
@@ -59,65 +80,73 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
     }
     "Deployable"
     {
         "CustomAction"
         {
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_421C6C2ECBEA47A99F8030FF8C8CA655"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_2C3A86B1700C4144BB91BD23428D6283"
             {
-            "Name" = "8:Primary output from EdiConnector (Active)"
+            "Name" = "8:Primary output from EdiConnectorService (Active)"
             "Condition" = "8:"
-            "Object" = "8:_BEAA287904AA49CBA913ED81B3EBE4BE"
+            "Object" = "8:_68C71B49FD604A46A440D221C9C9CDBF"
             "FileType" = "3:2"
             "InstallAction" = "3:2"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
-            "Identifier" = "8:_54488007_EC03_4F6C_A0DC_DC8B6DC6990E"
+            "Identifier" = "8:_6726ABC2_ABBB_4373_A57F_51826C186782"
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:"
             }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_516482B0B82D487E8016AC2A43C3DB2C"
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_4B4F694B6CCC40F68A526A9858411D59"
             {
-            "Name" = "8:Primary output from EdiConnector (Active)"
+            "Name" = "8:Primary output from EdiConnectorService (Active)"
             "Condition" = "8:"
-            "Object" = "8:_BEAA287904AA49CBA913ED81B3EBE4BE"
-            "FileType" = "3:2"
-            "InstallAction" = "3:4"
-            "Arguments" = "8:"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:1"
-            "Identifier" = "8:_D99D7385_804F_4F66_A51E_0B1DA4BAEF51"
-            "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:"
-            }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_80739C4B3A0A49839D9569B12506EA63"
-            {
-            "Name" = "8:Primary output from EdiConnector (Active)"
-            "Condition" = "8:"
-            "Object" = "8:_BEAA287904AA49CBA913ED81B3EBE4BE"
-            "FileType" = "3:2"
-            "InstallAction" = "3:1"
-            "Arguments" = "8:"
-            "EntryPoint" = "8:"
-            "Sequence" = "3:1"
-            "Identifier" = "8:_593BFCF0_6A52_400B_B4EC_725CAFB5C0F2"
-            "InstallerClass" = "11:TRUE"
-            "CustomActionData" = "8:"
-            }
-            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_D94B0BF65EE44A689EEDB17B46E832A2"
-            {
-            "Name" = "8:Primary output from EdiConnector (Active)"
-            "Condition" = "8:"
-            "Object" = "8:_BEAA287904AA49CBA913ED81B3EBE4BE"
+            "Object" = "8:_68C71B49FD604A46A440D221C9C9CDBF"
             "FileType" = "3:2"
             "InstallAction" = "3:3"
             "Arguments" = "8:"
             "EntryPoint" = "8:"
             "Sequence" = "3:1"
-            "Identifier" = "8:_4BDAC61A_E33A_445B_A812_63A90260D7ED"
+            "Identifier" = "8:_8B28C0B8_A2F0_423E_904F_9BBC29FEAF1A"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_A51F44C2D6B740998A31BB6601ABD786"
+            {
+            "Name" = "8:Primary output from EdiConnectorService (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_68C71B49FD604A46A440D221C9C9CDBF"
+            "FileType" = "3:2"
+            "InstallAction" = "3:4"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_9A4E029C_6817_4A1C_BF9D_8B6E9CDCE52D"
+            "InstallerClass" = "11:TRUE"
+            "CustomActionData" = "8:"
+            }
+            "{4AA51A2D-7D85-4A59-BA75-B0809FC8B380}:_E42ED4BC405A4934B2F1B1DCFB4AAD92"
+            {
+            "Name" = "8:Primary output from EdiConnectorService (Active)"
+            "Condition" = "8:"
+            "Object" = "8:_68C71B49FD604A46A440D221C9C9CDBF"
+            "FileType" = "3:2"
+            "InstallAction" = "3:1"
+            "Arguments" = "8:"
+            "EntryPoint" = "8:"
+            "Sequence" = "3:1"
+            "Identifier" = "8:_103CBC0E_7B92_4D52_B5BF_F5195234479D"
             "InstallerClass" = "11:TRUE"
             "CustomActionData" = "8:"
             }
@@ -201,7 +230,7 @@
         "Name" = "8:Microsoft Visual Studio"
         "ProductName" = "8:ECServiceSetup"
         "ProductCode" = "8:{7DD6BD0C-1772-47CF-AA2A-AEE20EBEEFCD}"
-        "PackageCode" = "8:{5B34801A-6CA2-46ED-845C-10042C07D857}"
+        "PackageCode" = "8:{46661DCF-1EA2-4896-9A05-BF91042178F1}"
         "UpgradeCode" = "8:{8C28B3BB-6CD3-4CB3-A830-D37682270779}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -720,9 +749,9 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_BEAA287904AA49CBA913ED81B3EBE4BE"
+            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_68C71B49FD604A46A440D221C9C9CDBF"
             {
-            "SourcePath" = "8:..\\EdiConnector\\obj\\x86\\Debug\\EdiConnector.exe"
+            "SourcePath" = "8:..\\EdiConnector\\obj\\x86\\Debug\\EdiConnectorService.exe"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_573C69D4585640FF949B33AA31C61D2D"
