@@ -20,24 +20,6 @@ Partial Class EdiService
     <MTAThread()> _
     <System.Diagnostics.DebuggerNonUserCode()> _
     Shared Sub Main()
-        If Not EventLog.SourceExists("EdiSource") Then
-            ' Create the source, if it does not already exist.
-            ' An event log source should not be created and immediately used.
-            ' There is a latency time to enable the source, it should be created
-            ' prior to executing the application that uses the source.
-            ' Execute this sample a second time to use the new source.
-            EventLog.CreateEventSource("EdiSource", "EdiServiceLog")
-            Console.WriteLine("CreatingEventSource")
-            'The source is created.  Exit the application to allow it to be registered.
-            Return
-        End If
-
-        ' Create an EventLog instance and assign its source.
-        myLog.Source = "EdiSource"
-
-        ' Write an informational entry to the event log.    
-        myLog.WriteEntry("Writing to event log.")
-
         Dim ServicesToRun() As System.ServiceProcess.ServiceBase
 
         ' More than one NT Service may run within the same process. To add
@@ -59,8 +41,20 @@ Partial Class EdiService
     ' Do not modify it using the code editor.
     <System.Diagnostics.DebuggerStepThrough()> _
     Private Sub InitializeComponent()
-        components = New System.ComponentModel.Container()
-        Me.ServiceName = "Service1"
+        Me.EventLog1 = New System.Diagnostics.EventLog
+        CType(Me.EventLog1, System.ComponentModel.ISupportInitialize).BeginInit()
+        '
+        'EventLog1
+        '
+        Me.EventLog1.Log = "Application"
+        Me.EventLog1.Source = "EdiService"
+        '
+        'MyService
+        '
+        Me.ServiceName = "EdiService"
+        CType(Me.EventLog1, System.ComponentModel.ISupportInitialize).EndInit()
+
     End Sub
+    Friend WithEvents EventLog1 As System.Diagnostics.EventLog
 
 End Class
