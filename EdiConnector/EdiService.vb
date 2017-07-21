@@ -327,7 +327,15 @@ Public Class EdiConnectorService
 
     Public Function Log(ByVal sType As String, ByVal msg As String, ByVal FunctionSender As String) As Integer
 
-        Me.EventLog1.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg)
+        Select Case sType
+            Case "V"
+                Me.EventLog1.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg, System.Diagnostics.EventLogEntryType.SuccessAudit)
+            Case "X"
+                Me.EventLog1.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg, System.Diagnostics.EventLogEntryType.FailureAudit)
+            Case Else
+                Me.EventLog1.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg)
+        End Select
+
 
         Return 0
 
