@@ -75,19 +75,22 @@ Public Class EdiConnectorService
         ' Log a service start message to the Application log.
         Me.EventLog1.WriteEntry("EdiService in OnStart.")
 
+        ReadSettings()
+        Connect_to_Sap()
+
         ' Queue the main service function for execution in a worker thread.
         ThreadPool.QueueUserWorkItem(New WaitCallback(AddressOf ServiceWorkerThread))
 
-        ReadSettings()
-        If Connect_to_Sap() = True Then
-            CreateUdfFiledsText()
-            CheckAndExport_delivery()
-            CheckAndExport_invoice()
-            Split_Order()
-            Read_SO_file()
 
 
-        End If
+        'CreateUdfFiledsText()
+        'CheckAndExport_delivery()
+        'CheckAndExport_invoice()
+        'Split_Order()
+        'Read_SO_file()
+
+
+
 
     End Sub
 
@@ -102,7 +105,13 @@ Public Class EdiConnectorService
             ' Perform main service function here...
             Me.EventLog1.WriteEntry("EdiService Tick.")
 
-            Thread.Sleep(2000)  ' Simulate some lengthy operations.
+            If cmp.Connected = True Then
+                Me.EventLog1.WriteEntry("Connected")
+            Else
+                Connect_to_database()
+            End If
+
+            Thread.Sleep(4000)  ' Simulate some lengthy operations.
         Loop
 
         ' Signal the stopped event.
@@ -174,6 +183,7 @@ Public Class EdiConnectorService
                 End If
 
             Else
+                Call Log("V", "Connected to SAP", "Connect_to_Sap")
                 Return True
 
             End If
@@ -329,9 +339,9 @@ Public Class EdiConnectorService
 
         Select Case sType
             Case "V"
-                Me.EventLog1.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg, System.Diagnostics.EventLogEntryType.SuccessAudit)
+                Me.EventLog1.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg, System.Diagnostics.EventLogEntryType.Information)
             Case "X"
-                Me.EventLog1.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg, System.Diagnostics.EventLogEntryType.FailureAudit)
+                Me.EventLog1.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg, System.Diagnostics.EventLogEntryType.Error)
             Case Else
                 Me.EventLog1.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg)
         End Select
