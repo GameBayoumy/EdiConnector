@@ -2,11 +2,13 @@
 Imports SAPbobsCOM
 Imports System.IO
 Imports System.Net
+Imports System.Threading
 
-Public Class EdiService
+Public Class EdiConnectorService
 
     Private applicationPath As String = My.Application.Info.DirectoryPath
-
+    Private stopping As Boolean
+    Private stoppedEvent As ManualResetEvent
 
     '' Dit is de huidige versie aangepast op 15/09/2014
 
@@ -39,19 +41,100 @@ Public Class EdiService
     Private sInvoiceMailTo As String
     Private sInvoiceMailToFullName As String
 
+    Public Sub New()
+        InitializeComponent()
+
+        Me.stopping = False
+        Me.stoppedEvent = New ManualResetEvent(False)
+    End Sub
+
+    ''' <summary>
+    ''' The function is executed when a Start command is sent to the service
+    ''' by the SCM or when the operating system starts (for a service that 
+    ''' starts automatically). It specifies actions to take when the service 
+    ''' starts. In this code sample, OnStart logs a service-start message to 
+    ''' the Application log, and queues the main service function for 
+    ''' execution in a thread pool worker thread.
+    ''' </summary>
+    ''' <param name="args">Command line arguments</param>
+    ''' <remarks>
+    ''' A service application is designed to be long running. Therefore, it 
+    ''' usually polls or monitors something in the system. The monitoring is 
+    ''' set up in the OnStart method. However, OnStart does not actually do 
+    ''' the monitoring. The OnStart method must return to the operating 
+    ''' system after the service's operation has begun. It must not loop 
+    ''' forever or block. To set up a simple monitoring mechanism, one 
+    ''' general solution is to create a timer in OnStart. The timer would 
+    ''' then raise events in your code periodically, at which time your 
+    ''' service could do its monitoring. The other solution is to spawn a 
+    ''' new thread to perform the main service functions, which is 
+    ''' demonstrated in this code sample.
+    ''' </remarks>
     Protected Overrides Sub OnStart(ByVal args() As String)
 
-        'ReadSettings
+        ' Log a service start message to the Application log.
+        Me.EventLog1.WriteEntry("EdiService in OnStart.")
+
+        ReadSettings()
+        Connect_to_Sap()
+        CreateUdfFiledsText()
+
+        ' Queue the main service function for execution in a worker thread.
+        ThreadPool.QueueUserWorkItem(New WaitCallback(AddressOf ServiceWorkerThread))
 
     End Sub
 
+    ''' <summary>
+    ''' The method performs the main function of the service. It runs on a 
+    ''' thread pool worker thread.
+    ''' </summary>
+    ''' <param name="state"></param>
+    Private Sub ServiceWorkerThread(ByVal state As Object)
+        ' Periodically check if the service is stopping.
+        Do While Not Me.stopping
+            ' Perform main service function here...
+            'Me.EventLog1.WriteEntry("EdiService Tick.")
+            CheckAndExport_delivery()
+            CheckAndExport_invoice()
+            Split_Order()
+            Read_SO_file()
+
+            If cmp.Connected = True Then
+
+            Else
+                Connect_to_Sap()
+            End If
+
+            Thread.Sleep(4000)  ' Simulate some lengthy operations.
+        Loop
+
+        ' Signal the stopped event.
+        Me.stoppedEvent.Set()
+    End Sub
+
+    ''' <summary>
+    ''' The function is executed when a Stop command is sent to the service 
+    ''' by SCM. It specifies actions to take when a service stops running. In 
+    ''' this code sample, OnStop logs a service-stop message to the 
+    ''' Application log, and waits for the finish of the main service 
+    ''' function.
+    ''' </summary>
     Protected Overrides Sub OnStop()
 
         ' Add code here to perform any tear-down necessary to stop your service.
+        Disconnect_to_Sap()
+
+        ' Log a service stop message to the Application log.
+        Me.EventLog1.WriteEntry("EdiService in OnStop.")
+
+        ' Indicate that the service is stopping and wait for the finish of 
+        ' the main service function (ServiceWorkerThread).
+        Me.stopping = True
+        Me.stoppedEvent.WaitOne()
 
     End Sub
 
-    Public Function Connect_to_Sap() As Integer
+    Public Function Connect_to_Sap() As Boolean
 
         Try
 
@@ -66,7 +149,7 @@ Public Class EdiService
             bln = Connect_to_database()
 
             If bln = False Then
-                Return 0
+                Return False
                 Exit Try
             End If
 
@@ -93,7 +176,12 @@ Public Class EdiService
                     Call Log("X", "Error: " & errMsg & "(" & Str(nErr) & ")", "Connect_to_Sap")
                 End If
 
+            Else
+                Call Log("V", "Connected to SAP", "Connect_to_Sap")
+                Return True
+
             End If
+
 
         Catch ex As Exception
 
@@ -101,7 +189,7 @@ Public Class EdiService
 
         End Try
 
-        Return 0
+        Return False
 
     End Function
 
@@ -243,22 +331,15 @@ Public Class EdiService
 
     Public Function Log(ByVal sType As String, ByVal msg As String, ByVal FunctionSender As String) As Integer
 
-        Using fs As New StreamWriter(applicationPath & "\log.txt", True)
-            fs.WriteLine(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg)
-            fs.Close()
-        End Using
+        Select Case sType
+            Case "V"
+                Me.EventLog1.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg, System.Diagnostics.EventLogEntryType.Information)
+            Case "X"
+                Me.EventLog1.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg, System.Diagnostics.EventLogEntryType.Error)
+            Case Else
+                Me.EventLog1.WriteEntry(sType & " - " & Format(Date.Now, "dd/MM/yyyy HH:mm:ss") & " - " & Replace(FunctionSender, "_", " ") & " - " & msg)
+        End Select
 
-        Return 0
-
-    End Function
-
-    Public Function View_log() As Integer
-
-        If File.Exists(applicationPath & "\log.txt") = True Then
-            Using frm As New Form3()
-                frm.ShowDialog()
-            End Using
-        End If
 
         Return 0
 
@@ -291,7 +372,7 @@ Public Class EdiService
         For Each fi In aryFi
 
             strFileSize = (Format(fi.Length / 1024, "##0.00")).ToString()
-            Call Log("V", "Begin splitting sales order filename " & fi.Name & " - file size: " & strFileSize & " kb", "Request_SO_file")
+            Call Log("V", "Begin splitting sales order filename " & fi.Name & " - file size: " & strFileSize & " kb", "Split_Order")
 
             Dim line As String
 
@@ -651,10 +732,10 @@ Public Class EdiService
         If oRecordSet.RecordCount = 1 Then
             KOPERADRES = oRecordSet.Fields(0).Value
         ElseIf oRecordSet.RecordCount > 1 Then
-            Call Log("X", "Error: Duplicate EANcode Buyers found!", "CheckSOHead")
+            Call Log("X", "Error: Duplicate EANcode Buyers found!", "CheckKoperAdres")
             KOPERADRES = ""
         Else
-            Call Log("X", "Error: Match EANcode Buyers NOT found!", "CheckSOHead")
+            Call Log("X", "Error: Match EANcode Buyers NOT found!", "CheckKoperAdres")
             KOPERADRES = ""
         End If
 
