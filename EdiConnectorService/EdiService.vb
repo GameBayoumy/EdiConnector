@@ -77,20 +77,10 @@ Public Class EdiConnectorService
 
         ReadSettings()
         Connect_to_Sap()
+        CreateUdfFiledsText()
 
         ' Queue the main service function for execution in a worker thread.
         ThreadPool.QueueUserWorkItem(New WaitCallback(AddressOf ServiceWorkerThread))
-
-
-
-        'CreateUdfFiledsText()
-        'CheckAndExport_delivery()
-        'CheckAndExport_invoice()
-        'Split_Order()
-        'Read_SO_file()
-
-
-
 
     End Sub
 
@@ -103,10 +93,14 @@ Public Class EdiConnectorService
         ' Periodically check if the service is stopping.
         Do While Not Me.stopping
             ' Perform main service function here...
-            Me.EventLog1.WriteEntry("EdiService Tick.")
+            'Me.EventLog1.WriteEntry("EdiService Tick.")
+            CheckAndExport_delivery()
+            CheckAndExport_invoice()
+            Split_Order()
+            Read_SO_file()
 
             If cmp.Connected = True Then
-                Me.EventLog1.WriteEntry("Connected")
+
             Else
                 Connect_to_Sap()
             End If
@@ -378,7 +372,7 @@ Public Class EdiConnectorService
         For Each fi In aryFi
 
             strFileSize = (Format(fi.Length / 1024, "##0.00")).ToString()
-            Call Log("V", "Begin splitting sales order filename " & fi.Name & " - file size: " & strFileSize & " kb", "Request_SO_file")
+            Call Log("V", "Begin splitting sales order filename " & fi.Name & " - file size: " & strFileSize & " kb", "Split_Order")
 
             Dim line As String
 
@@ -738,10 +732,10 @@ Public Class EdiConnectorService
         If oRecordSet.RecordCount = 1 Then
             KOPERADRES = oRecordSet.Fields(0).Value
         ElseIf oRecordSet.RecordCount > 1 Then
-            Call Log("X", "Error: Duplicate EANcode Buyers found!", "CheckSOHead")
+            Call Log("X", "Error: Duplicate EANcode Buyers found!", "CheckKoperAdres")
             KOPERADRES = ""
         Else
-            Call Log("X", "Error: Match EANcode Buyers NOT found!", "CheckSOHead")
+            Call Log("X", "Error: Match EANcode Buyers NOT found!", "CheckKoperAdres")
             KOPERADRES = ""
         End If
 
