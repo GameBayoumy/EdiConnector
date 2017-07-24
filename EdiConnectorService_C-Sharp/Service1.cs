@@ -9,9 +9,9 @@ using System.Text;
 
 namespace EdiConnectorService_C_Sharp
 {
-    public partial class Service1 : ServiceBase
+    public partial class EdiConnectorService : ServiceBase
     {
-        public Service1()
+        public EdiConnectorService()
         {
             InitializeComponent();
         }

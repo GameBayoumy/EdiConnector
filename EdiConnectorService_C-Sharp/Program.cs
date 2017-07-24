@@ -16,7 +16,7 @@ namespace EdiConnectorService_C_Sharp
             ServiceBase[] ServicesToRun;
             ServicesToRun = new ServiceBase[] 
 			{ 
-				new Service1() 
+				new EdiConnectorService() 
 			};
             ServiceBase.Run(ServicesToRun);
         }
