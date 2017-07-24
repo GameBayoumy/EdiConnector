@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
-Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "EdiConnectorService", "EdiConnector\EdiConnectorService.vbproj", "{37CA9B07-111D-4E8C-BE30-330F49FB0F29}"
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "EdiConnectorService", "EdiConnectorService\EdiConnectorService.vbproj", "{37CA9B07-111D-4E8C-BE30-330F49FB0F29}"
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "TestEdiConnector", "TestEdiConnector\TestEdiConnector.vbproj", "{6E81B7ED-8717-4B41-83C6-CBE36493BEDB}"
 EndProject

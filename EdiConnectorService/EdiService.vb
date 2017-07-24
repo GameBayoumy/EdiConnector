@@ -108,7 +108,7 @@ Public Class EdiConnectorService
             If cmp.Connected = True Then
                 Me.EventLog1.WriteEntry("Connected")
             Else
-                Connect_to_database()
+                Connect_to_Sap()
             End If
 
             Thread.Sleep(4000)  ' Simulate some lengthy operations.
