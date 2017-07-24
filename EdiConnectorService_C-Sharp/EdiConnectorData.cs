@@ -6,230 +6,233 @@ using System.Data.SqlClient;
 
 namespace EdiConnectorService_C_Sharp
 {
-    class EdiConnectorData
+    public class EdiConnectorData
     {
-        private string sApplicationPath;
+        public string sApplicationPath;
 
-        //Dit is de huidige versie aangepast op 15/09/2014
-        private SAPbobsCOM.Documents oOrder;
-        private string CARDCODE;
-        private string ITEMCODE;
-        private string ITEMNAME;
-        private string SALPACKUN;
-        private string KOPERADRES;
+        public SAPbobsCOM.Documents oOrder;
+        public string CARDCODE;
+        public string ITEMCODE;
+        public string ITEMNAME;
+        public string SALPACKUN;
+        public string KOPERADRES;
 
         //Email notifications
-        private int iSendNotification;
-        private string sSmpt;
-        private int iSmtpPort;
-        private string sSmtpUser;
-        private string sSmtpPassword;
+        public int iSendNotification;
+        public string sSmpt;
+        public int iSmtpPort;
+        public bool bSmtpUserSecurity;
+        public string sSmtpUser;
+        public string sSmtpPassword;
 
-        private string sSenderEmail;
-        private string sSenderName;
+        public string sSenderEmail;
+        public string sSenderName;
 
-        private string sOrderMailTo;
-        private string sOrderMailToFullName;
+        public string sOrderMailTo;
+        public string sOrderMailToFullName;
 
-        private string sDeliveryMailTo;
-        private string sDeliveryMailToFullName;
+        public string sDeliveryMailTo;
+        public string sDeliveryMailToFullName;
 
-        private string sInvoiceMailTo;
-        private string sInvoiceMailToFullName;
+        public string sInvoiceMailTo;
+        public string sInvoiceMailToFullName;
 
         //Connections
-        private SqlConnection cn;
-        private SAPbobsCOM.Company cmp;
-        private SAPbobsCOM.BoDataServerTypes bstDBServerType;
-        private string sSQL;
-        private string sDBServerType;
-        private string sServer;
-        private string sDBUsername;
-        private string sDBPassword;
-        private string sUserName;
-        private string sPassword;
-        private string sSQLVersion;
+        public SqlConnection cn;
+        public SAPbobsCOM.Company cmp;
+        public SAPbobsCOM.BoDataServerTypes bstDBServerType;
+        public string sSQL;
+        public string sDBServerType;
+        public string sServer;
+        public string sDBUserName;
+        public string sDBPassword;
+        public string sCompanyDB;
+        public string sUserName;
+        public string sPassword;
+        public string sSQLVersion;
 
         //Level
-        private string sDesAdvLevel;
+        public string sDesAdvLevel;
 
         //Files
-        private string SO_FILE;
-        private string SO_FILENAME;
+        public string SO_FILE;
+        public string SO_FILENAME;
 
         //Paths
-        private string sSOPath;
-        private string sSOTempPath;
-        private string sSODonePath;
-        private string sSOErrorPath;
-        private string sInvoicePath;
-        private string sDeliveryPath;
+        public string sSOPath;
+        public string sSOTempPath;
+        public string sSODonePath;
+        public string sSOErrorPath;
+        public string sInvoicePath;
+        public string sDeliveryPath;
 
         //Invoice Dimension
-        private string FK_K_EANCODE;
-        private string FK_FAKTEST;
-        private string FK_KNAAM;
-        private string FK_F_SOORT;
-        private string FK_FAKT_NUM;
-        private string FK_FAKT_DATUM;
-        private string FK_AFL_DATUM;
-        private string FK_RFFIV;
-        private string FK_K_ORDERNR;
-        private string FK_K_ORDDAT;
-        private string FK_PAKBONNR;
-        private string FK_RFFCDN;
-        private string FK_RFFALO;
-        private string FK_RFFVN;
-        private string FK_RFFVNDAT;
-        private string FK_NAD_BY;
-        private string FK_A_EANCODE;
-        private string FK_F_EANCODE;
-        private string FK_NAD_SF;
-        private string FK_NAD_SU;
-        private string FK_NAD_UC;
-        private string FK_NAD_PE;
-        private string FK_OBNUMMER;
-        private string FK_ACT;
-        private string FK_CUX;
-        private string FK_DAGEN;
-        private string FK_KORTPERC;
-        private string FK_KORTBEDR;
-        private string FK_ONTVANGER;
+        public string FK_K_EANCODE;
+        public string FK_FAKTEST;
+        public string FK_KNAAM;
+        public string FK_F_SOORT;
+        public string FK_FAKT_NUM;
+        public string FK_FAKT_DATUM;
+        public string FK_AFL_DATUM;
+        public string FK_RFFIV;
+        public string FK_K_ORDERNR;
+        public string FK_K_ORDDAT;
+        public string FK_PAKBONNR;
+        public string FK_RFFCDN;
+        public string FK_RFFALO;
+        public string FK_RFFVN;
+        public string FK_RFFVNDAT;
+        public string FK_NAD_BY;
+        public string FK_A_EANCODE;
+        public string FK_F_EANCODE;
+        public string FK_NAD_SF;
+        public string FK_NAD_SU;
+        public string FK_NAD_UC;
+        public string FK_NAD_PE;
+        public string FK_OBNUMMER;
+        public string FK_ACT;
+        public string FK_CUX;
+        public string FK_DAGEN;
+        public string FK_KORTPERC;
+        public string FK_KORTBEDR;
+        public string FK_ONTVANGER;
 
-        private string AK_SOORT;
-        private string AK_QUAL;
-        private string AK_BEDRAG;
-        private string AK_BTWSOORT;
-        private string AK_FOOTMOA;
-        private string AK_NOTINCALC;
+        public string AK_SOORT;
+        public string AK_QUAL;
+        public string AK_BEDRAG;
+        public string AK_BTWSOORT;
+        public string AK_FOOTMOA;
+        public string AK_NOTINCALC;
 
-        private string FR_DEUAC;
-        private string FR_DEARTNR;
-        private string FR_DEARTOM;
-        private string FR_AANTAL;
-        private string FR_FAANTAL;
-        private string FR_ARTEENHEID;
-        private string FR_FEENHEID;
-        private string FR_NETTOBEDR;
-        private string FR_PRIJS;
-        private string FR_FREKEN;
-        private string FR_BTWSOORT;
-        private string FR_PV;
-        private string FR_ORDER;
-        private string FR_REGELID;
-        private string FR_INVO;
-        private string FR_DESA;
-        private string FR_PRIAAA;
-        private string FR_PIAPB;
+        public string FR_DEUAC;
+        public string FR_DEARTNR;
+        public string FR_DEARTOM;
+        public string FR_AANTAL;
+        public string FR_FAANTAL;
+        public string FR_ARTEENHEID;
+        public string FR_FEENHEID;
+        public string FR_NETTOBEDR;
+        public string FR_PRIJS;
+        public string FR_FREKEN;
+        public string FR_BTWSOORT;
+        public string FR_PV;
+        public string FR_ORDER;
+        public string FR_REGELID;
+        public string FR_INVO;
+        public string FR_DESA;
+        public string FR_PRIAAA;
+        public string FR_PIAPB;
 
-        private string AR_SOORT;
-        private string AR_QUAL;
-        private string AR_BEDRAG;
-        private string AR_BTWSOORT;
-        private string AR_PERC;
-        private string AR_LTOTAL;
-        private string AR_FOOTMOA;
-        private string AR_NOTINCALC;
+        public string AR_SOORT;
+        public string AR_QUAL;
+        public string AR_BEDRAG;
+        public string AR_BTWSOORT;
+        public string AR_PERC;
+        public string AR_LTOTAL;
+        public string AR_FOOTMOA;
+        public string AR_NOTINCALC;
 
         //Delivery
-        private string DK_K_EANCODE;
-        private string DK_PBTEST;
-        private string DK_KNAAM;
-        private string DK_BGM;
-        private string DK_DTM_137;
-        private string DK_DTM_2;
-        private string DK_TIJD_2;
-        private string DK_DTM_17;
-        private string DK_TIJD_17;
-        private string DK_DTM_64;
-        private string DK_TIJD_64;
-        private string DK_DTM_63;
-        private string DK_TIJD_63;
-        private string DK_BH_DAT;
-        private string DK_BH_TIJD;
-        private string DK_RFF;
-        private string DK_RFFVN;
-        private string DK_BH_EAN;
-        private string DK_NAD_BY;
-        private string DK_NAD_DP;
-        private string DK_NAD_SU;
-        private string DK_NAD_UC;
-        private string DK_DESATYPE;
-        private string DK_ONTVANGER;
+        public string DK_K_EANCODE;
+        public string DK_PBTEST;
+        public string DK_KNAAM;
+        public string DK_BGM;
+        public string DK_DTM_137;
+        public string DK_DTM_2;
+        public string DK_TIJD_2;
+        public string DK_DTM_17;
+        public string DK_TIJD_17;
+        public string DK_DTM_64;
+        public string DK_TIJD_64;
+        public string DK_DTM_63;
+        public string DK_TIJD_63;
+        public string DK_BH_DAT;
+        public string DK_BH_TIJD;
+        public string DK_RFF;
+        public string DK_RFFVN;
+        public string DK_BH_EAN;
+        public string DK_NAD_BY;
+        public string DK_NAD_DP;
+        public string DK_NAD_SU;
+        public string DK_NAD_UC;
+        public string DK_DESATYPE;
+        public string DK_ONTVANGER;
 
-        private string DR_DEUAC;
-        private string DR_OLDUAC;
-        private string DR_DEARTNR;
-        private string DR_DEARTOM;
-        private string DR_PIA;
-        private string DR_BATCH;
-        private string DR_QTY;
-        private string DR_ARTEENHEID;
-        private string DR_RFFONID;
-        private string DR_RFFONORD;
-        private string DR_DTM_23E;
-        private string DR_TGTDATUM;
-        private string DR_GEWICHT;
-        private string DR_FEENHEID;
-        private string DR_QTY_AFW;
-        private string DR_REDEN;
-        private string DR_GINTYPE;
-        private string DR_GINID;
-        private string DR_BATCHH;
+        public string DR_DEUAC;
+        public string DR_OLDUAC;
+        public string DR_DEARTNR;
+        public string DR_DEARTOM;
+        public string DR_PIA;
+        public string DR_BATCH;
+        public string DR_QTY;
+        public string DR_ARTEENHEID;
+        public string DR_RFFONID;
+        public string DR_RFFONORD;
+        public string DR_DTM_23E;
+        public string DR_TGTDATUM;
+        public string DR_GEWICHT;
+        public string DR_FEENHEID;
+        public string DR_QTY_AFW;
+        public string DR_REDEN;
+        public string DR_GINTYPE;
+        public string DR_GINID;
+        public string DR_BATCHH;
 
         //Sales Order
-        private string OK_K_EANCODE;
-        private string OK_TEST;
-        private string OK_KNAAM;
-        private string OK_BGM;
-        private DateTime OK_K_ORDDAT;
-        private DateTime OK_DTM_2;
-        private string OK_TIJD_2;
-        private DateTime OK_DTM_17;
-        private string OK_TIJD_17;
-        private DateTime OK_DTM_64;
-        private string OK_TIJD_64;
-        private DateTime OK_DTM_63;
-        private string OK_TIJD_63;
-        private string OK_RFF_BO;
-        private string OK_RFF_CR;
-        private string OK_RFF_PD;
-        private string OK_RFFCT;
-        private DateTime OK_DTMCT;
+        public string OK_K_EANCODE;
+        public string OK_TEST;
+        public string OK_KNAAM;
+        public string OK_BGM;
+        public DateTime OK_K_ORDDAT;
+        public DateTime OK_DTM_2;
+        public string OK_TIJD_2;
+        public DateTime OK_DTM_17;
+        public string OK_TIJD_17;
+        public DateTime OK_DTM_64;
+        public string OK_TIJD_64;
+        public DateTime OK_DTM_63;
+        public string OK_TIJD_63;
+        public string OK_RFF_BO;
+        public string OK_RFF_CR;
+        public string OK_RFF_PD;
+        public string OK_RFFCT;
+        public DateTime OK_DTMCT;
 
-        private string[] OK_FLAGS = new string[10];
+        public string[] OK_FLAGS = new string[10];
 
-        private string OK_FTXDSI;
-        private string OK_NAD_BY;
-        private string OK_NAD_DP;
-        private string OK_NAD_IV;
-        private string OK_NAD_SF;
-        private string OK_NAD_SU;
-        private string OK_NAD_UC;
-        private string OK_NAD_BCO;
-        private string OK_ONTVANGER;
+        public string OK_FTXDSI;
+        public string OK_NAD_BY;
+        public string OK_NAD_DP;
+        public string OK_NAD_IV;
+        public string OK_NAD_SF;
+        public string OK_NAD_SU;
+        public string OK_NAD_UC;
+        public string OK_NAD_BCO;
+        public string OK_ONTVANGER;
 
-        private string OR_DEUAC;
-        private double OR_QTY;
-        private string OR_LEVARTCODE;
-        private string OR_DEARTOM;
-        private string OR_KLEUR;
-        private string OR_LENGTE;
-        private string OR_BREEDTE;
-        private string OR_HOOGTE;
-        private string OR_CUX;
-        private string OR_PIA;
-        private string OR_RFFLI1;
-        private string OR_RFFLI2;
-        private DateTime OR_DTM_2;
-        private string OR_LINNR;
-        private double OR_PRI;
+        public string OR_DEUAC;
+        public double OR_QTY;
+        public string OR_LEVARTCODE;
+        public string OR_DEARTOM;
+        public string OR_KLEUR;
+        public string OR_LENGTE;
+        public string OR_BREEDTE;
+        public string OR_HOOGTE;
+        public string OR_CUX;
+        public string OR_PIA;
+        public string OR_RFFLI1;
+        public string OR_RFFLI2;
+        public DateTime OR_DTM_2;
+        public string OR_LINNR;
+        public double OR_PRI;
 
         //order file pos/len
-        private int[] OK_POS = new int[37];
-        private int[] OK_LEN = new int[37];
+        public int[] OK_POS = new int[37];
+        public int[] OK_LEN = new int[37];
 
-        private int[] OR_POS = new int[14];
-        private int[] OR_LEN = new int[14];
+        public int[] OR_POS = new int[14];
+        public int[] OR_LEN = new int[14];
+
+
     }
 }
