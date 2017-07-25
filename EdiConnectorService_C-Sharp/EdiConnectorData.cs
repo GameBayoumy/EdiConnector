@@ -208,16 +208,16 @@ namespace EdiConnectorService_C_Sharp
         public string OK_NAD_SU;
         public string OK_NAD_UC;
         public string OK_NAD_BCO;
-        public string OK_ONTVANGER;
+        public string OK_RECEIVER;
 
         public string OR_DEUAC;
         public double OR_QTY;
         public string OR_LEVARTCODE;
         public string OR_DEARTOM;
-        public string OR_KLEUR;
-        public string OR_LENGTE;
-        public string OR_BREEDTE;
-        public string OR_HOOGTE;
+        public string OR_COLOR;
+        public string OR_LENGTH;
+        public string OR_WIDTH;
+        public string OR_HEIGHT;
         public string OR_CUX;
         public string OR_PIA;
         public string OR_RFFLI1;
