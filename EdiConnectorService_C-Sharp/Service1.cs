@@ -646,36 +646,36 @@ namespace EdiConnectorService_C_Sharp
         public string CheckBuyerAddress(string buyerEANCode)
         {
             string buyerAddress = "";
-            Recordset oRecordSet;
-            oRecordSet = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            Recordset oRecordset;
+            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
-            oRecordSet.DoQuery("SELECT LicTradNum FROM OCRD WHERE U_K_EANCODE = '" + buyerEANCode + "'");
-            if (oRecordSet.RecordCount == 1)
-                buyerAddress = oRecordSet.Fields.Item(0).Value.ToString();
-            else if (oRecordSet.RecordCount > 1)
+            oRecordset.DoQuery("SELECT LicTradNum FROM OCRD WHERE U_K_EANCODE = '" + buyerEANCode + "'");
+            if (oRecordset.RecordCount == 1)
+                buyerAddress = oRecordset.Fields.Item(0).Value.ToString();
+            else if (oRecordset.RecordCount > 1)
                 Log("X", "Error: Duplicate EANcode Buyers found!", "CheckBuyerAddress");
             else
                 Log("X", "Error: Match EANcode Buyers NOT found!", "CheckBuyerAddress");
 
-            oRecordSet = null;
+            oRecordset = null;
             return buyerAddress;
         }
 
         public bool CheckSOhead()
         {
             ECD.CARDCODE = "";
-            Recordset oRecordSet;
-            oRecordSet = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            Recordset oRecordset;
+            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             try
             {
-                oRecordSet.DoQuery("SELECT CardCode FROM OCRD WHERE U_K_EANCODE = '" + ECD.OK_K_EANCODE + "'");
-                if (oRecordSet.RecordCount == 1)
+                oRecordset.DoQuery("SELECT CardCode FROM OCRD WHERE U_K_EANCODE = '" + ECD.OK_K_EANCODE + "'");
+                if (oRecordset.RecordCount == 1)
                 {
-                    ECD.CARDCODE = oRecordSet.Fields.Item(0).Value.ToString();
+                    ECD.CARDCODE = oRecordset.Fields.Item(0).Value.ToString();
                     return true;
                 }
-                else if (oRecordSet.RecordCount > 1)
+                else if (oRecordset.RecordCount > 1)
                 {
                     Log("X", "Error: Duplicate customers found!", "CheckSOhead");
                     return false;
@@ -688,7 +688,7 @@ namespace EdiConnectorService_C_Sharp
             }
             finally
             {
-                oRecordSet = null;
+                oRecordset = null;
             }
         }
 
@@ -740,21 +740,21 @@ namespace EdiConnectorService_C_Sharp
             ECD.ITEMCODE = "";
             ECD.ITEMNAME = "";
             ECD.SALPACKUN = "1";
-            Recordset oRecordSet;
-            oRecordSet = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            Recordset oRecordset;
+            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             try
             {
-                oRecordSet.DoQuery("SELECT ItemCode, ItemName, SalPackUn FROM OITM WHERE U_EAN_Handels_EH = '" + ECD.OR_DEUAC + "'");
+                oRecordset.DoQuery("SELECT ItemCode, ItemName, SalPackUn FROM OITM WHERE U_EAN_Handels_EH = '" + ECD.OR_DEUAC + "'");
 
-                if (oRecordSet.RecordCount == 1)
+                if (oRecordset.RecordCount == 1)
                 {
-                    ECD.ITEMCODE = oRecordSet.Fields.Item(0).Value.ToString();
-                    ECD.ITEMNAME = oRecordSet.Fields.Item(1).Value.ToString();
-                    ECD.SALPACKUN = oRecordSet.Fields.Item(2).Value.ToString();
+                    ECD.ITEMCODE = oRecordset.Fields.Item(0).Value.ToString();
+                    ECD.ITEMNAME = oRecordset.Fields.Item(1).Value.ToString();
+                    ECD.SALPACKUN = oRecordset.Fields.Item(2).Value.ToString();
                     return true;
                 }
-                else if (oRecordSet.RecordCount > 1)
+                else if (oRecordset.RecordCount > 1)
                 {
                     Log("X", "Error: Duplicate EANcodes found! Eancode " + ECD.OR_DEUAC, "CheckSOitems");
                     return false;
@@ -767,7 +767,7 @@ namespace EdiConnectorService_C_Sharp
             }
             finally
             {
-                oRecordSet = null;
+                oRecordset = null;
             }
         }
 
@@ -893,6 +893,607 @@ namespace EdiConnectorService_C_Sharp
                 Log("X", "Order notification was not sent!", "MailToSOreceiver");
                 return false;
             }
+        }
+
+        public void CheckAndExportDelivery()
+        {
+            Recordset oRecordset;
+            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            try
+            {
+                oRecordset.DoQuery("SELECT DocEntry FROM EDLN WHERE Canceled='N' AND U_EDI_BERICHT = 'Ja' " +
+                    "AND U_EDI_EXPORT = 'Ja' AND (U_EDI_DEL_EXP is NULL OR U_EDI_DEL_EXP = 'Nee')");
+
+                if (oRecordset.RecordCount == 0)
+                    Log("V", "No Delivery notes found to export!", "CheckAndExportDelivery");
+                else if (oRecordset.RecordCount > 0)
+                {
+                    oRecordset.MoveFirst();
+                    for (int i = 1; i < oRecordset.RecordCount; i++)
+                    {
+                        CreateDeliveryFile(Convert.ToInt32(oRecordset.Fields.Item(0).Value));
+                        oRecordset.MoveNext();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log("X", e.Message, "CheckAndExportDelivery");
+            }
+            finally
+            {
+                oRecordset = null;
+            }
+        }
+
+        public void CreateDeliveryFile(int _docEntry)
+        {
+            Documents oDelivery;
+            oDelivery = ECD.cmp.GetBusinessObject(BoObjectTypes.oDeliveryNotes);
+            bool foundKey = oDelivery.GetByKey(_docEntry);
+
+            if (oDelivery.UserFields.Fields.Item("U_DESADV").Value.ToString() == "1")
+            {
+                if (foundKey == true)
+                {
+                    try
+                    {
+                        using (StreamWriter writer = new StreamWriter(ECD.sDeliveryPath + @"\" + "DEL_" + oDelivery.DocNum + ".DAT"))
+                        {
+
+                            string header = "";
+                            string line = "";
+
+                            ECD.DK_K_EANCODE = "";
+                            ECD.DK_PBTEST = "";
+                            ECD.DK_KNAAM = "";
+                            ECD.DK_BGM = "";
+                            ECD.DK_DTM_137 = "";
+                            ECD.DK_DTM_2 = "";
+                            ECD.DK_TIJD_2 = "";
+                            ECD.DK_DTM_17 = "";
+                            ECD.DK_TIJD_17 = "";
+                            ECD.DK_DTM_64 = "";
+                            ECD.DK_TIJD_64 = "";
+                            ECD.DK_DTM_63 = "";
+                            ECD.DK_TIJD_63 = "";
+                            ECD.DK_BH_DAT = "";
+                            ECD.DK_BH_TIJD = "";
+                            ECD.DK_RFF = "";
+                            ECD.DK_RFFVN = "";
+                            ECD.DK_BH_EAN = "";
+                            ECD.DK_NAD_BY = "";
+                            ECD.DK_NAD_SU = "";
+                            ECD.DK_DESATYPE = "";
+                            ECD.DK_ONTVANGER = "";
+
+                            ECD.DK_K_EANCODE = FormatField(oDelivery.UserFields.Fields.Item("U_K_EANCODE").Value.ToString(), 13, "STRING");
+
+                            if (oDelivery.UserFields.Fields.Item("U_TEST").Value.ToString() == "J")
+                                ECD.DK_PBTEST = FormatField("1", 1, "STRING");
+                            else
+                                ECD.DK_PBTEST = FormatField(" ", 1, "STRING");
+
+                            ECD.DK_KNAAM = FormatField(oDelivery.UserFields.Fields.Item("U_KNAAM").Value.ToString(), 14, "STRING");
+                            ECD.DK_BGM = FormatField(oDelivery.DocNum.ToString(), 35, "STRING");
+                            ECD.DK_DTM_137 = FormatField(oDelivery.DocDate.ToString("yyyyMMdd"), 8, "STIRNG");
+
+                            if (oDelivery.UserFields.Fields.Item("U_DTM_2").Value.ToString().Trim().Length > 0)
+                                ECD.DK_DTM_2 = FormatField(Convert.ToDateTime(oDelivery.UserFields.Fields.Item("U_DTM_2").Value).ToString("yyyyMMdd"), 8, "STRING");
+                            else
+                                ECD.DK_DTM_2 = FormatField(" ", 8, "STRING");
+                            ECD.DK_TIJD_2 = FormatField(oDelivery.UserFields.Fields.Item("U_TIJD_2").Value.ToString(), 5, "STRING");
+
+                            if (oDelivery.UserFields.Fields.Item("U_DTM_17").Value.ToString().Trim().Length > 0)
+                                ECD.DK_DTM_17 = FormatField(Convert.ToDateTime(oDelivery.UserFields.Fields.Item("U_DTM_17").Value).ToString("yyyyMMdd"), 8, "STRING");
+                            else
+                                ECD.DK_DTM_17 = FormatField(" ", 8, "STRING");
+                            ECD.DK_TIJD_17 = FormatField(oDelivery.UserFields.Fields.Item("U_TIJD_17").Value.ToString(), 5, "STRING");
+
+                            if (oDelivery.UserFields.Fields.Item("U_DTM_64").Value.ToString().Trim().Length > 0)
+                                ECD.DK_DTM_64 = FormatField(Convert.ToDateTime(oDelivery.UserFields.Fields.Item("U_DTM_64").Value).ToString("yyyyMMdd"), 8, "STRING");
+                            else
+                                ECD.DK_DTM_64 = FormatField(" ", 8, "STRING");
+                            ECD.DK_TIJD_64 = FormatField(oDelivery.UserFields.Fields.Item("U_TIJD_64").Value.ToString(), 5, "STRING");
+
+                            if (oDelivery.UserFields.Fields.Item("U_DTM_63").Value.ToString().Trim().Length > 0)
+                                ECD.DK_DTM_63 = FormatField(Convert.ToDateTime(oDelivery.UserFields.Fields.Item("U_DTM_63").Value).ToString("yyyyMMdd"), 8, "STRING");
+                            else
+                                ECD.DK_DTM_63 = FormatField(" ", 8, "STRING");
+                            ECD.DK_TIJD_63 = FormatField(oDelivery.UserFields.Fields.Item("U_TIJD_63").Value.ToString(), 5, "STRING");
+
+                            ECD.DK_BH_DAT = FormatField(oDelivery.UserFields.Fields.Item("U_BH_DAT").Value.ToString(), 8, "STRING");
+                            ECD.DK_BH_TIJD = FormatField(oDelivery.UserFields.Fields.Item("U_BH_TIJD").Value.ToString(), 5, "STRING");
+                            ECD.DK_RFF = FormatField(oDelivery.UserFields.Fields.Item("U_RFF").Value.ToString(), 35, "STRING");
+                            ECD.DK_RFFVN = FormatField(oDelivery.UserFields.Fields.Item("U_RFFVN").Value.ToString(), 35, "STRING");
+                            ECD.DK_BH_EAN = FormatField(oDelivery.UserFields.Fields.Item("U_BH_EAN").Value.ToString(), 13, "STRING");
+                            ECD.DK_NAD_BY = FormatField(oDelivery.UserFields.Fields.Item("U_NAD_BY").Value.ToString(), 13, "STRING");
+                            ECD.DK_NAD_DP = FormatField(oDelivery.UserFields.Fields.Item("U_NAD_DP").Value.ToString(), 13, "STRING");
+                            ECD.DK_NAD_SU = FormatField(oDelivery.UserFields.Fields.Item("U_NAD_SU").Value.ToString(), 13, "STRING");
+                            ECD.DK_NAD_UC = FormatField(oDelivery.UserFields.Fields.Item("U_NAD_UC").Value.ToString(), 13, "STRING");
+                            //DK_DESATYPE = strDesAdvLevel //see desadvlevel in settings file
+                            ECD.DK_DESATYPE = oDelivery.UserFields.Fields.Item("U_DESADV").Value.ToString();
+                            ECD.DK_ONTVANGER = FormatField(oDelivery.UserFields.Fields.Item("U_ONTVANGER").Value.ToString(), 13, "STRING");
+
+                            header = ECD.DK_K_EANCODE +
+                                ECD.DK_PBTEST +
+                                ECD.DK_KNAAM +
+                                ECD.DK_BGM +
+                                ECD.DK_DTM_137 +
+                                ECD.DK_DTM_2 +
+                                ECD.DK_TIJD_2 +
+                                ECD.DK_DTM_17 +
+                                ECD.DK_TIJD_17 +
+                                ECD.DK_DTM_64 +
+                                ECD.DK_TIJD_64 +
+                                ECD.DK_DTM_63 +
+                                ECD.DK_TIJD_63 +
+                                ECD.DK_BH_DAT +
+                                ECD.DK_BH_TIJD +
+                                ECD.DK_RFF +
+                                ECD.DK_RFFVN +
+                                ECD.DK_BH_EAN +
+                                ECD.DK_NAD_BY +
+                                ECD.DK_NAD_DP +
+                                ECD.DK_NAD_SU +
+                                ECD.DK_NAD_UC +
+                                ECD.DK_DESATYPE +
+                                ECD.DK_ONTVANGER;
+
+                            writer.WriteLine("0" + header);
+
+                            for (int i = 0; i < oDelivery.Lines.Count; i++)
+                            {
+                                line = "";
+
+                                ECD.DR_DEUAC = "";
+                                ECD.DR_OLDUAC = "";
+                                ECD.DR_DEARTNR = "";
+                                ECD.DR_DEARTOM = "";
+                                ECD.DR_PIA = "";
+                                ECD.DR_BATCH = "";
+                                ECD.DR_QTY = "";
+                                ECD.DR_ARTEENHEID = "";
+                                ECD.DR_RFFONID = "";
+                                ECD.DR_RFFONORD = "";
+                                ECD.DR_DTM_23E = "";
+                                ECD.DR_TGTDATUM = "";
+                                ECD.DR_GEWICHT = "";
+                                ECD.DR_FEENHEID = "";
+                                ECD.DR_QTY_AFW = "";
+                                ECD.DR_REDEN = "";
+                                ECD.DR_GINTYPE = "";
+                                ECD.DR_GINID = "";
+                                ECD.DR_BATCHH = "";
+
+                                oDelivery.Lines.SetCurrentLine(i);
+
+                                ECD.DR_DEUAC = FormatField(ItemEAN(oDelivery.Lines.ItemCode), 14, "STRING");
+                                ECD.DR_OLDUAC = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_OLDUAC").Value.ToString(), 14, "STRING");
+                                ECD.DR_DEARTNR = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_DEARTNR").Value.ToString(), 9, "STRING");
+                                ECD.DR_DEARTOM = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_DEARTOM").Value.ToString(), 35, "STRING");
+                                ECD.DR_PIA = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_PIA").Value.ToString(), 10, "STRING");
+                                ECD.DR_BATCH = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_BATCH").Value.ToString(), 35, "STRING");
+
+                                ECD.DR_QTY = FormatField(oDelivery.Lines.Quantity.ToString(), 17, "STRING");
+
+                                ECD.DR_ARTEENHEID = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_ARTEENHEID").Value.ToString(), 3, "STRING");
+                                ECD.DR_RFFONID = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_RFFONID").Value.ToString(), 6, "STRING");
+                                ECD.DR_RFFONORD = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_RFFONORD").Value.ToString(), 35, "STRING");
+                                ECD.DR_DTM_23E = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_DTM_23E").Value.ToString(), 8, "STRING");
+                                ECD.DR_TGTDATUM = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_TGTDATUM").Value.ToString(), 1, "STRING");
+                                ECD.DR_GEWICHT = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_GEWICHT").Value.ToString(), 6, "STRING");
+                                ECD.DR_FEENHEID = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_FEENHEID").Value.ToString(), 3, "STRING");
+                                ECD.DR_QTY_AFW = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_QTY_AFW").Value.ToString(), 17, "STRING");
+                                ECD.DR_REDEN = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_REDEN").Value.ToString(), 3, "STRING");
+                                ECD.DR_GINTYPE = FormatField(" ", 3, "STRING");
+                                ECD.DR_GINID = FormatField(" ", 19, "STRING");
+                                ECD.DR_BATCHH = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_BATCHH").Value.ToString(), 35, "STRING");
+
+                                line = ECD.DR_DEUAC +
+                                    ECD.DR_OLDUAC +
+                                    ECD.DR_DEARTNR +
+                                    ECD.DR_DEARTOM +
+                                    ECD.DR_PIA +
+                                    ECD.DR_BATCH +
+                                    ECD.DR_QTY +
+                                    ECD.DR_ARTEENHEID +
+                                    ECD.DR_RFFONID +
+                                    ECD.DR_RFFONORD +
+                                    ECD.DR_DTM_23E +
+                                    ECD.DR_TGTDATUM +
+                                    ECD.DR_GEWICHT +
+                                    ECD.DR_FEENHEID +
+                                    ECD.DR_QTY_AFW +
+                                    ECD.DR_REDEN +
+                                    ECD.DR_GINTYPE +
+                                    ECD.DR_GINID +
+                                    ECD.DR_BATCHH;
+
+                                if (oDelivery.Lines.TreeType != BoItemTreeTypes.iIngredient)
+                                    writer.WriteLine("1" + line);
+                            }// End for loop
+
+                            writer.Close();
+
+                            oDelivery.UserFields.Fields.Item("U_EDI_DEL_EXP").Value = "Ja";
+                            oDelivery.UserFields.Fields.Item("U_EDI_DELEXP_TIJD").Value = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+                            oDelivery.Update();
+
+                            if (ECD.iSendNotification == 1)
+                                MailToDLreceiver(oDelivery.DocEntry, oDelivery.DocDate, oDelivery.DocNum);
+
+                            Log("V", "Delivery note file created!", "CreateDeliveryFile");
+                        }// End using
+                    }// End try
+                    catch (Exception e)
+                    {
+                        File.Delete(ECD.sDeliveryPath + @"\" + "DEL_" + oDelivery.DocNum + ".DAT");
+                        Log("X", e.Message, "CreateDeliveryFile");
+                    }
+
+                }// End if foundKey
+                else
+                {
+                    Log("X", "Delivery note " + _docEntry + " not found!", "CreateDeliveryFile");
+                }
+            }// End if "U_DESADV"
+        }
+
+        public string SSCC(int _docEntry, int _lineNr, string _itemCode)
+        {
+            string newSSCC;
+            Recordset oRecordset;
+            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+
+            oRecordset.DoQuery("SELECT SSCC_Code FROM SSCC WHERE DocEntry = " + _docEntry + " AND RegelNr = " + _lineNr + " AND ItemCode = '" + _itemCode + "'");
+            if (oRecordset.RecordCount > 0)
+            {
+                newSSCC = oRecordset.Fields.Item(0).Value.ToString();
+                Log("V", "SSCC code found!", "SSCC");
+            }
+            else
+            {
+                newSSCC = "";
+                Log("X", "SSCC code for document " + _docEntry + " not found!", "SSCC");
+            }
+
+            oRecordset = null;
+            return newSSCC;
+        }
+
+        public string SSCCqty(int _docEntry, int _lineNr)
+        {
+            string newSSCCqty;
+            Recordset oRecordset;
+            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+
+            oRecordset.DoQuery("SELECT Quantity FROM SSCC WHERE DocEntry = " + _docEntry + " AND RegelNr = " + _lineNr);
+            if (oRecordset.RecordCount > 0)
+            {
+                newSSCCqty = oRecordset.Fields.Item(0).Value.ToString();
+                Log("V", "SSCC code (qty) found!", "SSCC");
+            }
+            else
+            {
+                newSSCCqty = "";
+                Log("X", "SSCC code (qty) for document " + _docEntry + " not found!", "SSCC");
+            }
+
+            oRecordset = null;
+            return newSSCCqty;
+        }
+
+        public string ItemEAN(string _iCode)
+        {
+            string i_EAN;
+            Recordset oRecordset;
+            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+
+            oRecordset.DoQuery("SELECT U_EAN_Handels_EH FROM OITM WHERE ItemCode = '" + _iCode + "'");
+            if (oRecordset.RecordCount > 0)
+            {
+                i_EAN = oRecordset.Fields.Item(0).Value.ToString();
+                Log("V", "ItemEAN code found!", "ItemEAN");
+            }
+            else
+            {
+                i_EAN = "";
+                Log("X", "ItemEAN not found!", "ItemEAN");
+            }
+
+            oRecordset = null;
+            return i_EAN;
+        }
+
+        public void CheckAndExportInvoice()
+        {
+            Recordset oRecordset;
+            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+
+            try
+            {
+                oRecordset.DoQuery("SELECT DocEntry FROM OINV WHERE U_EDI_BERICHT = 'Ja' AND U_EDI_EXPORT = 'Ja' AND (U_EDI_INV_EXP is NULL OR U_EDI_INV_EXP = 'Nee')");
+                if (oRecordset.RecordCount == 0)
+                    Log("V", "No Invoices note found to export!", "CheckAndExportInvoice");
+                else if (oRecordset.RecordCount > 0)
+                {
+                    oRecordset.MoveFirst();
+                    for (int i = 1; i < oRecordset.RecordCount; i++)
+                    {
+                        CreateInvoiceFile(oRecordset.Fields.Item(0).Value.ToString());
+                        oRecordset.MoveNext();
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Log("X", e.Message, "CheckAndExportInvoice");
+            }
+            finally
+            {
+                oRecordset = null;
+            }
+        }
+
+        public void CreateInvoiceFile(string _docEntry)
+        {
+            Documents oInvoice;
+            oInvoice = ECD.cmp.GetBusinessObject(BoObjectTypes.oInvoices);
+            bool foundKey = oInvoice.GetByKey(Convert.ToInt32(_docEntry));
+
+            if (foundKey == true)
+            {
+                try
+                {
+                    using(StreamWriter writer = new StreamWriter(ECD.sInvoicePath + @"\" + "INV_" + oInvoice.DocNum + ".DAT"))
+                    {
+                        string header = "";
+                        string line = "";
+
+                        string alcHeader = "";
+                        string alcLine = "";
+
+                        ECD.FK_K_EANCODE = "";
+                        ECD.FK_FAKTEST = "";
+                        ECD.FK_KNAAM = "";
+                        ECD.FK_F_SOORT = "";
+                        ECD.FK_FAKT_NUM = "";
+                        ECD.FK_FAKT_DATUM = "";
+                        ECD.FK_AFL_DATUM = "";
+                        ECD.FK_RFFIV = "";
+                        ECD.FK_K_ORDERNR = "";
+                        ECD.FK_K_ORDDAT = "";
+                        ECD.FK_PAKBONNR = "";
+                        ECD.FK_RFFCDN = "";
+                        ECD.FK_RFFALO = "";
+                        ECD.FK_RFFVN = "";
+                        ECD.FK_RFFVNDAT = "";
+                        ECD.FK_NAD_BY = "";
+                        ECD.FK_A_EANCODE = "";
+                        ECD.FK_F_EANCODE = "";
+                        ECD.FK_NAD_SF = "";
+                        ECD.FK_NAD_SU = "";
+                        ECD.FK_NAD_UC = "";
+                        ECD.FK_NAD_PE = "";
+                        ECD.FK_OBNUMMER = "";
+                        ECD.FK_ACT = "";
+                        ECD.FK_CUX = "";
+                        ECD.FK_DAGEN = "";
+                        ECD.FK_KORTPERC = "";
+                        ECD.FK_KORTBEDR = "";
+                        ECD.FK_ONTVANGER = "";
+
+                        ECD.FK_K_EANCODE = FormatField(oInvoice.UserFields.Fields.Item("U_K_EANCODE").Value.ToString(), 13, "STRING");
+
+                        if (oInvoice.UserFields.Fields.Item("U_TEST").Value.ToString() == "J")
+                            ECD.FK_FAKTEST = FormatField("1", 1, "STRING");
+                        else
+                            ECD.FK_FAKTEST = FormatField(" ", 1, "STRING");
+
+                        ECD.FK_KNAAM = FormatField(oInvoice.UserFields.Fields.Item("U_KNAAM").Value.ToString(), 14, "STRING");
+
+                        if (oInvoice.UserFields.Fields.Item("U_F_SOORT").Value.ToString().Trim().Length > 0)
+                            ECD.FK_F_SOORT = FormatField(oInvoice.UserFields.Fields.Item("U_F_SOORT").Value.ToString(), 3, "STRING");
+                        else
+                            ECD.FK_F_SOORT = FormatField("380", 3, "STRING");
+
+                        ECD.FK_FAKT_NUM = FormatField(oInvoice.DocNum.ToString(), 12, "STRING");
+
+                        ECD.FK_FAKT_DATUM = FormatField(oInvoice.DocDate.ToString("yyyyMMdd"), 8, "STRING");
+                        ECD.FK_AFL_DATUM = FormatField(Convert.ToDateTime(oInvoice.UserFields.Fields.Item("U_AFL_DATUM").Value).ToString("yyyyMMdd"), 8, "STRING");
+                        ECD.FK_RFFIV = FormatField(oInvoice.UserFields.Fields.Item("U_RFFIV").Value.ToString(), 35, "STRING");
+                        ECD.FK_K_ORDERNR = FormatField(oInvoice.UserFields.Fields.Item("U_K_ORDERNR").Value.ToString(), 35, "STRING");
+                        ECD.FK_K_ORDDAT = FormatField(oInvoice.UserFields.Fields.Item("U_K_ORDDAT").Value.ToString(), 8, "STRING");
+                        ECD.FK_PAKBONNR = FormatField(oInvoice.UserFields.Fields.Item("U_PAKBONNR").Value.ToString(), 35, "STRING");
+                        ECD.FK_RFFCDN = FormatField(oInvoice.UserFields.Fields.Item("U_RFFCDN").Value.ToString(), 35, "STRING");
+                        ECD.FK_RFFALO = FormatField(oInvoice.UserFields.Fields.Item("U_RFFALO").Value.ToString(), 35, "STRING");
+                        ECD.FK_RFFVN = FormatField(oInvoice.UserFields.Fields.Item("U_RFFVN").Value.ToString(), 35, "STRING");
+                        ECD.FK_RFFVNDAT = FormatField(oInvoice.UserFields.Fields.Item("U_RFFVNDAT").Value.ToString(), 8, "STRING");
+                        ECD.FK_NAD_BY = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_BY").Value.ToString(), 13, "STRING");
+                        ECD.FK_A_EANCODE = FormatField(oInvoice.ShipToCode, 13, "STRING");
+                        ECD.FK_F_EANCODE = FormatField(oInvoice.PayToCode, 13, "STRING");
+                        ECD.FK_NAD_SF = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_SF").Value.ToString(), 13, "STRING");
+                        ECD.FK_NAD_SU = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_SU").Value.ToString(), 13, "STRING");
+                        ECD.FK_NAD_UC = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_UC").Value.ToString(), 13, "STRING");
+                        ECD.FK_NAD_PE = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_PE").Value.ToString(), 13, "STRING");
+                        ECD.FK_OBNUMMER = FormatField(CheckBuyerAddress(oInvoice.UserFields.Fields.Item("U_K_EANCODE").Value.ToString()), 15, "STRING");
+
+                        ECD.FK_ACT = FormatField(oInvoice.UserFields.Fields.Item("U_ACT").Value.ToString(), 1, "STRING");
+                        ECD.FK_CUX = FormatField(oInvoice.DocCurrency, 3, "STRING");
+                        ECD.FK_DAGEN = FormatField(oInvoice.UserFields.Fields.Item("U_DAGEN").Value.ToString(), 3, "STRING");
+                        ECD.FK_KORTPERC = FormatField(oInvoice.UserFields.Fields.Item("U_KORTPERC").Value.ToString(), 8, "STRING");
+                        ECD.FK_KORTBEDR = FormatField(oInvoice.UserFields.Fields.Item("U_KORTBEDR").Value.ToString(), 9, "STRING");
+                        ECD.FK_ONTVANGER = FormatField(oInvoice.UserFields.Fields.Item("U_ONTVANGER").Value.ToString(), 13, "STRING");
+
+                        header = ECD.FK_K_EANCODE +
+                            ECD.FK_FAKTEST +
+                            ECD.FK_KNAAM +
+                            ECD.FK_F_SOORT +
+                            ECD.FK_FAKT_NUM +
+                            ECD.FK_FAKT_DATUM +
+                            ECD.FK_AFL_DATUM +
+                            ECD.FK_RFFIV +
+                            ECD.FK_K_ORDERNR +
+                            ECD.FK_K_ORDDAT +
+                            ECD.FK_PAKBONNR +
+                            ECD.FK_RFFCDN +
+                            ECD.FK_RFFALO +
+                            ECD.FK_RFFVN +
+                            ECD.FK_RFFVNDAT +
+                            ECD.FK_NAD_BY +
+                            ECD.FK_A_EANCODE +
+                            ECD.FK_F_EANCODE +
+                            ECD.FK_NAD_SF +
+                            ECD.FK_NAD_SU +
+                            ECD.FK_NAD_UC +
+                            ECD.FK_NAD_PE +
+                            ECD.FK_OBNUMMER +
+                            ECD.FK_ACT +
+                            ECD.FK_CUX +
+                            ECD.FK_DAGEN +
+                            ECD.FK_KORTPERC +
+                            ECD.FK_KORTBEDR +
+                            ECD.FK_ONTVANGER;
+
+                        writer.WriteLine("0" + header);
+
+                        ECD.AK_SOORT = "";
+                        ECD.AK_QUAL = "";
+                        ECD.AK_BEDRAG = "";
+                        ECD.AK_BTWSOORT = "";
+                        ECD.AK_FOOTMOA = "";
+                        ECD.AK_NOTINCALC = "";
+
+                        if (oInvoice.DiscountPercent > 0)
+                            ECD.AK_SOORT = FormatField("C", 1, "STRING");
+                        else
+                            ECD.AK_SOORT = FormatField("A", 1, "STRING");
+
+                        ECD.AK_QUAL = FormatField(oInvoice.UserFields.Fields.Item("U_QUAL").Value.ToString(), 3, "STRING");
+                        ECD.AK_BEDRAG = FormatField(oInvoice.TotalDiscount.ToString(), 9, "STRING");
+
+                        ECD.AK_BTWSOORT = FormatField(oInvoice.UserFields.Fields.Item("U_BTWSOORT").Value.ToString(), 1, "STRING");
+                        ECD.AK_FOOTMOA = FormatField(oInvoice.UserFields.Fields.Item("U_FOOTMOA").Value.ToString(), 1, "STRING");
+                        ECD.AK_NOTINCALC = FormatField(oInvoice.UserFields.Fields.Item("U_NOTINCALC").Value.ToString(), 1, "STRING");
+
+                        alcHeader = ECD.AK_SOORT +
+                            ECD.AK_QUAL +
+                            ECD.AK_BEDRAG +
+                            ECD.AK_BTWSOORT +
+                            ECD.AK_FOOTMOA +
+                            ECD.AK_NOTINCALC;
+
+                        if (ECD.AK_SOORT == "C")
+                            writer.WriteLine("1" + alcHeader);
+
+                        for (int i = 0; i < oInvoice.Lines.Count; i++ )
+                        {
+                            oInvoice.Lines.SetCurrentLine(i);
+                            
+                            line = "";
+
+                            ECD.FR_DEUAC = "";
+                            ECD.FR_DEARTNR = "";
+                            ECD.FR_DEARTOM = "";
+                            ECD.FR_AANTAL = "";
+                            ECD.FR_FAANTAL = "";
+                            ECD.FR_ARTEENHEID = "";
+                            ECD.FR_FEENHEID = "";
+                            ECD.FR_NETTOBEDR = "";
+                            ECD.FR_PRIJS = "";
+                            ECD.FR_FREKEN = "";
+                            ECD.FR_BTWSOORT = "";
+                            ECD.FR_PV = "";
+                            ECD.FR_ORDER = "";
+                            ECD.FR_REGELID = "";
+                            ECD.FR_INVO = "";
+                            ECD.FR_DESA = "";
+                            ECD.FR_PRIAAA = "";
+                            ECD.FR_PIAPB = "";
+
+                            ECD.FR_DEUAC = FormatField(oInvoice.UserFields.Fields.Item("U_DEUAC").Value.ToString(), 14, "STRING");
+                            ECD.FR_DEARTNR = FormatField("---------", 9, "STRING");
+                            ECD.FR_DEARTOM = FormatField(oInvoice.Lines.ItemDescription, 70, "STRING");
+                            ECD.FR_AANTAL = FormatField(oInvoice.Lines.Quantity.ToString(), 5, "STRING");
+                            ECD.FR_FAANTAL = FormatField(oInvoice.Lines.Quantity.ToString(), 9, "STRING");
+                            ECD.FR_ARTEENHEID = FormatField(oInvoice.UserFields.Fields.Item("U_ARTEENHEID").Value.ToString(), 3, "STRING");
+                            ECD.FR_FEENHEID = FormatField(oInvoice.UserFields.Fields.Item("U_FEENHEID").Value.ToString(), 3, "STRING");
+                            ECD.FR_NETTOBEDR = FormatField(oInvoice.Lines.LineTotal.ToString(), 11, "STRING");
+                            ECD.FR_PRIJS = FormatField(oInvoice.Lines.Price.ToString(), 10, "STRING");
+                            ECD.FR_FREKEN = FormatField(oInvoice.UserFields.Fields.Item("U_FREKEN").Value.ToString(), 9, "STRING");
+
+                            switch (oInvoice.Lines.VatGroup.Trim())
+                            {
+                                case "A0":
+                                    ECD.FR_BTWSOORT = FormatField("0", 1, "STRING");
+                                    break;
+                                case "A1":
+                                    ECD.FR_BTWSOORT = FormatField("L", 1, "STRING");
+                                    break;
+                                case "A2":
+                                    ECD.FR_BTWSOORT = FormatField("H", 1, "STRING");
+                                    break;
+                                default:
+                                    ECD.FR_BTWSOORT = FormatField("9", 1, "STRING");
+                                    break;
+                            }
+
+                            ECD.FR_PV = FormatField(oInvoice.UserFields.Fields.Item("U_PV").Value.ToString(), 10, "STRING");
+                            ECD.FR_ORDER = FormatField(oInvoice.UserFields.Fields.Item("U_ORDER").Value.ToString(), 35, "STRING");
+                            ECD.FR_REGELID = FormatField(oInvoice.Lines.LineNum.ToString(), 6, "STRING");
+                            ECD.FR_INVO = FormatField(oInvoice.UserFields.Fields.Item("U_INVO").Value.ToString(), 35, "STRING");
+                            ECD.FR_DESA = FormatField(oInvoice.UserFields.Fields.Item("U_DESA").Value.ToString(), 35, "STRING");
+                            ECD.FR_PRIAAA = FormatField(oInvoice.UserFields.Fields.Item("U_PRIAAA").Value.ToString(), 10, "STRING");
+                            ECD.FR_PIAPB = FormatField(oInvoice.Lines.SupplierCatNum, 9, "STRING");
+
+                            line = ECD.FR_DEUAC +
+                            ECD.FR_DEARTNR +
+                            ECD.FR_DEARTOM +
+                            ECD.FR_AANTAL +
+                            ECD.FR_FAANTAL +
+                            ECD.FR_ARTEENHEID +
+                            ECD.FR_FEENHEID +
+                            ECD.FR_NETTOBEDR +
+                            ECD.FR_PRIJS +
+                            ECD.FR_FREKEN +
+                            ECD.FR_BTWSOORT +
+                            ECD.FR_PV +
+                            ECD.FR_ORDER +
+                            ECD.FR_REGELID +
+                            ECD.FR_INVO +
+                            ECD.FR_DESA +
+                            ECD.FR_PRIAAA +
+                            ECD.FR_PIAPB;
+
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+
+                }
+            }
+        }
+
+        private string FormatField(string _fieldValue, int _fieldLen, string _type)
+        {
+            string newValue;
+
+            switch (_type)
+            {
+                case "STRING":
+                    if (_fieldValue.Length > 0)
+                        newValue = _fieldValue.Trim() + new String(' ', _fieldLen).Substring(1, _fieldLen - _fieldValue.PadLeft(_fieldLen).Trim().Length);
+                    else
+                        newValue = new String(' ', _fieldLen);
+                    break;
+                default:
+                    newValue = new String(' ', _fieldLen);
+                    break;
+            }
+
+            return newValue;
         }
     }
 }
