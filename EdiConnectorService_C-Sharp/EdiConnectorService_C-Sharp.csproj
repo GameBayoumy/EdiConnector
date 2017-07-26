@@ -54,7 +54,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Connection.cs" />
+    <Compile Include="AbstractClasses\Connection.cs" />
     <Compile Include="EdiConnectorData.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>

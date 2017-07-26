@@ -17,17 +17,21 @@ namespace EdiConnectorService_C_Sharp
 {
     public partial class EdiConnectorService : ServiceBase
     {
-        private EdiConnectorData ECD;
         private bool stopping;
         private ManualResetEvent stoppedEvent;
+        private EdiConnectorData ECD;
+
+        private SAPConnection connection = new SAPConnection();
+        public EventLogger eventLogger;
 
         public EdiConnectorService()
         {
-            ECD = new EdiConnectorData();
             InitializeComponent();
-
-            this.stopping = false;
+            EventLogger.setInstance(eventLog1);
             this.stoppedEvent = new ManualResetEvent(false);
+            this.stopping = false;
+
+            ECD = new EdiConnectorData();
         }
 
         /* <summary>
