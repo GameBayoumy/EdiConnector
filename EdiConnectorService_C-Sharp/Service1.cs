@@ -76,14 +76,13 @@ namespace EdiConnectorService_C_Sharp
             do
             {
                 //Perform main service function here...
-                CheckAndExportDelivery();
-                CheckAndExportInvoice();
-                SplitOrder();
-                ReadSOfile();
 
-                if (ECD.cmp.Connected == true)
+                if (ECD.cmp.Connected == true && ECD.cn.State == ConnectionState.Open)
                 {
-
+                    CheckAndExportDelivery();
+                    CheckAndExportInvoice();
+                    SplitOrder();
+                    ReadSOFile();
                 }
                 else
                 {
@@ -126,8 +125,8 @@ namespace EdiConnectorService_C_Sharp
             {
                 if (ECD.cmp.Connected == true)
                 {
-                    Log("X", "SAP is already Connected", "ConnectToSAP");
-                    return false;
+                    Log("V", "SAP is already Connected", "ConnectToSAP");
+                    return true;
                 }
 
                 bool bln = ConnectToDatabase();
@@ -210,11 +209,11 @@ namespace EdiConnectorService_C_Sharp
                 DataSet dataSet = new DataSet();
                 dataSet.ReadXml(ECD.sApplicationPath + @"\settings.xml");
 
-                if (dataSet.Tables["server"].Rows[0]["sqlversion"] == "2005")
+                if (dataSet.Tables["server"].Rows[0]["sqlversion"].ToString() == "2005")
                     ECD.bstDBServerType = BoDataServerTypes.dst_MSSQL2005;
-                else if (dataSet.Tables["server"].Rows[0]["sqlversion"] == "2008")
+                else if (dataSet.Tables["server"].Rows[0]["sqlversion"].ToString() == "2008")
                     ECD.bstDBServerType = BoDataServerTypes.dst_MSSQL2008;
-                else if (dataSet.Tables["server"].Rows[0]["sqlversion"] == "2012")
+                else if (dataSet.Tables["server"].Rows[0]["sqlversion"].ToString() == "2012")
                     ECD.bstDBServerType = BoDataServerTypes.dst_MSSQL2012;
                 else
                     ECD.bstDBServerType = BoDataServerTypes.dst_MSSQL;
@@ -422,114 +421,112 @@ namespace EdiConnectorService_C_Sharp
 
                 using (StringReader reader = new StringReader(ECD.SO_FILE))
                 {
-                    while (true)
+                    line = reader.ReadLine();
+                    switch (line.Substring(1, 1))
                     {
-                        line = reader.ReadLine();
-                        switch (line.Substring(1, 1))
-                        {
-                            case "0":
-                                ECD.OK_K_EANCODE = line.Substring(ECD.OK_POS[0], ECD.OK_LEN[0]).Trim();
-                                ECD.OK_TEST = line.Substring(ECD.OK_POS[1], ECD.OK_LEN[1]).Trim();
-                                ECD.OK_KNAAM = line.Substring(ECD.OK_POS[2], ECD.OK_LEN[2]).Trim();
-                                ECD.OK_BGM = line.Substring(ECD.OK_POS[3], ECD.OK_LEN[3]).Trim();
-                                if (line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Trim().Length == 8)
-                                    ECD.OK_K_ORDDAT = Convert.ToDateTime(line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
-                                else
-                                    ECD.OK_K_ORDDAT = Convert.ToDateTime("01-01-0001");
+                        case "0":
+                            ECD.OK_K_EANCODE = line.Substring(ECD.OK_POS[0], ECD.OK_LEN[0]).Trim();
+                            ECD.OK_TEST = line.Substring(ECD.OK_POS[1], ECD.OK_LEN[1]).Trim();
+                            ECD.OK_KNAAM = line.Substring(ECD.OK_POS[2], ECD.OK_LEN[2]).Trim();
+                            ECD.OK_BGM = line.Substring(ECD.OK_POS[3], ECD.OK_LEN[3]).Trim();
+                            if (line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Trim().Length == 8)
+                                ECD.OK_K_ORDDAT = Convert.ToDateTime(line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
+                            else
+                                ECD.OK_K_ORDDAT = Convert.ToDateTime("01-01-0001");
 
-                                if (line.Substring(ECD.OK_POS[5], ECD.OK_LEN[5]).Trim().Length == 8)
-                                    ECD.OK_DTM_2 = Convert.ToDateTime(line.Substring(ECD.OK_POS[5], ECD.OK_LEN[5]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
-                                else
-                                    ECD.OK_DTM_2 = Convert.ToDateTime("01-01-0001");
-                                ECD.OK_TIJD_2 = line.Substring(ECD.OK_POS[6], ECD.OK_LEN[6]).Trim();
+                            if (line.Substring(ECD.OK_POS[5], ECD.OK_LEN[5]).Trim().Length == 8)
+                                ECD.OK_DTM_2 = Convert.ToDateTime(line.Substring(ECD.OK_POS[5], ECD.OK_LEN[5]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
+                            else
+                                ECD.OK_DTM_2 = Convert.ToDateTime("01-01-0001");
+                            ECD.OK_TIJD_2 = line.Substring(ECD.OK_POS[6], ECD.OK_LEN[6]).Trim();
 
-                                if (line.Substring(ECD.OK_POS[7], ECD.OK_LEN[7]).Trim().Length == 8)
-                                    ECD.OK_DTM_17 = Convert.ToDateTime(line.Substring(ECD.OK_POS[7], ECD.OK_LEN[7]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
-                                else
-                                    ECD.OK_DTM_17 = Convert.ToDateTime("01-01-0001");
-                                ECD.OK_TIJD_17 = line.Substring(ECD.OK_POS[8], ECD.OK_LEN[8]).Trim();
+                            if (line.Substring(ECD.OK_POS[7], ECD.OK_LEN[7]).Trim().Length == 8)
+                                ECD.OK_DTM_17 = Convert.ToDateTime(line.Substring(ECD.OK_POS[7], ECD.OK_LEN[7]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
+                            else
+                                ECD.OK_DTM_17 = Convert.ToDateTime("01-01-0001");
+                            ECD.OK_TIJD_17 = line.Substring(ECD.OK_POS[8], ECD.OK_LEN[8]).Trim();
 
-                                if (line.Substring(ECD.OK_POS[9], ECD.OK_LEN[9]).Trim().Length == 8)
-                                    ECD.OK_DTM_64 = Convert.ToDateTime(line.Substring(ECD.OK_POS[9], ECD.OK_LEN[9]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
-                                else
-                                    ECD.OK_DTM_64 = Convert.ToDateTime("01-01-0001");
-                                ECD.OK_TIJD_64 = line.Substring(ECD.OK_POS[10], ECD.OK_LEN[10]).Trim();
+                            if (line.Substring(ECD.OK_POS[9], ECD.OK_LEN[9]).Trim().Length == 8)
+                                ECD.OK_DTM_64 = Convert.ToDateTime(line.Substring(ECD.OK_POS[9], ECD.OK_LEN[9]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
+                            else
+                                ECD.OK_DTM_64 = Convert.ToDateTime("01-01-0001");
+                            ECD.OK_TIJD_64 = line.Substring(ECD.OK_POS[10], ECD.OK_LEN[10]).Trim();
 
-                                if (line.Substring(ECD.OK_POS[11], ECD.OK_LEN[11]).Trim().Length == 8)
-                                    ECD.OK_DTM_63 = Convert.ToDateTime(line.Substring(ECD.OK_POS[11], ECD.OK_LEN[11]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
-                                else
-                                    ECD.OK_DTM_63 = Convert.ToDateTime("01-01-0001");
-                                ECD.OK_TIJD_63 = line.Substring(ECD.OK_POS[12], ECD.OK_LEN[12]).Trim();
+                            if (line.Substring(ECD.OK_POS[11], ECD.OK_LEN[11]).Trim().Length == 8)
+                                ECD.OK_DTM_63 = Convert.ToDateTime(line.Substring(ECD.OK_POS[11], ECD.OK_LEN[11]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
+                            else
+                                ECD.OK_DTM_63 = Convert.ToDateTime("01-01-0001");
+                            ECD.OK_TIJD_63 = line.Substring(ECD.OK_POS[12], ECD.OK_LEN[12]).Trim();
 
-                                ECD.OK_RFF_BO = line.Substring(ECD.OK_POS[13], ECD.OK_LEN[13]).Trim();
-                                ECD.OK_RFF_CR = line.Substring(ECD.OK_POS[14], ECD.OK_LEN[14]).Trim();
-                                ECD.OK_RFF_PD = line.Substring(ECD.OK_POS[15], ECD.OK_LEN[15]).Trim();
-                                ECD.OK_RFFCT = line.Substring(ECD.OK_POS[16], ECD.OK_LEN[16]).Trim();
-                                if (line.Substring(ECD.OK_POS[17], ECD.OK_LEN[17]).Trim().Length == 8)
-                                    ECD.OK_DTMCT = Convert.ToDateTime(line.Substring(ECD.OK_POS[17], ECD.OK_LEN[17]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
-                                else
-                                    ECD.OK_DTMCT = Convert.ToDateTime("01-01-0001");
+                            ECD.OK_RFF_BO = line.Substring(ECD.OK_POS[13], ECD.OK_LEN[13]).Trim();
+                            ECD.OK_RFF_CR = line.Substring(ECD.OK_POS[14], ECD.OK_LEN[14]).Trim();
+                            ECD.OK_RFF_PD = line.Substring(ECD.OK_POS[15], ECD.OK_LEN[15]).Trim();
+                            ECD.OK_RFFCT = line.Substring(ECD.OK_POS[16], ECD.OK_LEN[16]).Trim();
+                            if (line.Substring(ECD.OK_POS[17], ECD.OK_LEN[17]).Trim().Length == 8)
+                                ECD.OK_DTMCT = Convert.ToDateTime(line.Substring(ECD.OK_POS[17], ECD.OK_LEN[17]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
+                            else
+                                ECD.OK_DTMCT = Convert.ToDateTime("01-01-0001");
 
-                                ECD.OK_FLAGS[0] = line.Substring(ECD.OK_POS[18], ECD.OK_LEN[18]).Trim();
-                                ECD.OK_FLAGS[1] = line.Substring(ECD.OK_POS[19], ECD.OK_LEN[19]).Trim();
-                                ECD.OK_FLAGS[2] = line.Substring(ECD.OK_POS[20], ECD.OK_LEN[20]).Trim();
-                                ECD.OK_FLAGS[3] = line.Substring(ECD.OK_POS[21], ECD.OK_LEN[21]).Trim();
-                                ECD.OK_FLAGS[4] = line.Substring(ECD.OK_POS[22], ECD.OK_LEN[22]).Trim();
-                                ECD.OK_FLAGS[5] = line.Substring(ECD.OK_POS[23], ECD.OK_LEN[23]).Trim();
-                                ECD.OK_FLAGS[6] = line.Substring(ECD.OK_POS[24], ECD.OK_LEN[24]).Trim();
-                                ECD.OK_FLAGS[7] = line.Substring(ECD.OK_POS[25], ECD.OK_LEN[25]).Trim();
-                                ECD.OK_FLAGS[8] = line.Substring(ECD.OK_POS[26], ECD.OK_LEN[26]).Trim();
-                                ECD.OK_FLAGS[9] = line.Substring(ECD.OK_POS[27], ECD.OK_LEN[27]).Trim();
-                                ECD.OK_FLAGS[10] = line.Substring(ECD.OK_POS[28], ECD.OK_LEN[28]).Trim();
-                                ECD.OK_FTXDSI = line.Substring(ECD.OK_POS[29], ECD.OK_LEN[29]).Trim();
-                                ECD.OK_NAD_BY = line.Substring(ECD.OK_POS[30], ECD.OK_LEN[30]).Trim();
-                                ECD.OK_NAD_DP = line.Substring(ECD.OK_POS[31], ECD.OK_LEN[31]).Trim();
-                                ECD.OK_NAD_IV = line.Substring(ECD.OK_POS[32], ECD.OK_LEN[32]).Trim();
-                                ECD.OK_NAD_SF = line.Substring(ECD.OK_POS[33], ECD.OK_LEN[33]).Trim();
-                                ECD.OK_NAD_SU = line.Substring(ECD.OK_POS[34], ECD.OK_LEN[34]).Trim();
-                                ECD.OK_NAD_UC = line.Substring(ECD.OK_POS[35], ECD.OK_LEN[35]).Trim();
-                                ECD.OK_NAD_BCO = line.Substring(ECD.OK_POS[36], ECD.OK_LEN[36]).Trim();
-                                ECD.OK_RECEIVER = line.Substring(ECD.OK_POS[37], ECD.OK_LEN[37]).Trim();
-                                bool matchHead = WriteSOhead();
-                                if (matchHead == false)
-                                {
-                                    // Move file
-                                    File.Move(ECD.sSOTempPath + @"\" + ECD.SO_FILENAME, ECD.sSOErrorPath + @"\" + DateTime.Now.ToString("HHmmss") + "_" + ECD.SO_FILENAME);
-                                    Log("X", ECD.SO_FILENAME + " copied to the errors folder!", "MatchSOdata");
-                                    return false;
-                                }
-                                break;
+                            ECD.OK_FLAGS[0] = line.Substring(ECD.OK_POS[18], ECD.OK_LEN[18]).Trim();
+                            ECD.OK_FLAGS[1] = line.Substring(ECD.OK_POS[19], ECD.OK_LEN[19]).Trim();
+                            ECD.OK_FLAGS[2] = line.Substring(ECD.OK_POS[20], ECD.OK_LEN[20]).Trim();
+                            ECD.OK_FLAGS[3] = line.Substring(ECD.OK_POS[21], ECD.OK_LEN[21]).Trim();
+                            ECD.OK_FLAGS[4] = line.Substring(ECD.OK_POS[22], ECD.OK_LEN[22]).Trim();
+                            ECD.OK_FLAGS[5] = line.Substring(ECD.OK_POS[23], ECD.OK_LEN[23]).Trim();
+                            ECD.OK_FLAGS[6] = line.Substring(ECD.OK_POS[24], ECD.OK_LEN[24]).Trim();
+                            ECD.OK_FLAGS[7] = line.Substring(ECD.OK_POS[25], ECD.OK_LEN[25]).Trim();
+                            ECD.OK_FLAGS[8] = line.Substring(ECD.OK_POS[26], ECD.OK_LEN[26]).Trim();
+                            ECD.OK_FLAGS[9] = line.Substring(ECD.OK_POS[27], ECD.OK_LEN[27]).Trim();
+                            ECD.OK_FLAGS[10] = line.Substring(ECD.OK_POS[28], ECD.OK_LEN[28]).Trim();
+                            ECD.OK_FTXDSI = line.Substring(ECD.OK_POS[29], ECD.OK_LEN[29]).Trim();
+                            ECD.OK_NAD_BY = line.Substring(ECD.OK_POS[30], ECD.OK_LEN[30]).Trim();
+                            ECD.OK_NAD_DP = line.Substring(ECD.OK_POS[31], ECD.OK_LEN[31]).Trim();
+                            ECD.OK_NAD_IV = line.Substring(ECD.OK_POS[32], ECD.OK_LEN[32]).Trim();
+                            ECD.OK_NAD_SF = line.Substring(ECD.OK_POS[33], ECD.OK_LEN[33]).Trim();
+                            ECD.OK_NAD_SU = line.Substring(ECD.OK_POS[34], ECD.OK_LEN[34]).Trim();
+                            ECD.OK_NAD_UC = line.Substring(ECD.OK_POS[35], ECD.OK_LEN[35]).Trim();
+                            ECD.OK_NAD_BCO = line.Substring(ECD.OK_POS[36], ECD.OK_LEN[36]).Trim();
+                            ECD.OK_RECEIVER = line.Substring(ECD.OK_POS[37], ECD.OK_LEN[37]).Trim();
+                            bool matchHead = WriteSOhead();
+                            if (matchHead == false)
+                            {
+                                // Move file
+                                File.Move(ECD.sSOTempPath + @"\" + ECD.SO_FILENAME, ECD.sSOErrorPath + @"\" + DateTime.Now.ToString("HHmmss") + "_" + ECD.SO_FILENAME);
+                                Log("X", ECD.SO_FILENAME + " copied to the errors folder!", "MatchSOdata");
+                                return false;
+                            }
+                            break;
 
-                            case "1":
-                                ECD.OR_DEUAC = line.Substring(ECD.OR_POS[0], ECD.OR_LEN[0]).Trim();
-                                ECD.OR_QTY = Convert.ToDouble(line.Substring(ECD.OR_POS[1], ECD.OR_LEN[1]).Trim());
-                                ECD.OR_LEVARTCODE = line.Substring(ECD.OR_POS[2], ECD.OR_LEN[2]).Trim();
-                                ECD.OR_DEARTOM = line.Substring(ECD.OR_POS[3], ECD.OR_LEN[3]).Trim();
-                                ECD.OR_COLOR = line.Substring(ECD.OR_POS[4], ECD.OR_LEN[4]).Trim();
-                                ECD.OR_LENGTH = line.Substring(ECD.OR_POS[5], ECD.OR_LEN[5]).Trim();
-                                ECD.OR_WIDTH = line.Substring(ECD.OR_POS[6], ECD.OR_LEN[6]).Trim();
-                                ECD.OR_HEIGHT = line.Substring(ECD.OR_POS[7], ECD.OR_LEN[7]).Trim();
-                                ECD.OR_CUX = line.Substring(ECD.OR_POS[8], ECD.OR_LEN[8]).Trim();
-                                ECD.OR_PIA = line.Substring(ECD.OR_POS[9], ECD.OR_LEN[9]).Trim();
-                                ECD.OR_RFFLI1 = line.Substring(ECD.OR_POS[10], ECD.OR_LEN[10]).Trim();
-                                ECD.OR_RFFLI2 = line.Substring(ECD.OR_POS[11], ECD.OR_LEN[11]).Trim();
-                                if (line.Substring(ECD.OR_POS[12], ECD.OR_LEN[12]).Trim().Length == 8)
-                                    ECD.OR_DTM_2 = Convert.ToDateTime(line.Substring(ECD.OR_POS[12], ECD.OR_LEN[12]).Substring(7, 2) + "-" + line.Substring(ECD.OR_POS[12], ECD.OR_LEN[12]).Substring(5, 2) + "-" + line.Substring(ECD.OR_POS[12], ECD.OR_LEN[12]).Substring(1, 4));
-                                else
-                                    ECD.OR_DTM_2 = Convert.ToDateTime("01-01-0001");
-                                ECD.OR_LINNR = line.Substring(ECD.OR_POS[13], ECD.OR_LEN[13]).Trim();
-                                ECD.OR_PRI = Convert.ToDouble(line.Substring(ECD.OR_POS[14], ECD.OR_LEN[14]).Trim());
-                                bool matchItem = WriteSOitems();
-                                if (matchItem == false)
-                                {
-                                    File.Move(ECD.sSOTempPath + @"\" + ECD.SO_FILENAME, ECD.sSOErrorPath + @"\" + DateTime.Now.ToString("HHmmss") + "_" + ECD.SO_FILENAME);
-                                    Log("X", ECD.SO_FILENAME + " copied to the errors folder!", "MatchSOdata");
-                                    return false;
-                                }
-                                break;
+                        case "1":
+                            ECD.OR_DEUAC = line.Substring(ECD.OR_POS[0], ECD.OR_LEN[0]).Trim();
+                            ECD.OR_QTY = Convert.ToDouble(line.Substring(ECD.OR_POS[1], ECD.OR_LEN[1]).Trim());
+                            ECD.OR_LEVARTCODE = line.Substring(ECD.OR_POS[2], ECD.OR_LEN[2]).Trim();
+                            ECD.OR_DEARTOM = line.Substring(ECD.OR_POS[3], ECD.OR_LEN[3]).Trim();
+                            ECD.OR_COLOR = line.Substring(ECD.OR_POS[4], ECD.OR_LEN[4]).Trim();
+                            ECD.OR_LENGTH = line.Substring(ECD.OR_POS[5], ECD.OR_LEN[5]).Trim();
+                            ECD.OR_WIDTH = line.Substring(ECD.OR_POS[6], ECD.OR_LEN[6]).Trim();
+                            ECD.OR_HEIGHT = line.Substring(ECD.OR_POS[7], ECD.OR_LEN[7]).Trim();
+                            ECD.OR_CUX = line.Substring(ECD.OR_POS[8], ECD.OR_LEN[8]).Trim();
+                            ECD.OR_PIA = line.Substring(ECD.OR_POS[9], ECD.OR_LEN[9]).Trim();
+                            ECD.OR_RFFLI1 = line.Substring(ECD.OR_POS[10], ECD.OR_LEN[10]).Trim();
+                            ECD.OR_RFFLI2 = line.Substring(ECD.OR_POS[11], ECD.OR_LEN[11]).Trim();
+                            if (line.Substring(ECD.OR_POS[12], ECD.OR_LEN[12]).Trim().Length == 8)
+                                ECD.OR_DTM_2 = Convert.ToDateTime(line.Substring(ECD.OR_POS[12], ECD.OR_LEN[12]).Substring(7, 2) + "-" + line.Substring(ECD.OR_POS[12], ECD.OR_LEN[12]).Substring(5, 2) + "-" + line.Substring(ECD.OR_POS[12], ECD.OR_LEN[12]).Substring(1, 4));
+                            else
+                                ECD.OR_DTM_2 = Convert.ToDateTime("01-01-0001");
+                            ECD.OR_LINNR = line.Substring(ECD.OR_POS[13], ECD.OR_LEN[13]).Trim();
+                            ECD.OR_PRI = Convert.ToDouble(line.Substring(ECD.OR_POS[14], ECD.OR_LEN[14]).Trim());
+                            bool matchItem = WriteSOitems();
+                            if (matchItem == false)
+                            {
+                                File.Move(ECD.sSOTempPath + @"\" + ECD.SO_FILENAME, ECD.sSOErrorPath + @"\" + DateTime.Now.ToString("HHmmss") + "_" + ECD.SO_FILENAME);
+                                Log("X", ECD.SO_FILENAME + " copied to the errors folder!", "MatchSOdata");
+                                return false;
+                            }
+                            break;
                         } // End switch
-                    } // End while
                 } // End using 
+
                 OrderSave();
 
                 ECD.SO_FILE = "";
@@ -787,7 +784,7 @@ namespace EdiConnectorService_C_Sharp
             else
             {
                 if (ECD.iSendNotification == 1)
-                    MailToSOreceiver(ECD.oOrder.DocEntry, ECD.oOrder.DocDate, ECD.oOrder.DocNum);
+                    MailToSOreceiver(ECD.oOrder.DocEntry, ECD.oOrder.DocDate.ToString(), ECD.oOrder.DocNum);
 
                 Log("V", "Order written in SAP BO!", "OrderSave");
                 File.Move(ECD.sSOTempPath + @"\" + ECD.SO_FILENAME, ECD.sSODonePath + @"\" + DateTime.Now.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss") + "_" + ECD.SO_FILENAME);
@@ -815,6 +812,7 @@ namespace EdiConnectorService_C_Sharp
             }
             catch (Exception e)
             {
+                Log("X", "Error: " + e.Message, "CreateUdfFieldsText");
                 dataSet.Dispose();
             }
         }
@@ -888,7 +886,7 @@ namespace EdiConnectorService_C_Sharp
                 Log("V", "Order notification sent!", "MailToSOreceiver");
                 return true;
             }
-            catch (Exception e)
+            catch
             {
                 Log("X", "Order notification was not sent!", "MailToSOreceiver");
                 return false;
@@ -1121,7 +1119,7 @@ namespace EdiConnectorService_C_Sharp
                             oDelivery.Update();
 
                             if (ECD.iSendNotification == 1)
-                                MailToDLreceiver(oDelivery.DocEntry, oDelivery.DocDate, oDelivery.DocNum);
+                                MailToDLreceiver(oDelivery.DocEntry, oDelivery.DocDate.ToString(), oDelivery.DocNum);
 
                             Log("V", "Delivery note file created!", "CreateDeliveryFile");
                         }// End using
@@ -1246,7 +1244,7 @@ namespace EdiConnectorService_C_Sharp
             {
                 try
                 {
-                    using(StreamWriter writer = new StreamWriter(ECD.sInvoicePath + @"\" + "INV_" + oInvoice.DocNum + ".DAT"))
+                    using (StreamWriter writer = new StreamWriter(ECD.sInvoicePath + @"\" + "INV_" + oInvoice.DocNum + ".DAT"))
                     {
                         string header = "";
                         string line = "";
@@ -1387,10 +1385,10 @@ namespace EdiConnectorService_C_Sharp
                         if (ECD.AK_SOORT == "C")
                             writer.WriteLine("1" + alcHeader);
 
-                        for (int i = 0; i < oInvoice.Lines.Count; i++ )
+                        for (int i = 0; i < oInvoice.Lines.Count; i++)
                         {
                             oInvoice.Lines.SetCurrentLine(i);
-                            
+
                             line = "";
 
                             ECD.FR_DEUAC = "";
@@ -1466,13 +1464,33 @@ namespace EdiConnectorService_C_Sharp
                             ECD.FR_PRIAAA +
                             ECD.FR_PIAPB;
 
-                        }
-                    }
+                            if (oInvoice.Lines.TreeType != BoItemTreeTypes.iIngredient)
+                                writer.WriteLine("2" + line);
+                        }// End for loop
+
+                        writer.Close();
+
+                        oInvoice.UserFields.Fields.Item("U_EDI_INV_EXP").Value = "Ja";
+                        oInvoice.UserFields.Fields.Item("U_EDI_INVEXP_TIJD").Value = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
+
+                        oInvoice.Update();
+
+                        if (ECD.iSendNotification == 1)
+                            MailToDLreceiver(oInvoice.DocEntry, oInvoice.DocDate.ToString(), oInvoice.DocNum);
+
+                        Log("V", "Invoice file created!", "CreateInvoiceFile");
+
+                    }// End using
                 }
                 catch (Exception e)
                 {
-
+                    File.Delete(ECD.sInvoicePath + @"\" + "INV_" + oInvoice.DocNum + ".DAT");
+                    Log("X", e.Message, "CreateInvoiceFile");
                 }
+            }// Key not found
+            else
+            {
+                Log("X", "Invoice " + _docEntry + " not found!", "CreateInvoiceFile");
             }
         }
 
@@ -1494,6 +1512,86 @@ namespace EdiConnectorService_C_Sharp
             }
 
             return newValue;
+        }
+
+        public bool MailToDLreceiver(int _docEntry, string _docDate, int _docNum)
+        {
+            try
+            {
+                using (MailMessage mailMsg = new MailMessage())
+                {
+                    SmtpClient smtpMail = new SmtpClient(ECD.sSmpt, ECD.iSmtpPort);
+
+                    if (ECD.bSmtpUserSecurity == true)
+                        smtpMail.Credentials = new NetworkCredential(ECD.sSmtpUser, ECD.sSmtpPassword);
+
+                    mailMsg.From = new MailAddress(ECD.sSenderEmail, ECD.sSenderName);
+                    mailMsg.To.Add(ECD.sDeliveryMailTo);
+                    mailMsg.Subject = String.Format("Delivery {0} exported", _docEntry);
+
+                    using (StreamReader fileReader = new StreamReader(ECD.sApplicationPath + @"\email_d.txt"))
+                    {
+                        string body;
+                        body = fileReader.ReadToEnd();
+                        body = body.Replace("::NAME::", ECD.sDeliveryMailToFullName);
+                        body = body.Replace("::DOCENTRY::", _docEntry.ToString());
+                        body = body.Replace("::DOCDATE::", _docDate);
+                        body = body.Replace("::DOCNUM::", _docNum.ToString());
+                        fileReader.Close();
+
+                        mailMsg.Body = body;
+                    }
+                    smtpMail.Send(mailMsg);
+                }
+
+                Log("V", "Delivery notification sent!", "MailToDLreceiver");
+                return true;
+            }
+            catch
+            {
+                Log("X", "Delivery notification was NOT sent!", "MailToDLreceiver");
+                return false;
+            }
+        }
+
+        public bool MailToINreceiver(int _docEntry, string _docDate, int _docNum)
+        {
+            try
+            {
+                using (MailMessage mailMsg = new MailMessage())
+                {
+                    SmtpClient smtpMail = new SmtpClient(ECD.sSmpt, ECD.iSmtpPort);
+
+                    if (ECD.bSmtpUserSecurity == true)
+                        smtpMail.Credentials = new NetworkCredential(ECD.sSmtpUser, ECD.sSmtpPassword);
+
+                    mailMsg.From = new MailAddress(ECD.sSenderEmail, ECD.sSenderName);
+                    mailMsg.To.Add(ECD.sInvoiceMailTo);
+                    mailMsg.Subject = String.Format("Invoice {0} imported", _docEntry);
+
+                    using (StreamReader fileReader = new StreamReader(ECD.sApplicationPath + @"\email_i.txt"))
+                    {
+                        string body;
+                        body = fileReader.ReadToEnd();
+                        body = body.Replace("::NAME::", ECD.sInvoiceMailToFullName);
+                        body = body.Replace("::DOCENTRY::", _docEntry.ToString());
+                        body = body.Replace("::DOCDATE::", _docDate);
+                        body = body.Replace("::DOCNUM::", _docNum.ToString());
+                        fileReader.Close();
+
+                        mailMsg.Body = body;
+                    }
+                    smtpMail.Send(mailMsg);
+                }
+
+                Log("V", "Invoice notification sent!", "MailToINreceiver");
+                return true;
+            }
+            catch
+            {
+                Log("X", "Invoice notification was NOT sent!", "MailToINreceiver");
+                return false;
+            }
         }
     }
 }
