@@ -552,7 +552,7 @@ namespace EdiConnectorService_C_Sharp
                 if (matchHead == false)
                     return false;
 
-                ECD.oOrder = ECD.cmp.GetBusinessObject(BoObjectTypes.oOrders);
+                ECD.oOrder = (Documents)ECD.cmp.GetBusinessObject(BoObjectTypes.oOrders);
 
                 ECD.oOrder.CardCode = ECD.CARDCODE;
                 ECD.oOrder.NumAtCard = ECD.OK_BGM;
@@ -646,7 +646,7 @@ namespace EdiConnectorService_C_Sharp
         {
             string buyerAddress = "";
             Recordset oRecordset;
-            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             oRecordset.DoQuery("SELECT LicTradNum FROM OCRD WHERE U_K_EANCODE = '" + buyerEANCode + "'");
             if (oRecordset.RecordCount == 1)
@@ -664,7 +664,7 @@ namespace EdiConnectorService_C_Sharp
         {
             ECD.CARDCODE = "";
             Recordset oRecordset;
-            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             try
             {
@@ -740,7 +740,7 @@ namespace EdiConnectorService_C_Sharp
             ECD.ITEMNAME = "";
             ECD.SALPACKUN = "1";
             Recordset oRecordset;
-            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             try
             {
@@ -823,7 +823,7 @@ namespace EdiConnectorService_C_Sharp
             BoFieldTypes _boType, BoFldSubTypes _boSubType, int _editSize, bool _mandatory, bool _default, string _defaultValue)
         {
             IUserFieldsMD oUDF;
-            oUDF = ECD.cmp.GetBusinessObject(BoObjectTypes.oUserFields);
+            oUDF = (SAPbobsCOM.IUserFieldsMD)ECD.cmp.GetBusinessObject(BoObjectTypes.oUserFields);
             int errCode;
             string errMsg = "";
 
@@ -898,7 +898,7 @@ namespace EdiConnectorService_C_Sharp
         public void CheckAndExportDelivery()
         {
             Recordset oRecordset;
-            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
             try
             {
                 oRecordset.DoQuery("SELECT DocEntry FROM EDLN WHERE Canceled='N' AND U_EDI_BERICHT = 'Ja' " +
@@ -929,7 +929,7 @@ namespace EdiConnectorService_C_Sharp
         public void CreateDeliveryFile(int _docEntry)
         {
             Documents oDelivery;
-            oDelivery = ECD.cmp.GetBusinessObject(BoObjectTypes.oDeliveryNotes);
+            oDelivery = (Documents)ECD.cmp.GetBusinessObject(BoObjectTypes.oDeliveryNotes);
             bool foundKey = oDelivery.GetByKey(_docEntry);
 
             if (oDelivery.UserFields.Fields.Item("U_DESADV").Value.ToString() == "1")
@@ -1144,7 +1144,7 @@ namespace EdiConnectorService_C_Sharp
         {
             string newSSCC;
             Recordset oRecordset;
-            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             oRecordset.DoQuery("SELECT SSCC_Code FROM SSCC WHERE DocEntry = " + _docEntry + " AND RegelNr = " + _lineNr + " AND ItemCode = '" + _itemCode + "'");
             if (oRecordset.RecordCount > 0)
@@ -1166,7 +1166,7 @@ namespace EdiConnectorService_C_Sharp
         {
             string newSSCCqty;
             Recordset oRecordset;
-            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             oRecordset.DoQuery("SELECT Quantity FROM SSCC WHERE DocEntry = " + _docEntry + " AND RegelNr = " + _lineNr);
             if (oRecordset.RecordCount > 0)
@@ -1188,7 +1188,7 @@ namespace EdiConnectorService_C_Sharp
         {
             string i_EAN;
             Recordset oRecordset;
-            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             oRecordset.DoQuery("SELECT U_EAN_Handels_EH FROM OITM WHERE ItemCode = '" + _iCode + "'");
             if (oRecordset.RecordCount > 0)
@@ -1209,7 +1209,7 @@ namespace EdiConnectorService_C_Sharp
         public void CheckAndExportInvoice()
         {
             Recordset oRecordset;
-            oRecordset = ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             try
             {
@@ -1239,7 +1239,7 @@ namespace EdiConnectorService_C_Sharp
         public void CreateInvoiceFile(string _docEntry)
         {
             Documents oInvoice;
-            oInvoice = ECD.cmp.GetBusinessObject(BoObjectTypes.oInvoices);
+            oInvoice = (Documents)ECD.cmp.GetBusinessObject(BoObjectTypes.oInvoices);
             bool foundKey = oInvoice.GetByKey(Convert.ToInt32(_docEntry));
 
             if (foundKey == true)
