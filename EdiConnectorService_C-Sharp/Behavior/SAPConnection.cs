@@ -41,23 +41,26 @@ namespace EdiConnectorService_C_Sharp
             {
                 if (Company.Connect() == 0)
                 {
+                    EventLogger.getInstance().EventInfo("Connected to SAP - Server: " + Company.Server);
                     ConnectedToSAP = true;
                     return ConnectedToSAP;
                 }
                 else if (Company.Connected == true)
                 {
+                    EventLogger.getInstance().EventInfo("Already connected to SAP - Server: " + Company.Server);
                     ConnectedToSAP = true;
                     return ConnectedToSAP;
                 }
                 else
                 {
+                    EventLogger.getInstance().EventError(Company.GetLastErrorDescription());
                     ConnectedToSAP = false;
-                    EventLogger.getInstance().EventInfo("");
                     return ConnectedToSAP;
                 }
             }
             catch (Exception e)
             {
+                EventLogger.getInstance().EventError(e.Message);
                 ConnectedToSAP = false;
                 return ConnectedToSAP;
             }
@@ -68,6 +71,7 @@ namespace EdiConnectorService_C_Sharp
             try
             {
                 Company.Disconnect();
+                EventLogger.getInstance().EventInfo("Disconnected to SAP - Server: " + Company.Server);
                 ConnectedToSAP = false;
                 return ConnectedToSAP;
             }

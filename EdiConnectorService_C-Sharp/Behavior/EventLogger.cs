@@ -32,9 +32,16 @@ namespace EdiConnectorService_C_Sharp
             eventLog1.WriteEntry(text, EventLogEntryType.Information);
             System.GC.Collect();
         }
-        public void TextError(string text)
+
+        public void EventError(string text)
         {
             eventLog1.WriteEntry(text, EventLogEntryType.Error);
+            System.GC.Collect();
+        }
+
+        public void EventWarning(string text)
+        {
+            eventLog1.WriteEntry(text, EventLogEntryType.Warning);
             System.GC.Collect();
         }
     }
