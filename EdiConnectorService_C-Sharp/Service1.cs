@@ -56,8 +56,10 @@ namespace EdiConnectorService_C_Sharp
         protected override void OnStart(string[] args)
         {
             this.eventLog1.WriteEntry("EdiService in OnStart.");
+            ECD.sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
 
             ReadSettings();
+            
             ConnectToSAP();
             CreateUdfFieldsText();
 
@@ -89,7 +91,7 @@ namespace EdiConnectorService_C_Sharp
                     ConnectToSAP();
                 }
 
-                Thread.Sleep(4000);
+                Thread.Sleep(6000);
 
             }
             while (!stopping);
@@ -274,13 +276,13 @@ namespace EdiConnectorService_C_Sharp
             DataSet dataSet = new DataSet();
             dataSet.ReadXml(ECD.sApplicationPath + @"\orderfld.xml");
 
-            for (int orderHead = 0; orderHead < dataSet.Tables["OK"].Rows.Count; orderHead++ )
+            for (int orderHead = 0; orderHead < dataSet.Tables["OK"].Rows.Count - 1; orderHead++ )
             {
                 ECD.OK_POS[orderHead] = Convert.ToInt32(dataSet.Tables["OK"].Rows[orderHead][0]);
                 ECD.OK_LEN[orderHead] = Convert.ToInt32(dataSet.Tables["OK"].Rows[orderHead][1]);
             }
 
-            for (int orderItem = 0; orderItem < dataSet.Tables["OR"].Rows.Count; orderItem++)
+            for (int orderItem = 0; orderItem < dataSet.Tables["OR"].Rows.Count - 1; orderItem++)
             {
                 ECD.OK_POS[orderItem] = Convert.ToInt32(dataSet.Tables["OR"].Rows[orderItem][0]);
                 ECD.OK_LEN[orderItem] = Convert.ToInt32(dataSet.Tables["OR"].Rows[orderItem][1]);
@@ -805,7 +807,7 @@ namespace EdiConnectorService_C_Sharp
             {
                 if (dataSet.Tables["udf"].Rows.Count > 0)
                 {
-                    for (int i = 0; i < dataSet.Tables["udf"].Rows.Count; i++)
+                    for (int i = 0; i < dataSet.Tables["udf"].Rows.Count - 1; i++)
                         CreateUdf(dataSet.Tables["udf"].Rows[i][0].ToString(), dataSet.Tables["udf"].Rows[i][1].ToString(), dataSet.Tables["udf"].Rows[i][2].ToString(), 
                             BoFieldTypes.db_Alpha, BoFldSubTypes.st_None, Convert.ToInt32(dataSet.Tables["udf"].Rows[i][3]), false, false, "");
                 }
@@ -1040,7 +1042,7 @@ namespace EdiConnectorService_C_Sharp
 
                             writer.WriteLine("0" + header);
 
-                            for (int i = 0; i < oDelivery.Lines.Count; i++)
+                            for (int i = 0; i < oDelivery.Lines.Count - 1; i++)
                             {
                                 line = "";
 
@@ -1250,7 +1252,7 @@ namespace EdiConnectorService_C_Sharp
                         string line = "";
 
                         string alcHeader = "";
-                        string alcLine = "";
+                        //string alcLine = "";
 
                         ECD.FK_K_EANCODE = "";
                         ECD.FK_FAKTEST = "";
@@ -1385,7 +1387,7 @@ namespace EdiConnectorService_C_Sharp
                         if (ECD.AK_SOORT == "C")
                             writer.WriteLine("1" + alcHeader);
 
-                        for (int i = 0; i < oInvoice.Lines.Count; i++)
+                        for (int i = 0; i < oInvoice.Lines.Count - 1; i++)
                         {
                             oInvoice.Lines.SetCurrentLine(i);
 

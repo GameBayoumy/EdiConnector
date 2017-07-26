@@ -38,8 +38,8 @@ namespace EdiConnectorService_C_Sharp
         public string sInvoiceMailToFullName;
 
         //Connections
-        public SqlConnection cn;
-        public SAPbobsCOM.Company cmp;
+        public SqlConnection cn = new SqlConnection();
+        public SAPbobsCOM.Company cmp = new SAPbobsCOM.Company();
         public SAPbobsCOM.BoDataServerTypes bstDBServerType;
         public string sSQL;
         public string sDBServerType;
