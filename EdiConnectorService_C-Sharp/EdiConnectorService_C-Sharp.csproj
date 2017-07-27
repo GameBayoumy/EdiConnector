@@ -55,9 +55,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractClasses\AConnection.cs" />
-    <Compile Include="Behavior\EventLogger.cs" />
-    <Compile Include="Behavior\SAPConnection.cs" />
+    <Compile Include="Behaviors\CreateConnections.cs" />
+    <Compile Include="Behaviors\EventLogger.cs" />
+    <Compile Include="Behaviors\SAPConnection.cs" />
     <Compile Include="EdiConnectorData.cs" />
+    <Compile Include="Interfaces\Command.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -80,6 +82,9 @@
     <EmbeddedResource Include="Service1.resx">
       <DependentUpon>Service1.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="config.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

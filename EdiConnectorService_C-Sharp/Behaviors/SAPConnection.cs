@@ -11,8 +11,27 @@ namespace EdiConnectorService_C_Sharp
     {
         XmlNode xmlNode;
 
+        /// <summary>
+        /// Gets or sets the company.
+        /// </summary>
+        public SAPbobsCOM.Company Company { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [connected to sap].
+        /// </summary>
+        public bool ConnectedToSAP { get; set; }
+
         public SAPConnection()
         {
+            Company = new Company();
+        }
+
+        /// <summary>
+        /// Finalizes an instance of the <see cref="SAPConnection"/> class.
+        /// </summary>
+        ~SAPConnection()
+        {
+            EdiConnectorService.ClearObject(Company);
         }
 
         /// <summary>
@@ -26,14 +45,15 @@ namespace EdiConnectorService_C_Sharp
                 this.xmlNode = _xmlNode;
                 Company.Server = xmlNode["Server"].InnerText;
                 Company.LicenseServer = xmlNode["LicenceServer"].InnerText;
+                Company.UserName = xmlNode["Username"].InnerText;
+                Company.Password = xmlNode["Password"].InnerText;
                 Company.CompanyDB = xmlNode["CompanyDB"].InnerText;
                 if (xmlNode["Test"].InnerText == "Y")
                     Company.CompanyDB = "TEST_" + Company.CompanyDB;
                 Company.DbServerType = BoDataServerTypes.dst_HANADB;
-                Company.DbUserName = xmlNode["DbUserName"].InnerText;
+                Company.DbUserName = xmlNode["DbUsername"].InnerText;
                 Company.DbPassword = xmlNode["DbPassword"].InnerText;
-                Company.UserName = xmlNode["UserName"].InnerText;
-                Company.Password = xmlNode["PassWord"].InnerText;
+                
                 EventLogger.getInstance().EventInfo("Set connection - Server: " + Company.Server);
             }
             catch (Exception e)
@@ -87,20 +107,5 @@ namespace EdiConnectorService_C_Sharp
                 return ConnectedToSAP;
             }
         }
-
-        /// <summary>
-        /// Gets or sets the company.
-        /// </summary>
-        /// <value>
-        /// The company.
-        /// </value>
-        public SAPbobsCOM.Company Company { get; set; }
-        /// <summary>
-        /// Gets or sets a value indicating whether [connected to sap].
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if [connected to sap]; otherwise, <c>false</c>.
-        /// </value>
-        public bool ConnectedToSAP { get; set; }
     }
 }

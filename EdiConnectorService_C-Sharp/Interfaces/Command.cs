@@ -10,6 +10,6 @@ namespace EdiConnectorService_C_Sharp
     /// </summary>
     interface Command
     {
-        public abstract void execute();
+        void execute();
     }
 }
