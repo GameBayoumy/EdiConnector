@@ -50,7 +50,16 @@ namespace EdiConnectorService_C_Sharp
                 Company.CompanyDB = xmlNode["CompanyDB"].InnerText;
                 if (xmlNode["Test"].InnerText == "Y")
                     Company.CompanyDB = "TEST_" + Company.CompanyDB;
-                Company.DbServerType = BoDataServerTypes.dst_HANADB;
+                if (xmlNode["DbServerType"].InnerText == "HANA")
+                    Company.DbServerType = BoDataServerTypes.dst_HANADB;
+                else if (xmlNode["DbServerType"].InnerText == "2005")
+                    Company.DbServerType = BoDataServerTypes.dst_MSSQL2005;
+                else if (xmlNode["DbServerType"].InnerText == "2008")
+                    Company.DbServerType = BoDataServerTypes.dst_MSSQL2008;
+                else if (xmlNode["DbServerType"].InnerText == "2012")
+                    Company.DbServerType = BoDataServerTypes.dst_MSSQL2012;
+                else
+                    Company.DbServerType = BoDataServerTypes.dst_MSSQL;
                 Company.DbUserName = xmlNode["DbUsername"].InnerText;
                 Company.DbPassword = xmlNode["DbPassword"].InnerText;
                 
