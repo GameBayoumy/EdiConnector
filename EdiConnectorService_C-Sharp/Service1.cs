@@ -22,7 +22,7 @@ namespace EdiConnectorService_C_Sharp
         private ManualResetEvent stoppedEvent;
 
         public EdiConnectorData ECD;
-        public ConnectionManager CM;
+        private ConnectionManager CM;
 
         public EdiConnectorService()
         {
@@ -30,24 +30,9 @@ namespace EdiConnectorService_C_Sharp
             this.stoppedEvent = new ManualResetEvent(false);
             this.stopping = false;
 
-            ECD = new EdiConnectorData();
-            CM = new ConnectionManager();
+            this.ECD = new EdiConnectorData();
+            this.CM = new ConnectionManager();
             
-            ECD.sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-            //string ECD.sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
-
-
-            // Create and set connections from config.xml
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(ECD.sApplicationPath + @"\config.xml");
-            XmlNodeList xmlList = xmlDoc.SelectNodes("/Connections/Connection");
-            for (int i = 0; i < xmlList.Count; i++)
-            {
-                CM.Connections.Add(xmlList[i]["Server"].InnerText , new SAPConnection());
-                CM.Connections.Last().Value.Set(xmlList[i]);
-            }
-
-            CM.ConnectAll();
         }
 
         /* <summary>
@@ -76,7 +61,20 @@ namespace EdiConnectorService_C_Sharp
         protected override void OnStart(string[] args)
         {
             EventLogger.getInstance().EventInfo("EdiService in OnStart.");
-            
+
+            ECD.sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
+            ECD.sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
+
+            // Create and set connections from config.xml
+            XmlDocument xmlDoc = new XmlDocument();
+            xmlDoc.Load(ECD.sApplicationPath + @"\config.xml");
+            XmlNodeList xmlList = xmlDoc.SelectNodes("/Connections/Connection");
+            for (int i = 0; i < xmlList.Count; i++)
+            {
+                CM.Connections.Add(xmlList[i]["Server"].InnerText, new SAPConnection());
+                CM.Connections.Last().Value.Set(xmlList[i]);
+            }
+            CM.ConnectAll();
 
             ReadSettings();
             

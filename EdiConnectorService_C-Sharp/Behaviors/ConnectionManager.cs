@@ -5,7 +5,7 @@ using System.Text;
 
 namespace EdiConnectorService_C_Sharp
 {
-    class ConnectionManager : AConnection
+    class ConnectionManager
     {
         public Dictionary<string, SAPConnection> Connections { get; set; }
 
@@ -36,31 +36,51 @@ namespace EdiConnectorService_C_Sharp
             }
         }
 
-        public string GetAllConnectedServers()
+        public List<string> GetAllConnectedServers()
         {
-            string connected = "";
+            List<string> connected = new List<string>();
             foreach (SAPConnection connection in Connections.Values)
             {
                 if (connection.ConnectedToSAP)
-                    connected += connection.Company.Server;
+                    connected.Add(connection.Company.Server);
             }
             return connected;
         }
 
-        public string GetAllDisconnectedServers()
+        public List<string> GetAllDisconnectedServers()
         {
-            string disconnected = "";
+            List<string> disconnected = new List<string>();
             foreach (SAPConnection connection in Connections.Values)
             {
                 if (!connection.ConnectedToSAP)
-                    disconnected += connection.Company.Server;
+                    disconnected.Add(connection.Company.Server);
             }
             return disconnected;
         }
 
         public string GetAllServerStatus()
         {
-            return "Connected: " + GetAllConnectedServers() + " Disconnected: " + GetAllDisconnectedServers();
+            string connectedStatus = "";
+            foreach (string c in GetAllConnectedServers())
+                connectedStatus += (c + " -");
+
+            string disconnectedStatus = "";
+            foreach (string d in GetAllDisconnectedServers())
+                disconnectedStatus += (d + " -");
+
+            return "Connected: " + connectedStatus + " Disconnected: " + disconnectedStatus;
+        }
+
+        public SAPConnection GetConnection(string _serverName)
+        {
+            SAPConnection value;
+            if (Connections.TryGetValue(_serverName, out value))
+                return value;
+            else
+            {
+                EventLogger.getInstance().EventError("Can't find connection - Server: " + _serverName);
+                return null;
+            }
         }
     }
 }
