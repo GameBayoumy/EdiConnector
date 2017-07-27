@@ -8,10 +8,20 @@ namespace EdiConnectorService_C_Sharp
     class ConnectionManager
     {
         public Dictionary<string, SAPConnection> Connections { get; set; }
+        private static ConnectionManager instance = null;
 
-        public ConnectionManager()
+        ConnectionManager()
         {
             Connections = new Dictionary<string, SAPConnection>();
+        }
+
+        public static ConnectionManager getInstance()
+        {
+            if (instance == null)
+            {
+                instance = new ConnectionManager();
+            }
+            return instance;
         }
 
         /// <summary>

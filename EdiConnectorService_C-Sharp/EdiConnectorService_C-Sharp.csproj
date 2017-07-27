@@ -55,8 +55,9 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AbstractClasses\AConnection.cs" />
+    <Compile Include="Behaviors\Agent.cs" />
     <Compile Include="Behaviors\ConnectionManager.cs" />
-    <Compile Include="Behaviors\CreateConnections.cs" />
+    <Compile Include="Behaviors\CreateConnectionsCommand.cs" />
     <Compile Include="Behaviors\EventLogger.cs" />
     <Compile Include="Behaviors\SAPConnection.cs" />
     <Compile Include="Behaviors\UdfFields.cs" />

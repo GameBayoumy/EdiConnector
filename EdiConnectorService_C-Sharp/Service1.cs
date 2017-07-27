@@ -20,7 +20,8 @@ namespace EdiConnectorService_C_Sharp
     {
         private bool stopping;
         private ManualResetEvent stoppedEvent;
-        private ConnectionManager CM;
+
+        public Agent agent;
 
         public EdiConnectorService()
         {
@@ -29,8 +30,11 @@ namespace EdiConnectorService_C_Sharp
             this.stopping = false;
 
             // Initialize objects
-            this.CM = new ConnectionManager();
             EdiConnectorData.getInstance();
+            ConnectionManager.getInstance();
+
+            agent = new Agent();
+            agent.QueueCommand(new CreateConnectionsCommand());
             
         }
 
@@ -64,23 +68,14 @@ namespace EdiConnectorService_C_Sharp
             EdiConnectorData.getInstance().sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
             EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
 
-            // Create and set connections from config.xml
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(EdiConnectorData.getInstance().sApplicationPath + @"\config.xml");
-            XmlNodeList xmlList = xmlDoc.SelectNodes("/Connections/Connection");
-            for (int i = 0; i < xmlList.Count; i++)
-            {
-                CM.Connections.Add(xmlList[i]["Server"].InnerText, new SAPConnection());
-                CM.Connections.Last().Value.Set(xmlList[i]);
-            }
-            CM.ConnectAll();
+            
 
             UdfFields.CreateUdfFields();
 
-            ReadSettings();
-            
-            ConnectToSAP();
-            CreateUdfFieldsText();
+
+            //ReadSettings();
+            //ConnectToSAP();
+            //CreateUdfFieldsText();
 
             ThreadPool.QueueUserWorkItem(new WaitCallback(ServiceWorkerThread));
         }
@@ -97,6 +92,14 @@ namespace EdiConnectorService_C_Sharp
             do
             {
                 //Perform main service function here...
+
+                //If there are any servers connected to SAP
+                if(ConnectionManager.getInstance().GetAllConnectedServers().Count > 0)
+                {
+
+                }
+
+
                 if (EdiConnectorData.getInstance().cmp.Connected == true && EdiConnectorData.getInstance().cn.State == ConnectionState.Open)
                 {
                     CheckAndExportDelivery();
