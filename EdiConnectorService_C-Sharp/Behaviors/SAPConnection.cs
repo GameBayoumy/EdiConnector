@@ -13,7 +13,6 @@ namespace EdiConnectorService_C_Sharp
 
         public SAPConnection()
         {
-
         }
 
         /// <summary>
@@ -22,17 +21,25 @@ namespace EdiConnectorService_C_Sharp
         /// <param name="_xmlNode">The XML node.</param>
         public override void Set(XmlNode _xmlNode)
         {
-            this.xmlNode = _xmlNode;
-            Company.DbServerType = BoDataServerTypes.dst_HANADB;
-            Company.DbUserName = xmlNode["DbUserName"].InnerText;
-            Company.DbPassword = xmlNode["DbPassword"].InnerText;
-            Company.Server = xmlNode["Server"].InnerText;
-            Company.LicenseServer = xmlNode["LicenceServer"].InnerText;
-            Company.CompanyDB = xmlNode["CompanyDB"].InnerText;
-            if (xmlNode["Test"].InnerText == "Y")
-                Company.CompanyDB = "TEST_" + Company.CompanyDB;
-            Company.UserName = xmlNode["UserName"].InnerText;
-            Company.Password = xmlNode["PassWord"].InnerText;
+            try
+            {
+                this.xmlNode = _xmlNode;
+                Company.Server = xmlNode["Server"].InnerText;
+                Company.LicenseServer = xmlNode["LicenceServer"].InnerText;
+                Company.CompanyDB = xmlNode["CompanyDB"].InnerText;
+                if (xmlNode["Test"].InnerText == "Y")
+                    Company.CompanyDB = "TEST_" + Company.CompanyDB;
+                Company.DbServerType = BoDataServerTypes.dst_HANADB;
+                Company.DbUserName = xmlNode["DbUserName"].InnerText;
+                Company.DbPassword = xmlNode["DbPassword"].InnerText;
+                Company.UserName = xmlNode["UserName"].InnerText;
+                Company.Password = xmlNode["PassWord"].InnerText;
+                EventLogger.getInstance().EventInfo("Set connection - Server: " + Company.Server);
+            }
+            catch (Exception e)
+            {
+                EventLogger.getInstance().EventError("Error setting connection: " + e.Message);
+            }
         }
 
         public override bool Connect()

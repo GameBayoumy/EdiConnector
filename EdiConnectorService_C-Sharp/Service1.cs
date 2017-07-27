@@ -12,6 +12,7 @@ using System.Data.SqlClient;
 using SAPbobsCOM;
 using System.Net.Mail;
 using System.Net;
+using System.Xml;
 
 namespace EdiConnectorService_C_Sharp
 {
@@ -19,18 +20,18 @@ namespace EdiConnectorService_C_Sharp
     {
         private bool stopping;
         private ManualResetEvent stoppedEvent;
-        private EdiConnectorData ECD;
 
-        private SAPConnection connection = new SAPConnection();
+        public EdiConnectorData ECD;
+        public List<SAPConnection> connections;
 
         public EdiConnectorService()
         {
             InitializeComponent();
-            
             this.stoppedEvent = new ManualResetEvent(false);
             this.stopping = false;
 
             ECD = new EdiConnectorData();
+            connections = new List<SAPConnection>();
         }
 
         /* <summary>
@@ -60,6 +61,7 @@ namespace EdiConnectorService_C_Sharp
         {
             EventLogger.getInstance().EventInfo("EdiService in OnStart.");
             ECD.sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
+
 
             ReadSettings();
             
