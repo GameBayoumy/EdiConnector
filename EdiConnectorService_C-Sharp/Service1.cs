@@ -32,9 +32,8 @@ namespace EdiConnectorService_C_Sharp
             // Initialize objects
             EdiConnectorData.getInstance();
             ConnectionManager.getInstance();
-
             agent = new Agent();
-            agent.QueueCommand(new CreateConnectionsCommand());
+            
             
         }
 
@@ -68,9 +67,9 @@ namespace EdiConnectorService_C_Sharp
             EdiConnectorData.getInstance().sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
             EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
 
-            
+            agent.QueueCommand(new CreateConnectionsCommand());
+            agent.QueueCommand(new CreateUfdFieldsCommand());
 
-            UdfFields.CreateUdfFields();
 
 
             //ReadSettings();
