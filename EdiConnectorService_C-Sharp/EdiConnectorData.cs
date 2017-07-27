@@ -8,6 +8,17 @@ namespace EdiConnectorService_C_Sharp
 {
     public class EdiConnectorData
     {
+        private static EdiConnectorData instance = null;
+
+        public static EdiConnectorData getInstance()
+        {
+            if (instance == null)
+            {
+                instance = new EdiConnectorData();
+            }
+            return instance;
+        }
+
         public string sApplicationPath;
 
         public SAPbobsCOM.Documents oOrder;

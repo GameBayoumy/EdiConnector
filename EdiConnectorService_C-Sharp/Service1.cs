@@ -20,8 +20,6 @@ namespace EdiConnectorService_C_Sharp
     {
         private bool stopping;
         private ManualResetEvent stoppedEvent;
-
-        public EdiConnectorData ECD;
         private ConnectionManager CM;
 
         public EdiConnectorService()
@@ -30,8 +28,9 @@ namespace EdiConnectorService_C_Sharp
             this.stoppedEvent = new ManualResetEvent(false);
             this.stopping = false;
 
-            this.ECD = new EdiConnectorData();
+            // Initialize objects
             this.CM = new ConnectionManager();
+            EdiConnectorData.getInstance();
             
         }
 
@@ -62,12 +61,12 @@ namespace EdiConnectorService_C_Sharp
         {
             EventLogger.getInstance().EventInfo("EdiService in OnStart.");
 
-            ECD.sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-            ECD.sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
+            EdiConnectorData.getInstance().sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
+            EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
 
             // Create and set connections from config.xml
             XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(ECD.sApplicationPath + @"\config.xml");
+            xmlDoc.Load(EdiConnectorData.getInstance().sApplicationPath + @"\config.xml");
             XmlNodeList xmlList = xmlDoc.SelectNodes("/Connections/Connection");
             for (int i = 0; i < xmlList.Count; i++)
             {
@@ -75,6 +74,8 @@ namespace EdiConnectorService_C_Sharp
                 CM.Connections.Last().Value.Set(xmlList[i]);
             }
             CM.ConnectAll();
+
+            UdfFields.CreateUdfFields();
 
             ReadSettings();
             
@@ -96,7 +97,7 @@ namespace EdiConnectorService_C_Sharp
             do
             {
                 //Perform main service function here...
-                if (ECD.cmp.Connected == true && ECD.cn.State == ConnectionState.Open)
+                if (EdiConnectorData.getInstance().cmp.Connected == true && EdiConnectorData.getInstance().cn.State == ConnectionState.Open)
                 {
                     CheckAndExportDelivery();
                     CheckAndExportInvoice();
@@ -143,7 +144,7 @@ namespace EdiConnectorService_C_Sharp
         {
             try
             {
-                if (ECD.cmp.Connected == true)
+                if (EdiConnectorData.getInstance().cmp.Connected == true)
                 {
                     Log("V", "SAP is already Connected", "ConnectToSAP");
                     return true;
@@ -156,20 +157,20 @@ namespace EdiConnectorService_C_Sharp
                     return false;
                 }
 
-                ECD.cmp.DbServerType = ECD.bstDBServerType;
-                ECD.cmp.Server = ECD.sServer;
-                ECD.cmp.DbUserName = ECD.sDBUserName;
-                ECD.cmp.DbPassword = ECD.sDBPassword;
-                ECD.cmp.CompanyDB = ECD.sCompanyDB;
-                ECD.cmp.UserName = ECD.sUserName;
-                ECD.cmp.Password = ECD.sPassword;
-                ECD.cmp.UseTrusted = false;
+                EdiConnectorData.getInstance().cmp.DbServerType = EdiConnectorData.getInstance().bstDBServerType;
+                EdiConnectorData.getInstance().cmp.Server = EdiConnectorData.getInstance().sServer;
+                EdiConnectorData.getInstance().cmp.DbUserName = EdiConnectorData.getInstance().sDBUserName;
+                EdiConnectorData.getInstance().cmp.DbPassword = EdiConnectorData.getInstance().sDBPassword;
+                EdiConnectorData.getInstance().cmp.CompanyDB = EdiConnectorData.getInstance().sCompanyDB;
+                EdiConnectorData.getInstance().cmp.UserName = EdiConnectorData.getInstance().sUserName;
+                EdiConnectorData.getInstance().cmp.Password = EdiConnectorData.getInstance().sPassword;
+                EdiConnectorData.getInstance().cmp.UseTrusted = false;
 
-                if (ECD.cmp.Connect() != 0)
+                if (EdiConnectorData.getInstance().cmp.Connect() != 0)
                 {
                     int errCode;
                     string errMsg = "";
-                    ECD.cmp.GetLastError(out errCode, out errMsg);
+                    EdiConnectorData.getInstance().cmp.GetLastError(out errCode, out errMsg);
                     if (errCode != 0)
                     {
                         Log("X", "Error: " + errMsg + "(" + errCode.ToString() + ")", "ConnectToSAP");
@@ -195,23 +196,23 @@ namespace EdiConnectorService_C_Sharp
         {
             try
             {
-                ECD.cn.ConnectionString = "Data Source=" + ECD.sServer +
-                    ";Initial Catalog=" + ECD.sCompanyDB +
-                    ";User ID=" + ECD.sDBUserName +
-                    ";Password=" + ECD.sDBPassword;
+                EdiConnectorData.getInstance().cn.ConnectionString = "Data Source=" + EdiConnectorData.getInstance().sServer +
+                    ";Initial Catalog=" + EdiConnectorData.getInstance().sCompanyDB +
+                    ";User ID=" + EdiConnectorData.getInstance().sDBUserName +
+                    ";Password=" + EdiConnectorData.getInstance().sDBPassword;
 
-                if (ECD.sSQLVersion == "2005")
-                    ECD.bstDBServerType = BoDataServerTypes.dst_MSSQL2005;
-                else if (ECD.sSQLVersion == "2008")
-                    ECD.bstDBServerType = BoDataServerTypes.dst_MSSQL2008;
-                else if (ECD.sSQLVersion == "2012")
-                    ECD.bstDBServerType = BoDataServerTypes.dst_MSSQL2012;
+                if (EdiConnectorData.getInstance().sSQLVersion == "2005")
+                    EdiConnectorData.getInstance().bstDBServerType = BoDataServerTypes.dst_MSSQL2005;
+                else if (EdiConnectorData.getInstance().sSQLVersion == "2008")
+                    EdiConnectorData.getInstance().bstDBServerType = BoDataServerTypes.dst_MSSQL2008;
+                else if (EdiConnectorData.getInstance().sSQLVersion == "2012")
+                    EdiConnectorData.getInstance().bstDBServerType = BoDataServerTypes.dst_MSSQL2012;
                 else
-                    ECD.bstDBServerType = BoDataServerTypes.dst_MSSQL;
+                    EdiConnectorData.getInstance().bstDBServerType = BoDataServerTypes.dst_MSSQL;
 
-                ECD.cn.Open();
+                EdiConnectorData.getInstance().cn.Open();
 
-                Log("V", "Connected to database " + ECD.sCompanyDB + ".", "ConnectToDatabase");
+                Log("V", "Connected to database " + EdiConnectorData.getInstance().sCompanyDB + ".", "ConnectToDatabase");
                 return true;
             }
             catch (Exception e)
@@ -227,57 +228,57 @@ namespace EdiConnectorService_C_Sharp
             try
             {
                 DataSet dataSet = new DataSet();
-                dataSet.ReadXml(ECD.sApplicationPath + @"\settings.xml");
+                dataSet.ReadXml(EdiConnectorData.getInstance().sApplicationPath + @"\settings.xml");
 
                 if (dataSet.Tables["server"].Rows[0]["sqlversion"].ToString() == "2005")
-                    ECD.bstDBServerType = BoDataServerTypes.dst_MSSQL2005;
+                    EdiConnectorData.getInstance().bstDBServerType = BoDataServerTypes.dst_MSSQL2005;
                 else if (dataSet.Tables["server"].Rows[0]["sqlversion"].ToString() == "2008")
-                    ECD.bstDBServerType = BoDataServerTypes.dst_MSSQL2008;
+                    EdiConnectorData.getInstance().bstDBServerType = BoDataServerTypes.dst_MSSQL2008;
                 else if (dataSet.Tables["server"].Rows[0]["sqlversion"].ToString() == "2012")
-                    ECD.bstDBServerType = BoDataServerTypes.dst_MSSQL2012;
+                    EdiConnectorData.getInstance().bstDBServerType = BoDataServerTypes.dst_MSSQL2012;
                 else
-                    ECD.bstDBServerType = BoDataServerTypes.dst_MSSQL;
+                    EdiConnectorData.getInstance().bstDBServerType = BoDataServerTypes.dst_MSSQL;
 
-                ECD.sServer = dataSet.Tables["server"].Rows[0]["name"].ToString();
-                ECD.sDBUserName = dataSet.Tables["server"].Rows[0]["userid"].ToString();
-                ECD.sDBPassword = dataSet.Tables["server"].Rows[0]["password"].ToString();
-                ECD.sCompanyDB = dataSet.Tables["server"].Rows[0]["catalog"].ToString();
-                ECD.sUserName = dataSet.Tables["server"].Rows[0]["sapuser"].ToString();
-                ECD.sPassword = dataSet.Tables["server"].Rows[0]["sappassword"].ToString();
-                ECD.sSQLVersion = dataSet.Tables["server"].Rows[0]["sqlversion"].ToString();
-                ECD.sDesAdvLevel = dataSet.Tables["server"].Rows[0]["desadvlevel"].ToString();
+                EdiConnectorData.getInstance().sServer = dataSet.Tables["server"].Rows[0]["name"].ToString();
+                EdiConnectorData.getInstance().sDBUserName = dataSet.Tables["server"].Rows[0]["userid"].ToString();
+                EdiConnectorData.getInstance().sDBPassword = dataSet.Tables["server"].Rows[0]["password"].ToString();
+                EdiConnectorData.getInstance().sCompanyDB = dataSet.Tables["server"].Rows[0]["catalog"].ToString();
+                EdiConnectorData.getInstance().sUserName = dataSet.Tables["server"].Rows[0]["sapuser"].ToString();
+                EdiConnectorData.getInstance().sPassword = dataSet.Tables["server"].Rows[0]["sappassword"].ToString();
+                EdiConnectorData.getInstance().sSQLVersion = dataSet.Tables["server"].Rows[0]["sqlversion"].ToString();
+                EdiConnectorData.getInstance().sDesAdvLevel = dataSet.Tables["server"].Rows[0]["desadvlevel"].ToString();
 
-                ECD.sSOPath = dataSet.Tables["folders"].Rows[0]["so"].ToString();
-                ECD.sSOTempPath = dataSet.Tables["folders"].Rows[0]["sotemp"].ToString();
-                ECD.sSODonePath = dataSet.Tables["folders"].Rows[0]["sodone"].ToString();
-                ECD.sSOErrorPath = dataSet.Tables["folders"].Rows[0]["soerror"].ToString();
-                ECD.sInvoicePath = dataSet.Tables["folders"].Rows[0]["invoice"].ToString();
-                ECD.sDeliveryPath = dataSet.Tables["folders"].Rows[0]["delivery"].ToString();
+                EdiConnectorData.getInstance().sSOPath = dataSet.Tables["folders"].Rows[0]["so"].ToString();
+                EdiConnectorData.getInstance().sSOTempPath = dataSet.Tables["folders"].Rows[0]["sotemp"].ToString();
+                EdiConnectorData.getInstance().sSODonePath = dataSet.Tables["folders"].Rows[0]["sodone"].ToString();
+                EdiConnectorData.getInstance().sSOErrorPath = dataSet.Tables["folders"].Rows[0]["soerror"].ToString();
+                EdiConnectorData.getInstance().sInvoicePath = dataSet.Tables["folders"].Rows[0]["invoice"].ToString();
+                EdiConnectorData.getInstance().sDeliveryPath = dataSet.Tables["folders"].Rows[0]["delivery"].ToString();
 
-                ECD.iSendNotification = Convert.ToInt32(dataSet.Tables["email"].Rows[0]["send_notification"]);
+                EdiConnectorData.getInstance().iSendNotification = Convert.ToInt32(dataSet.Tables["email"].Rows[0]["send_notification"]);
 
-                ECD.sSmpt = dataSet.Tables["email"].Rows[0]["smtp"].ToString();
-                ECD.iSmtpPort = Convert.ToInt32(dataSet.Tables["email"].Rows[0]["port"]);
+                EdiConnectorData.getInstance().sSmpt = dataSet.Tables["email"].Rows[0]["smtp"].ToString();
+                EdiConnectorData.getInstance().iSmtpPort = Convert.ToInt32(dataSet.Tables["email"].Rows[0]["port"]);
 
                 if (dataSet.Tables["email"].Rows[0]["security"].ToString() == "0")
-                    ECD.bSmtpUserSecurity = false;
+                    EdiConnectorData.getInstance().bSmtpUserSecurity = false;
                 else
-                    ECD.bSmtpUserSecurity = true;
+                    EdiConnectorData.getInstance().bSmtpUserSecurity = true;
 
-                ECD.sSmtpUser = dataSet.Tables["email"].Rows[0]["user"].ToString();
-                ECD.sSmtpPassword = dataSet.Tables["email"].Rows[0]["password"].ToString();
+                EdiConnectorData.getInstance().sSmtpUser = dataSet.Tables["email"].Rows[0]["user"].ToString();
+                EdiConnectorData.getInstance().sSmtpPassword = dataSet.Tables["email"].Rows[0]["password"].ToString();
 
-                ECD.sSenderEmail = dataSet.Tables["email"].Rows[0]["emailaddress"].ToString();
-                ECD.sSenderName = dataSet.Tables["email"].Rows[0]["fullname"].ToString();
+                EdiConnectorData.getInstance().sSenderEmail = dataSet.Tables["email"].Rows[0]["emailaddress"].ToString();
+                EdiConnectorData.getInstance().sSenderName = dataSet.Tables["email"].Rows[0]["fullname"].ToString();
 
-                ECD.sOrderMailTo = dataSet.Tables["email"].Rows[0]["emailaddress_order"].ToString();
-                ECD.sOrderMailToFullName = dataSet.Tables["email"].Rows[0]["fullname_order"].ToString();
+                EdiConnectorData.getInstance().sOrderMailTo = dataSet.Tables["email"].Rows[0]["emailaddress_order"].ToString();
+                EdiConnectorData.getInstance().sOrderMailToFullName = dataSet.Tables["email"].Rows[0]["fullname_order"].ToString();
 
-                ECD.sDeliveryMailTo = dataSet.Tables["email"].Rows[0]["emailaddress_delivery"].ToString();
-                ECD.sDeliveryMailToFullName = dataSet.Tables["email"].Rows[0]["fullname_delivery"].ToString();
+                EdiConnectorData.getInstance().sDeliveryMailTo = dataSet.Tables["email"].Rows[0]["emailaddress_delivery"].ToString();
+                EdiConnectorData.getInstance().sDeliveryMailToFullName = dataSet.Tables["email"].Rows[0]["fullname_delivery"].ToString();
 
-                ECD.sInvoiceMailTo = dataSet.Tables["email"].Rows[0]["emailaddress_invoice"].ToString();
-                ECD.sInvoiceMailToFullName = dataSet.Tables["email"].Rows[0]["fullname_invoice"].ToString();
+                EdiConnectorData.getInstance().sInvoiceMailTo = dataSet.Tables["email"].Rows[0]["emailaddress_invoice"].ToString();
+                EdiConnectorData.getInstance().sInvoiceMailToFullName = dataSet.Tables["email"].Rows[0]["fullname_invoice"].ToString();
 
                 dataSet.Dispose();
 
@@ -292,18 +293,18 @@ namespace EdiConnectorService_C_Sharp
         public void ReadInterface()
         {
             DataSet dataSet = new DataSet();
-            dataSet.ReadXml(ECD.sApplicationPath + @"\orderfld.xml");
+            dataSet.ReadXml(EdiConnectorData.getInstance().sApplicationPath + @"\orderfld.xml");
 
             for (int orderHead = 0; orderHead < dataSet.Tables["OK"].Rows.Count - 1; orderHead++ )
             {
-                ECD.OK_POS[orderHead] = Convert.ToInt32(dataSet.Tables["OK"].Rows[orderHead][0]);
-                ECD.OK_LEN[orderHead] = Convert.ToInt32(dataSet.Tables["OK"].Rows[orderHead][1]);
+                EdiConnectorData.getInstance().OK_POS[orderHead] = Convert.ToInt32(dataSet.Tables["OK"].Rows[orderHead][0]);
+                EdiConnectorData.getInstance().OK_LEN[orderHead] = Convert.ToInt32(dataSet.Tables["OK"].Rows[orderHead][1]);
             }
 
             for (int orderItem = 0; orderItem < dataSet.Tables["OR"].Rows.Count - 1; orderItem++)
             {
-                ECD.OK_POS[orderItem] = Convert.ToInt32(dataSet.Tables["OR"].Rows[orderItem][0]);
-                ECD.OK_LEN[orderItem] = Convert.ToInt32(dataSet.Tables["OR"].Rows[orderItem][1]);
+                EdiConnectorData.getInstance().OK_POS[orderItem] = Convert.ToInt32(dataSet.Tables["OR"].Rows[orderItem][0]);
+                EdiConnectorData.getInstance().OK_LEN[orderItem] = Convert.ToInt32(dataSet.Tables["OR"].Rows[orderItem][1]);
             }
 
             dataSet.Dispose();
@@ -327,10 +328,10 @@ namespace EdiConnectorService_C_Sharp
 
         public void DisconnectToSAP()
         {
-            if (ECD.cmp.Connected == true)
+            if (EdiConnectorData.getInstance().cmp.Connected == true)
             {
-                ECD.cmp.Disconnect();
-                ECD.cn.Close();
+                EdiConnectorData.getInstance().cmp.Disconnect();
+                EdiConnectorData.getInstance().cn.Close();
                 Log("V", "SAP is disconneted.", "DisconnectToSAP");
             }
             else
@@ -340,7 +341,7 @@ namespace EdiConnectorService_C_Sharp
         public void SplitOrder()
         {
             string fileSize = "";
-            DirectoryInfo dirI = new DirectoryInfo(ECD.sSOPath);
+            DirectoryInfo dirI = new DirectoryInfo(EdiConnectorData.getInstance().sSOPath);
             FileInfo[] arrayFileI = dirI.GetFiles("*.DAT");
             string newFile = "";
             string BGMnumber = "";
@@ -395,7 +396,7 @@ namespace EdiConnectorService_C_Sharp
         {
             try
             {
-                using (StreamWriter writer = new StreamWriter(ECD.sSOTempPath + @"\" + "ORDER" + "_" + BGMnumber + ".DAT"))
+                using (StreamWriter writer = new StreamWriter(EdiConnectorData.getInstance().sSOTempPath + @"\" + "ORDER" + "_" + BGMnumber + ".DAT"))
                 {
                     writer.Write(newFile);
                     writer.Close();
@@ -410,7 +411,7 @@ namespace EdiConnectorService_C_Sharp
 
         public void ReadSOFile()
         {
-            DirectoryInfo dirI = new DirectoryInfo(ECD.sSOTempPath);
+            DirectoryInfo dirI = new DirectoryInfo(EdiConnectorData.getInstance().sSOTempPath);
             FileInfo[] arrayFileI = dirI.GetFiles("*.DAT");
 
             foreach (FileInfo fileInfo in arrayFileI)
@@ -420,8 +421,8 @@ namespace EdiConnectorService_C_Sharp
                     Log("V", "Begin reading sales order filename " + fileInfo.Name + ".", "Read_SO_file");
 
                     StreamReader reader = new StreamReader(fileInfo.FullName, false);
-                    ECD.SO_FILE = reader.ReadToEnd();
-                    ECD.SO_FILENAME = fileInfo.Name;
+                    EdiConnectorData.getInstance().SO_FILE = reader.ReadToEnd();
+                    EdiConnectorData.getInstance().SO_FILENAME = fileInfo.Name;
                     reader.Close();
                 }
                 catch (Exception e)
@@ -439,108 +440,108 @@ namespace EdiConnectorService_C_Sharp
             {
                 string line = "";
 
-                using (StringReader reader = new StringReader(ECD.SO_FILE))
+                using (StringReader reader = new StringReader(EdiConnectorData.getInstance().SO_FILE))
                 {
                     line = reader.ReadLine();
                     switch (line.Substring(1, 1))
                     {
                         case "0":
-                            ECD.OK_K_EANCODE = line.Substring(ECD.OK_POS[0], ECD.OK_LEN[0]).Trim();
-                            ECD.OK_TEST = line.Substring(ECD.OK_POS[1], ECD.OK_LEN[1]).Trim();
-                            ECD.OK_KNAAM = line.Substring(ECD.OK_POS[2], ECD.OK_LEN[2]).Trim();
-                            ECD.OK_BGM = line.Substring(ECD.OK_POS[3], ECD.OK_LEN[3]).Trim();
-                            if (line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Trim().Length == 8)
-                                ECD.OK_K_ORDDAT = Convert.ToDateTime(line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
+                            EdiConnectorData.getInstance().OK_K_EANCODE = line.Substring(EdiConnectorData.getInstance().OK_POS[0], EdiConnectorData.getInstance().OK_LEN[0]).Trim();
+                            EdiConnectorData.getInstance().OK_TEST = line.Substring(EdiConnectorData.getInstance().OK_POS[1], EdiConnectorData.getInstance().OK_LEN[1]).Trim();
+                            EdiConnectorData.getInstance().OK_KNAAM = line.Substring(EdiConnectorData.getInstance().OK_POS[2], EdiConnectorData.getInstance().OK_LEN[2]).Trim();
+                            EdiConnectorData.getInstance().OK_BGM = line.Substring(EdiConnectorData.getInstance().OK_POS[3], EdiConnectorData.getInstance().OK_LEN[3]).Trim();
+                            if (line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Trim().Length == 8)
+                                EdiConnectorData.getInstance().OK_K_ORDDAT = Convert.ToDateTime(line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(7, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(1, 4));
                             else
-                                ECD.OK_K_ORDDAT = Convert.ToDateTime("01-01-0001");
+                                EdiConnectorData.getInstance().OK_K_ORDDAT = Convert.ToDateTime("01-01-0001");
 
-                            if (line.Substring(ECD.OK_POS[5], ECD.OK_LEN[5]).Trim().Length == 8)
-                                ECD.OK_DTM_2 = Convert.ToDateTime(line.Substring(ECD.OK_POS[5], ECD.OK_LEN[5]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
+                            if (line.Substring(EdiConnectorData.getInstance().OK_POS[5], EdiConnectorData.getInstance().OK_LEN[5]).Trim().Length == 8)
+                                EdiConnectorData.getInstance().OK_DTM_2 = Convert.ToDateTime(line.Substring(EdiConnectorData.getInstance().OK_POS[5], EdiConnectorData.getInstance().OK_LEN[5]).Substring(7, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(1, 4));
                             else
-                                ECD.OK_DTM_2 = Convert.ToDateTime("01-01-0001");
-                            ECD.OK_TIJD_2 = line.Substring(ECD.OK_POS[6], ECD.OK_LEN[6]).Trim();
+                                EdiConnectorData.getInstance().OK_DTM_2 = Convert.ToDateTime("01-01-0001");
+                            EdiConnectorData.getInstance().OK_TIJD_2 = line.Substring(EdiConnectorData.getInstance().OK_POS[6], EdiConnectorData.getInstance().OK_LEN[6]).Trim();
 
-                            if (line.Substring(ECD.OK_POS[7], ECD.OK_LEN[7]).Trim().Length == 8)
-                                ECD.OK_DTM_17 = Convert.ToDateTime(line.Substring(ECD.OK_POS[7], ECD.OK_LEN[7]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
+                            if (line.Substring(EdiConnectorData.getInstance().OK_POS[7], EdiConnectorData.getInstance().OK_LEN[7]).Trim().Length == 8)
+                                EdiConnectorData.getInstance().OK_DTM_17 = Convert.ToDateTime(line.Substring(EdiConnectorData.getInstance().OK_POS[7], EdiConnectorData.getInstance().OK_LEN[7]).Substring(7, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(1, 4));
                             else
-                                ECD.OK_DTM_17 = Convert.ToDateTime("01-01-0001");
-                            ECD.OK_TIJD_17 = line.Substring(ECD.OK_POS[8], ECD.OK_LEN[8]).Trim();
+                                EdiConnectorData.getInstance().OK_DTM_17 = Convert.ToDateTime("01-01-0001");
+                            EdiConnectorData.getInstance().OK_TIJD_17 = line.Substring(EdiConnectorData.getInstance().OK_POS[8], EdiConnectorData.getInstance().OK_LEN[8]).Trim();
 
-                            if (line.Substring(ECD.OK_POS[9], ECD.OK_LEN[9]).Trim().Length == 8)
-                                ECD.OK_DTM_64 = Convert.ToDateTime(line.Substring(ECD.OK_POS[9], ECD.OK_LEN[9]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
+                            if (line.Substring(EdiConnectorData.getInstance().OK_POS[9], EdiConnectorData.getInstance().OK_LEN[9]).Trim().Length == 8)
+                                EdiConnectorData.getInstance().OK_DTM_64 = Convert.ToDateTime(line.Substring(EdiConnectorData.getInstance().OK_POS[9], EdiConnectorData.getInstance().OK_LEN[9]).Substring(7, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(1, 4));
                             else
-                                ECD.OK_DTM_64 = Convert.ToDateTime("01-01-0001");
-                            ECD.OK_TIJD_64 = line.Substring(ECD.OK_POS[10], ECD.OK_LEN[10]).Trim();
+                                EdiConnectorData.getInstance().OK_DTM_64 = Convert.ToDateTime("01-01-0001");
+                            EdiConnectorData.getInstance().OK_TIJD_64 = line.Substring(EdiConnectorData.getInstance().OK_POS[10], EdiConnectorData.getInstance().OK_LEN[10]).Trim();
 
-                            if (line.Substring(ECD.OK_POS[11], ECD.OK_LEN[11]).Trim().Length == 8)
-                                ECD.OK_DTM_63 = Convert.ToDateTime(line.Substring(ECD.OK_POS[11], ECD.OK_LEN[11]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
+                            if (line.Substring(EdiConnectorData.getInstance().OK_POS[11], EdiConnectorData.getInstance().OK_LEN[11]).Trim().Length == 8)
+                                EdiConnectorData.getInstance().OK_DTM_63 = Convert.ToDateTime(line.Substring(EdiConnectorData.getInstance().OK_POS[11], EdiConnectorData.getInstance().OK_LEN[11]).Substring(7, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(1, 4));
                             else
-                                ECD.OK_DTM_63 = Convert.ToDateTime("01-01-0001");
-                            ECD.OK_TIJD_63 = line.Substring(ECD.OK_POS[12], ECD.OK_LEN[12]).Trim();
+                                EdiConnectorData.getInstance().OK_DTM_63 = Convert.ToDateTime("01-01-0001");
+                            EdiConnectorData.getInstance().OK_TIJD_63 = line.Substring(EdiConnectorData.getInstance().OK_POS[12], EdiConnectorData.getInstance().OK_LEN[12]).Trim();
 
-                            ECD.OK_RFF_BO = line.Substring(ECD.OK_POS[13], ECD.OK_LEN[13]).Trim();
-                            ECD.OK_RFF_CR = line.Substring(ECD.OK_POS[14], ECD.OK_LEN[14]).Trim();
-                            ECD.OK_RFF_PD = line.Substring(ECD.OK_POS[15], ECD.OK_LEN[15]).Trim();
-                            ECD.OK_RFFCT = line.Substring(ECD.OK_POS[16], ECD.OK_LEN[16]).Trim();
-                            if (line.Substring(ECD.OK_POS[17], ECD.OK_LEN[17]).Trim().Length == 8)
-                                ECD.OK_DTMCT = Convert.ToDateTime(line.Substring(ECD.OK_POS[17], ECD.OK_LEN[17]).Substring(7, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(ECD.OK_POS[4], ECD.OK_LEN[4]).Substring(1, 4));
+                            EdiConnectorData.getInstance().OK_RFF_BO = line.Substring(EdiConnectorData.getInstance().OK_POS[13], EdiConnectorData.getInstance().OK_LEN[13]).Trim();
+                            EdiConnectorData.getInstance().OK_RFF_CR = line.Substring(EdiConnectorData.getInstance().OK_POS[14], EdiConnectorData.getInstance().OK_LEN[14]).Trim();
+                            EdiConnectorData.getInstance().OK_RFF_PD = line.Substring(EdiConnectorData.getInstance().OK_POS[15], EdiConnectorData.getInstance().OK_LEN[15]).Trim();
+                            EdiConnectorData.getInstance().OK_RFFCT = line.Substring(EdiConnectorData.getInstance().OK_POS[16], EdiConnectorData.getInstance().OK_LEN[16]).Trim();
+                            if (line.Substring(EdiConnectorData.getInstance().OK_POS[17], EdiConnectorData.getInstance().OK_LEN[17]).Trim().Length == 8)
+                                EdiConnectorData.getInstance().OK_DTMCT = Convert.ToDateTime(line.Substring(EdiConnectorData.getInstance().OK_POS[17], EdiConnectorData.getInstance().OK_LEN[17]).Substring(7, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(5, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OK_POS[4], EdiConnectorData.getInstance().OK_LEN[4]).Substring(1, 4));
                             else
-                                ECD.OK_DTMCT = Convert.ToDateTime("01-01-0001");
+                                EdiConnectorData.getInstance().OK_DTMCT = Convert.ToDateTime("01-01-0001");
 
-                            ECD.OK_FLAGS[0] = line.Substring(ECD.OK_POS[18], ECD.OK_LEN[18]).Trim();
-                            ECD.OK_FLAGS[1] = line.Substring(ECD.OK_POS[19], ECD.OK_LEN[19]).Trim();
-                            ECD.OK_FLAGS[2] = line.Substring(ECD.OK_POS[20], ECD.OK_LEN[20]).Trim();
-                            ECD.OK_FLAGS[3] = line.Substring(ECD.OK_POS[21], ECD.OK_LEN[21]).Trim();
-                            ECD.OK_FLAGS[4] = line.Substring(ECD.OK_POS[22], ECD.OK_LEN[22]).Trim();
-                            ECD.OK_FLAGS[5] = line.Substring(ECD.OK_POS[23], ECD.OK_LEN[23]).Trim();
-                            ECD.OK_FLAGS[6] = line.Substring(ECD.OK_POS[24], ECD.OK_LEN[24]).Trim();
-                            ECD.OK_FLAGS[7] = line.Substring(ECD.OK_POS[25], ECD.OK_LEN[25]).Trim();
-                            ECD.OK_FLAGS[8] = line.Substring(ECD.OK_POS[26], ECD.OK_LEN[26]).Trim();
-                            ECD.OK_FLAGS[9] = line.Substring(ECD.OK_POS[27], ECD.OK_LEN[27]).Trim();
-                            ECD.OK_FLAGS[10] = line.Substring(ECD.OK_POS[28], ECD.OK_LEN[28]).Trim();
-                            ECD.OK_FTXDSI = line.Substring(ECD.OK_POS[29], ECD.OK_LEN[29]).Trim();
-                            ECD.OK_NAD_BY = line.Substring(ECD.OK_POS[30], ECD.OK_LEN[30]).Trim();
-                            ECD.OK_NAD_DP = line.Substring(ECD.OK_POS[31], ECD.OK_LEN[31]).Trim();
-                            ECD.OK_NAD_IV = line.Substring(ECD.OK_POS[32], ECD.OK_LEN[32]).Trim();
-                            ECD.OK_NAD_SF = line.Substring(ECD.OK_POS[33], ECD.OK_LEN[33]).Trim();
-                            ECD.OK_NAD_SU = line.Substring(ECD.OK_POS[34], ECD.OK_LEN[34]).Trim();
-                            ECD.OK_NAD_UC = line.Substring(ECD.OK_POS[35], ECD.OK_LEN[35]).Trim();
-                            ECD.OK_NAD_BCO = line.Substring(ECD.OK_POS[36], ECD.OK_LEN[36]).Trim();
-                            ECD.OK_RECEIVER = line.Substring(ECD.OK_POS[37], ECD.OK_LEN[37]).Trim();
+                            EdiConnectorData.getInstance().OK_FLAGS[0] = line.Substring(EdiConnectorData.getInstance().OK_POS[18], EdiConnectorData.getInstance().OK_LEN[18]).Trim();
+                            EdiConnectorData.getInstance().OK_FLAGS[1] = line.Substring(EdiConnectorData.getInstance().OK_POS[19], EdiConnectorData.getInstance().OK_LEN[19]).Trim();
+                            EdiConnectorData.getInstance().OK_FLAGS[2] = line.Substring(EdiConnectorData.getInstance().OK_POS[20], EdiConnectorData.getInstance().OK_LEN[20]).Trim();
+                            EdiConnectorData.getInstance().OK_FLAGS[3] = line.Substring(EdiConnectorData.getInstance().OK_POS[21], EdiConnectorData.getInstance().OK_LEN[21]).Trim();
+                            EdiConnectorData.getInstance().OK_FLAGS[4] = line.Substring(EdiConnectorData.getInstance().OK_POS[22], EdiConnectorData.getInstance().OK_LEN[22]).Trim();
+                            EdiConnectorData.getInstance().OK_FLAGS[5] = line.Substring(EdiConnectorData.getInstance().OK_POS[23], EdiConnectorData.getInstance().OK_LEN[23]).Trim();
+                            EdiConnectorData.getInstance().OK_FLAGS[6] = line.Substring(EdiConnectorData.getInstance().OK_POS[24], EdiConnectorData.getInstance().OK_LEN[24]).Trim();
+                            EdiConnectorData.getInstance().OK_FLAGS[7] = line.Substring(EdiConnectorData.getInstance().OK_POS[25], EdiConnectorData.getInstance().OK_LEN[25]).Trim();
+                            EdiConnectorData.getInstance().OK_FLAGS[8] = line.Substring(EdiConnectorData.getInstance().OK_POS[26], EdiConnectorData.getInstance().OK_LEN[26]).Trim();
+                            EdiConnectorData.getInstance().OK_FLAGS[9] = line.Substring(EdiConnectorData.getInstance().OK_POS[27], EdiConnectorData.getInstance().OK_LEN[27]).Trim();
+                            EdiConnectorData.getInstance().OK_FLAGS[10] = line.Substring(EdiConnectorData.getInstance().OK_POS[28], EdiConnectorData.getInstance().OK_LEN[28]).Trim();
+                            EdiConnectorData.getInstance().OK_FTXDSI = line.Substring(EdiConnectorData.getInstance().OK_POS[29], EdiConnectorData.getInstance().OK_LEN[29]).Trim();
+                            EdiConnectorData.getInstance().OK_NAD_BY = line.Substring(EdiConnectorData.getInstance().OK_POS[30], EdiConnectorData.getInstance().OK_LEN[30]).Trim();
+                            EdiConnectorData.getInstance().OK_NAD_DP = line.Substring(EdiConnectorData.getInstance().OK_POS[31], EdiConnectorData.getInstance().OK_LEN[31]).Trim();
+                            EdiConnectorData.getInstance().OK_NAD_IV = line.Substring(EdiConnectorData.getInstance().OK_POS[32], EdiConnectorData.getInstance().OK_LEN[32]).Trim();
+                            EdiConnectorData.getInstance().OK_NAD_SF = line.Substring(EdiConnectorData.getInstance().OK_POS[33], EdiConnectorData.getInstance().OK_LEN[33]).Trim();
+                            EdiConnectorData.getInstance().OK_NAD_SU = line.Substring(EdiConnectorData.getInstance().OK_POS[34], EdiConnectorData.getInstance().OK_LEN[34]).Trim();
+                            EdiConnectorData.getInstance().OK_NAD_UC = line.Substring(EdiConnectorData.getInstance().OK_POS[35], EdiConnectorData.getInstance().OK_LEN[35]).Trim();
+                            EdiConnectorData.getInstance().OK_NAD_BCO = line.Substring(EdiConnectorData.getInstance().OK_POS[36], EdiConnectorData.getInstance().OK_LEN[36]).Trim();
+                            EdiConnectorData.getInstance().OK_RECEIVER = line.Substring(EdiConnectorData.getInstance().OK_POS[37], EdiConnectorData.getInstance().OK_LEN[37]).Trim();
                             bool matchHead = WriteSOhead();
                             if (matchHead == false)
                             {
                                 // Move file
-                                File.Move(ECD.sSOTempPath + @"\" + ECD.SO_FILENAME, ECD.sSOErrorPath + @"\" + DateTime.Now.ToString("HHmmss") + "_" + ECD.SO_FILENAME);
-                                Log("X", ECD.SO_FILENAME + " copied to the errors folder!", "MatchSOdata");
+                                File.Move(EdiConnectorData.getInstance().sSOTempPath + @"\" + EdiConnectorData.getInstance().SO_FILENAME, EdiConnectorData.getInstance().sSOErrorPath + @"\" + DateTime.Now.ToString("HHmmss") + "_" + EdiConnectorData.getInstance().SO_FILENAME);
+                                Log("X", EdiConnectorData.getInstance().SO_FILENAME + " copied to the errors folder!", "MatchSOdata");
                                 return false;
                             }
                             break;
 
                         case "1":
-                            ECD.OR_DEUAC = line.Substring(ECD.OR_POS[0], ECD.OR_LEN[0]).Trim();
-                            ECD.OR_QTY = Convert.ToDouble(line.Substring(ECD.OR_POS[1], ECD.OR_LEN[1]).Trim());
-                            ECD.OR_LEVARTCODE = line.Substring(ECD.OR_POS[2], ECD.OR_LEN[2]).Trim();
-                            ECD.OR_DEARTOM = line.Substring(ECD.OR_POS[3], ECD.OR_LEN[3]).Trim();
-                            ECD.OR_COLOR = line.Substring(ECD.OR_POS[4], ECD.OR_LEN[4]).Trim();
-                            ECD.OR_LENGTH = line.Substring(ECD.OR_POS[5], ECD.OR_LEN[5]).Trim();
-                            ECD.OR_WIDTH = line.Substring(ECD.OR_POS[6], ECD.OR_LEN[6]).Trim();
-                            ECD.OR_HEIGHT = line.Substring(ECD.OR_POS[7], ECD.OR_LEN[7]).Trim();
-                            ECD.OR_CUX = line.Substring(ECD.OR_POS[8], ECD.OR_LEN[8]).Trim();
-                            ECD.OR_PIA = line.Substring(ECD.OR_POS[9], ECD.OR_LEN[9]).Trim();
-                            ECD.OR_RFFLI1 = line.Substring(ECD.OR_POS[10], ECD.OR_LEN[10]).Trim();
-                            ECD.OR_RFFLI2 = line.Substring(ECD.OR_POS[11], ECD.OR_LEN[11]).Trim();
-                            if (line.Substring(ECD.OR_POS[12], ECD.OR_LEN[12]).Trim().Length == 8)
-                                ECD.OR_DTM_2 = Convert.ToDateTime(line.Substring(ECD.OR_POS[12], ECD.OR_LEN[12]).Substring(7, 2) + "-" + line.Substring(ECD.OR_POS[12], ECD.OR_LEN[12]).Substring(5, 2) + "-" + line.Substring(ECD.OR_POS[12], ECD.OR_LEN[12]).Substring(1, 4));
+                            EdiConnectorData.getInstance().OR_DEUAC = line.Substring(EdiConnectorData.getInstance().OR_POS[0], EdiConnectorData.getInstance().OR_LEN[0]).Trim();
+                            EdiConnectorData.getInstance().OR_QTY = Convert.ToDouble(line.Substring(EdiConnectorData.getInstance().OR_POS[1], EdiConnectorData.getInstance().OR_LEN[1]).Trim());
+                            EdiConnectorData.getInstance().OR_LEVARTCODE = line.Substring(EdiConnectorData.getInstance().OR_POS[2], EdiConnectorData.getInstance().OR_LEN[2]).Trim();
+                            EdiConnectorData.getInstance().OR_DEARTOM = line.Substring(EdiConnectorData.getInstance().OR_POS[3], EdiConnectorData.getInstance().OR_LEN[3]).Trim();
+                            EdiConnectorData.getInstance().OR_COLOR = line.Substring(EdiConnectorData.getInstance().OR_POS[4], EdiConnectorData.getInstance().OR_LEN[4]).Trim();
+                            EdiConnectorData.getInstance().OR_LENGTH = line.Substring(EdiConnectorData.getInstance().OR_POS[5], EdiConnectorData.getInstance().OR_LEN[5]).Trim();
+                            EdiConnectorData.getInstance().OR_WIDTH = line.Substring(EdiConnectorData.getInstance().OR_POS[6], EdiConnectorData.getInstance().OR_LEN[6]).Trim();
+                            EdiConnectorData.getInstance().OR_HEIGHT = line.Substring(EdiConnectorData.getInstance().OR_POS[7], EdiConnectorData.getInstance().OR_LEN[7]).Trim();
+                            EdiConnectorData.getInstance().OR_CUX = line.Substring(EdiConnectorData.getInstance().OR_POS[8], EdiConnectorData.getInstance().OR_LEN[8]).Trim();
+                            EdiConnectorData.getInstance().OR_PIA = line.Substring(EdiConnectorData.getInstance().OR_POS[9], EdiConnectorData.getInstance().OR_LEN[9]).Trim();
+                            EdiConnectorData.getInstance().OR_RFFLI1 = line.Substring(EdiConnectorData.getInstance().OR_POS[10], EdiConnectorData.getInstance().OR_LEN[10]).Trim();
+                            EdiConnectorData.getInstance().OR_RFFLI2 = line.Substring(EdiConnectorData.getInstance().OR_POS[11], EdiConnectorData.getInstance().OR_LEN[11]).Trim();
+                            if (line.Substring(EdiConnectorData.getInstance().OR_POS[12], EdiConnectorData.getInstance().OR_LEN[12]).Trim().Length == 8)
+                                EdiConnectorData.getInstance().OR_DTM_2 = Convert.ToDateTime(line.Substring(EdiConnectorData.getInstance().OR_POS[12], EdiConnectorData.getInstance().OR_LEN[12]).Substring(7, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OR_POS[12], EdiConnectorData.getInstance().OR_LEN[12]).Substring(5, 2) + "-" + line.Substring(EdiConnectorData.getInstance().OR_POS[12], EdiConnectorData.getInstance().OR_LEN[12]).Substring(1, 4));
                             else
-                                ECD.OR_DTM_2 = Convert.ToDateTime("01-01-0001");
-                            ECD.OR_LINNR = line.Substring(ECD.OR_POS[13], ECD.OR_LEN[13]).Trim();
-                            ECD.OR_PRI = Convert.ToDouble(line.Substring(ECD.OR_POS[14], ECD.OR_LEN[14]).Trim());
+                                EdiConnectorData.getInstance().OR_DTM_2 = Convert.ToDateTime("01-01-0001");
+                            EdiConnectorData.getInstance().OR_LINNR = line.Substring(EdiConnectorData.getInstance().OR_POS[13], EdiConnectorData.getInstance().OR_LEN[13]).Trim();
+                            EdiConnectorData.getInstance().OR_PRI = Convert.ToDouble(line.Substring(EdiConnectorData.getInstance().OR_POS[14], EdiConnectorData.getInstance().OR_LEN[14]).Trim());
                             bool matchItem = WriteSOitems();
                             if (matchItem == false)
                             {
-                                File.Move(ECD.sSOTempPath + @"\" + ECD.SO_FILENAME, ECD.sSOErrorPath + @"\" + DateTime.Now.ToString("HHmmss") + "_" + ECD.SO_FILENAME);
-                                Log("X", ECD.SO_FILENAME + " copied to the errors folder!", "MatchSOdata");
+                                File.Move(EdiConnectorData.getInstance().sSOTempPath + @"\" + EdiConnectorData.getInstance().SO_FILENAME, EdiConnectorData.getInstance().sSOErrorPath + @"\" + DateTime.Now.ToString("HHmmss") + "_" + EdiConnectorData.getInstance().SO_FILENAME);
+                                Log("X", EdiConnectorData.getInstance().SO_FILENAME + " copied to the errors folder!", "MatchSOdata");
                                 return false;
                             }
                             break;
@@ -549,15 +550,15 @@ namespace EdiConnectorService_C_Sharp
 
                 OrderSave();
 
-                ECD.SO_FILE = "";
-                ECD.SO_FILENAME = "";
+                EdiConnectorData.getInstance().SO_FILE = "";
+                EdiConnectorData.getInstance().SO_FILENAME = "";
                 return true;
             } // End try
             catch(Exception e)
             {
-                File.Move(ECD.sSOTempPath + @"\" + ECD.SO_FILENAME, ECD.sSOErrorPath + @"\" + DateTime.Now.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss") + "_" + ECD.SO_FILENAME);
+                File.Move(EdiConnectorData.getInstance().sSOTempPath + @"\" + EdiConnectorData.getInstance().SO_FILENAME, EdiConnectorData.getInstance().sSOErrorPath + @"\" + DateTime.Now.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss") + "_" + EdiConnectorData.getInstance().SO_FILENAME);
                 Log("X", e.Message, "MatchSOdata");
-                Log("X", ECD.SO_FILENAME + " copied to the errors folder!", "MatchSOdata");
+                Log("X", EdiConnectorData.getInstance().SO_FILENAME + " copied to the errors folder!", "MatchSOdata");
                 return false;
             }
         }
@@ -570,80 +571,80 @@ namespace EdiConnectorService_C_Sharp
                 if (matchHead == false)
                     return false;
 
-                ECD.oOrder = (Documents)ECD.cmp.GetBusinessObject(BoObjectTypes.oOrders);
+                EdiConnectorData.getInstance().oOrder = (Documents)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.oOrders);
 
-                ECD.oOrder.CardCode = ECD.CARDCODE;
-                ECD.oOrder.NumAtCard = ECD.OK_BGM;
-                ECD.oOrder.DocDate =  ECD.OK_K_ORDDAT;
-                ECD.oOrder.TaxDate = ECD.OK_K_ORDDAT;
+                EdiConnectorData.getInstance().oOrder.CardCode = EdiConnectorData.getInstance().CARDCODE;
+                EdiConnectorData.getInstance().oOrder.NumAtCard = EdiConnectorData.getInstance().OK_BGM;
+                EdiConnectorData.getInstance().oOrder.DocDate =  EdiConnectorData.getInstance().OK_K_ORDDAT;
+                EdiConnectorData.getInstance().oOrder.TaxDate = EdiConnectorData.getInstance().OK_K_ORDDAT;
 
                 // Reference Rosis DocDueDate
-                if (ECD.OK_DTM_2.Year > 1999)
-                    ECD.oOrder.DocDueDate = ECD.OK_DTM_2;
-                else if(ECD.OK_DTM_17.Year > 1999)
-                    ECD.oOrder.DocDueDate = ECD.OK_DTM_17;
-                else if (ECD.OK_DTM_64.Year > 1999)
-                    ECD.oOrder.DocDueDate = ECD.OK_DTM_64;
+                if (EdiConnectorData.getInstance().OK_DTM_2.Year > 1999)
+                    EdiConnectorData.getInstance().oOrder.DocDueDate = EdiConnectorData.getInstance().OK_DTM_2;
+                else if(EdiConnectorData.getInstance().OK_DTM_17.Year > 1999)
+                    EdiConnectorData.getInstance().oOrder.DocDueDate = EdiConnectorData.getInstance().OK_DTM_17;
+                else if (EdiConnectorData.getInstance().OK_DTM_64.Year > 1999)
+                    EdiConnectorData.getInstance().oOrder.DocDueDate = EdiConnectorData.getInstance().OK_DTM_64;
                 else
-                    ECD.oOrder.DocDueDate = Convert.ToDateTime("31/12/" + DateTime.Now.Year);
+                    EdiConnectorData.getInstance().oOrder.DocDueDate = Convert.ToDateTime("31/12/" + DateTime.Now.Year);
 
-                ECD.oOrder.ShipToCode = ECD.OK_NAD_DP;
-                ECD.oOrder.PayToCode = ECD.OK_NAD_IV;
+                EdiConnectorData.getInstance().oOrder.ShipToCode = EdiConnectorData.getInstance().OK_NAD_DP;
+                EdiConnectorData.getInstance().oOrder.PayToCode = EdiConnectorData.getInstance().OK_NAD_IV;
 
                 // Loop UDF
-                foreach (Field field in ECD.oOrder.UserFields.Fields)
+                foreach (Field field in EdiConnectorData.getInstance().oOrder.UserFields.Fields)
                 {
                     switch (field.Name)
                     {
-                        case "U_BGM": field.Value = ECD.OK_BGM; break;
-                        case "U_RFF": field.Value = ECD.OK_BGM; break;
+                        case "U_BGM": field.Value = EdiConnectorData.getInstance().OK_BGM; break;
+                        case "U_RFF": field.Value = EdiConnectorData.getInstance().OK_BGM; break;
 
-                        case "U_K_EANCODE": field.Value = ECD.OK_K_EANCODE; break;
-                        case "U_KNAAM": field.Value = ECD.OK_KNAAM; break;
+                        case "U_K_EANCODE": field.Value = EdiConnectorData.getInstance().OK_K_EANCODE; break;
+                        case "U_KNAAM": field.Value = EdiConnectorData.getInstance().OK_KNAAM; break;
                         case "U_TEST":
-                            if (ECD.OK_TEST == "1")
+                            if (EdiConnectorData.getInstance().OK_TEST == "1")
                                 field.Value = "J";
                             else
                                 field.Value = "N";
                             break;
 
-                        case "U_DTM_2": if (ECD.OK_DTM_2.ToString() != "1-1-0001 0:00:00") field.Value = ECD.OK_DTM_2.ToString().Replace(" 0:00:00", ""); break;
-                        case "U_TIJD_2": field.Value = ECD.OK_TIJD_2; break;
+                        case "U_DTM_2": if (EdiConnectorData.getInstance().OK_DTM_2.ToString() != "1-1-0001 0:00:00") field.Value = EdiConnectorData.getInstance().OK_DTM_2.ToString().Replace(" 0:00:00", ""); break;
+                        case "U_TIJD_2": field.Value = EdiConnectorData.getInstance().OK_TIJD_2; break;
 
-                        case "U_DTM_17": if (ECD.OK_DTM_17.ToString() != "1-1-0001 0:00:00") field.Value = ECD.OK_DTM_17.ToString().Replace(" 0:00:00", ""); break;
-                        case "U_TIJD_17": field.Value = ECD.OK_TIJD_17; break;
+                        case "U_DTM_17": if (EdiConnectorData.getInstance().OK_DTM_17.ToString() != "1-1-0001 0:00:00") field.Value = EdiConnectorData.getInstance().OK_DTM_17.ToString().Replace(" 0:00:00", ""); break;
+                        case "U_TIJD_17": field.Value = EdiConnectorData.getInstance().OK_TIJD_17; break;
 
-                        case "U_DTM_64": if (ECD.OK_DTM_64.ToString() != "1-1-0001 0:00:00") field.Value = ECD.OK_DTM_64.ToString().Replace(" 0:00:00", ""); break;
-                        case "U_TIJD_64": field.Value = ECD.OK_TIJD_64; break;
+                        case "U_DTM_64": if (EdiConnectorData.getInstance().OK_DTM_64.ToString() != "1-1-0001 0:00:00") field.Value = EdiConnectorData.getInstance().OK_DTM_64.ToString().Replace(" 0:00:00", ""); break;
+                        case "U_TIJD_64": field.Value = EdiConnectorData.getInstance().OK_TIJD_64; break;
 
-                        case "U_RFF_BO": field.Value = ECD.OK_RFF_BO.ToString(); break;
-                        case "U_RFF_CR": field.Value = ECD.OK_RFF_CR.ToString(); break;
-                        case "U_RFF_PD": field.Value = ECD.OK_RFF_PD.ToString(); break;
-                        case "U_RFFCT": field.Value = ECD.OK_RFFCT.ToString(); break;
+                        case "U_RFF_BO": field.Value = EdiConnectorData.getInstance().OK_RFF_BO.ToString(); break;
+                        case "U_RFF_CR": field.Value = EdiConnectorData.getInstance().OK_RFF_CR.ToString(); break;
+                        case "U_RFF_PD": field.Value = EdiConnectorData.getInstance().OK_RFF_PD.ToString(); break;
+                        case "U_RFFCT": field.Value = EdiConnectorData.getInstance().OK_RFFCT.ToString(); break;
 
-                        case "U_DTMCT": if (ECD.OK_DTMCT.ToString() != "1-1-0001 0:00:00") field.Value = ECD.OK_DTMCT.ToString().Replace(" 0:00:00", ""); break;
+                        case "U_DTMCT": if (EdiConnectorData.getInstance().OK_DTMCT.ToString() != "1-1-0001 0:00:00") field.Value = EdiConnectorData.getInstance().OK_DTMCT.ToString().Replace(" 0:00:00", ""); break;
 
-                        case "U_FLAG0": field.Value = ECD.OK_FLAGS[0].ToString(); break;
-                        case "U_FLAG1": field.Value = ECD.OK_FLAGS[1].ToString(); break;
-                        case "U_FLAG2": field.Value = ECD.OK_FLAGS[2].ToString(); break;
-                        case "U_FLAG3": field.Value = ECD.OK_FLAGS[3].ToString(); break;
-                        case "U_FLAG4": field.Value = ECD.OK_FLAGS[4].ToString(); break;
-                        case "U_FLAG5": field.Value = ECD.OK_FLAGS[5].ToString(); break;
-                        case "U_FLAG6": field.Value = ECD.OK_FLAGS[6].ToString(); break;
-                        case "U_FLAG7": field.Value = ECD.OK_FLAGS[7].ToString(); break;
-                        case "U_FLAG8": field.Value = ECD.OK_FLAGS[8].ToString(); break;
-                        case "U_FLAG9": field.Value = ECD.OK_FLAGS[9].ToString(); break;
-                        case "U_FLAG10": field.Value = ECD.OK_FLAGS[10].ToString(); break;
+                        case "U_FLAG0": field.Value = EdiConnectorData.getInstance().OK_FLAGS[0].ToString(); break;
+                        case "U_FLAG1": field.Value = EdiConnectorData.getInstance().OK_FLAGS[1].ToString(); break;
+                        case "U_FLAG2": field.Value = EdiConnectorData.getInstance().OK_FLAGS[2].ToString(); break;
+                        case "U_FLAG3": field.Value = EdiConnectorData.getInstance().OK_FLAGS[3].ToString(); break;
+                        case "U_FLAG4": field.Value = EdiConnectorData.getInstance().OK_FLAGS[4].ToString(); break;
+                        case "U_FLAG5": field.Value = EdiConnectorData.getInstance().OK_FLAGS[5].ToString(); break;
+                        case "U_FLAG6": field.Value = EdiConnectorData.getInstance().OK_FLAGS[6].ToString(); break;
+                        case "U_FLAG7": field.Value = EdiConnectorData.getInstance().OK_FLAGS[7].ToString(); break;
+                        case "U_FLAG8": field.Value = EdiConnectorData.getInstance().OK_FLAGS[8].ToString(); break;
+                        case "U_FLAG9": field.Value = EdiConnectorData.getInstance().OK_FLAGS[9].ToString(); break;
+                        case "U_FLAG10": field.Value = EdiConnectorData.getInstance().OK_FLAGS[10].ToString(); break;
 
-                        case "U_NAD_BY": field.Value = ECD.OK_NAD_BY.ToString(); break;
-                        case "U_NAD_DP": field.Value = ECD.OK_NAD_DP.ToString(); break;
-                        case "U_NAD_IV": field.Value = ECD.OK_NAD_IV.ToString(); break;
-                        case "U_NAD_SF": field.Value = ECD.OK_NAD_SF.ToString(); break;
-                        case "U_NAD_SU": field.Value = ECD.OK_NAD_SU.ToString(); break;
-                        case "U_NAD_UC": field.Value = ECD.OK_NAD_UC.ToString(); break;
-                        case "U_NAD_BCO": field.Value = ECD.OK_NAD_BCO.ToString(); break;
+                        case "U_NAD_BY": field.Value = EdiConnectorData.getInstance().OK_NAD_BY.ToString(); break;
+                        case "U_NAD_DP": field.Value = EdiConnectorData.getInstance().OK_NAD_DP.ToString(); break;
+                        case "U_NAD_IV": field.Value = EdiConnectorData.getInstance().OK_NAD_IV.ToString(); break;
+                        case "U_NAD_SF": field.Value = EdiConnectorData.getInstance().OK_NAD_SF.ToString(); break;
+                        case "U_NAD_SU": field.Value = EdiConnectorData.getInstance().OK_NAD_SU.ToString(); break;
+                        case "U_NAD_UC": field.Value = EdiConnectorData.getInstance().OK_NAD_UC.ToString(); break;
+                        case "U_NAD_BCO": field.Value = EdiConnectorData.getInstance().OK_NAD_BCO.ToString(); break;
 
-                        case "U_ONTVANGER": field.Value = ECD.OK_RECEIVER.ToString(); break;
+                        case "U_ONTVANGER": field.Value = EdiConnectorData.getInstance().OK_RECEIVER.ToString(); break;
                         case "U_EDI_BERICHT": field.Value = "Ja"; break;
                         case "U_EDI_IMP_TIJD": field.Value = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss"); break;
                         case "U_EDI_EXPORT": field.Value = "Nee"; break;
@@ -664,7 +665,7 @@ namespace EdiConnectorService_C_Sharp
         {
             string buyerAddress = "";
             Recordset oRecordset;
-            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             oRecordset.DoQuery("SELECT LicTradNum FROM OCRD WHERE U_K_EANCODE = '" + buyerEANCode + "'");
             if (oRecordset.RecordCount == 1)
@@ -680,16 +681,16 @@ namespace EdiConnectorService_C_Sharp
 
         public bool CheckSOhead()
         {
-            ECD.CARDCODE = "";
+            EdiConnectorData.getInstance().CARDCODE = "";
             Recordset oRecordset;
-            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             try
             {
-                oRecordset.DoQuery("SELECT CardCode FROM OCRD WHERE U_K_EANCODE = '" + ECD.OK_K_EANCODE + "'");
+                oRecordset.DoQuery("SELECT CardCode FROM OCRD WHERE U_K_EANCODE = '" + EdiConnectorData.getInstance().OK_K_EANCODE + "'");
                 if (oRecordset.RecordCount == 1)
                 {
-                    ECD.CARDCODE = oRecordset.Fields.Item(0).Value.ToString();
+                    EdiConnectorData.getInstance().CARDCODE = oRecordset.Fields.Item(0).Value.ToString();
                     return true;
                 }
                 else if (oRecordset.RecordCount > 1)
@@ -717,32 +718,32 @@ namespace EdiConnectorService_C_Sharp
                 if (matchItems == false)
                     return false;
 
-                ECD.oOrder.Lines.ItemCode = ECD.ITEMCODE;
-                string replace = ECD.OR_QTY.ToString().Replace(",", ".");
-                ECD.oOrder.Lines.Quantity = Convert.ToDouble(String.Format(ECD.SALPACKUN, replace));
-                ECD.oOrder.Lines.ShipDate = ECD.OK_DTM_2;
+                EdiConnectorData.getInstance().oOrder.Lines.ItemCode = EdiConnectorData.getInstance().ITEMCODE;
+                string replace = EdiConnectorData.getInstance().OR_QTY.ToString().Replace(",", ".");
+                EdiConnectorData.getInstance().oOrder.Lines.Quantity = Convert.ToDouble(String.Format(EdiConnectorData.getInstance().SALPACKUN, replace));
+                EdiConnectorData.getInstance().oOrder.Lines.ShipDate = EdiConnectorData.getInstance().OK_DTM_2;
 
-                foreach (Field field in ECD.oOrder.Lines.UserFields.Fields)
+                foreach (Field field in EdiConnectorData.getInstance().oOrder.Lines.UserFields.Fields)
                 {
                     switch (field.Name)
                     {
-                        case "U_DEUAC": field.Value = ECD.OR_DEUAC.ToString(); break;
-                        case "U_LEVARTCODE": field.Value = ECD.OR_LEVARTCODE.ToString(); break;
-                        case "U_DEARTOM": field.Value = ECD.OR_DEARTOM.ToString(); break;
-                        case "U_KLEUR": field.Value = ECD.OR_COLOR.ToString(); break;
-                        case "U_LENGTE": field.Value = ECD.OR_LENGTH.ToString(); break;
-                        case "U_BREEDTE": field.Value = ECD.OR_WIDTH.ToString(); break;
-                        case "U_HOOGTE": field.Value = ECD.OR_HEIGHT.ToString(); break;
-                        case "U_CUX": field.Value = ECD.OR_CUX.ToString(); break;
-                        case "U_PIA": field.Value = ECD.OR_PIA.ToString(); break;
-                        case "U_RFFLI1": field.Value = ECD.OR_RFFLI1.ToString(); break;
-                        case "U_RFFLI2": field.Value = ECD.OR_RFFLI2.ToString(); break;
-                        case "U_LINNR": field.Value = ECD.OR_LINNR.ToString(); break;
-                        case "U_PRI": field.Value = ECD.OR_PRI.ToString(); break;
+                        case "U_DEUAC": field.Value = EdiConnectorData.getInstance().OR_DEUAC.ToString(); break;
+                        case "U_LEVARTCODE": field.Value = EdiConnectorData.getInstance().OR_LEVARTCODE.ToString(); break;
+                        case "U_DEARTOM": field.Value = EdiConnectorData.getInstance().OR_DEARTOM.ToString(); break;
+                        case "U_KLEUR": field.Value = EdiConnectorData.getInstance().OR_COLOR.ToString(); break;
+                        case "U_LENGTE": field.Value = EdiConnectorData.getInstance().OR_LENGTH.ToString(); break;
+                        case "U_BREEDTE": field.Value = EdiConnectorData.getInstance().OR_WIDTH.ToString(); break;
+                        case "U_HOOGTE": field.Value = EdiConnectorData.getInstance().OR_HEIGHT.ToString(); break;
+                        case "U_CUX": field.Value = EdiConnectorData.getInstance().OR_CUX.ToString(); break;
+                        case "U_PIA": field.Value = EdiConnectorData.getInstance().OR_PIA.ToString(); break;
+                        case "U_RFFLI1": field.Value = EdiConnectorData.getInstance().OR_RFFLI1.ToString(); break;
+                        case "U_RFFLI2": field.Value = EdiConnectorData.getInstance().OR_RFFLI2.ToString(); break;
+                        case "U_LINNR": field.Value = EdiConnectorData.getInstance().OR_LINNR.ToString(); break;
+                        case "U_PRI": field.Value = EdiConnectorData.getInstance().OR_PRI.ToString(); break;
 
                     }
                 }
-                ECD.oOrder.Lines.Add();
+                EdiConnectorData.getInstance().oOrder.Lines.Add();
                 return true;
             }
             catch (Exception e)
@@ -754,26 +755,26 @@ namespace EdiConnectorService_C_Sharp
 
         public bool CheckSOitems()
         {
-            ECD.ITEMCODE = "";
-            ECD.ITEMNAME = "";
-            ECD.SALPACKUN = "1";
+            EdiConnectorData.getInstance().ITEMCODE = "";
+            EdiConnectorData.getInstance().ITEMNAME = "";
+            EdiConnectorData.getInstance().SALPACKUN = "1";
             Recordset oRecordset;
-            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             try
             {
-                oRecordset.DoQuery("SELECT ItemCode, ItemName, SalPackUn FROM OITM WHERE U_EAN_Handels_EH = '" + ECD.OR_DEUAC + "'");
+                oRecordset.DoQuery("SELECT ItemCode, ItemName, SalPackUn FROM OITM WHERE U_EAN_Handels_EH = '" + EdiConnectorData.getInstance().OR_DEUAC + "'");
 
                 if (oRecordset.RecordCount == 1)
                 {
-                    ECD.ITEMCODE = oRecordset.Fields.Item(0).Value.ToString();
-                    ECD.ITEMNAME = oRecordset.Fields.Item(1).Value.ToString();
-                    ECD.SALPACKUN = oRecordset.Fields.Item(2).Value.ToString();
+                    EdiConnectorData.getInstance().ITEMCODE = oRecordset.Fields.Item(0).Value.ToString();
+                    EdiConnectorData.getInstance().ITEMNAME = oRecordset.Fields.Item(1).Value.ToString();
+                    EdiConnectorData.getInstance().SALPACKUN = oRecordset.Fields.Item(2).Value.ToString();
                     return true;
                 }
                 else if (oRecordset.RecordCount > 1)
                 {
-                    Log("X", "Error: Duplicate EANcodes found! Eancode " + ECD.OR_DEUAC, "CheckSOitems");
+                    Log("X", "Error: Duplicate EANcodes found! Eancode " + EdiConnectorData.getInstance().OR_DEUAC, "CheckSOitems");
                     return false;
                 }
                 else
@@ -793,33 +794,33 @@ namespace EdiConnectorService_C_Sharp
             int errCode;
             string errMsg = "";
 
-            if (ECD.oOrder.Add() != 0)
+            if (EdiConnectorData.getInstance().oOrder.Add() != 0)
             {
-                ECD.cmp.GetLastError(out errCode, out errMsg);
+                EdiConnectorData.getInstance().cmp.GetLastError(out errCode, out errMsg);
 
-                File.Move(ECD.sSOTempPath + @"\" + ECD.SO_FILENAME, ECD.sSOErrorPath + @"\" + DateTime.Now.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss") + "_" + ECD.SO_FILENAME);
+                File.Move(EdiConnectorData.getInstance().sSOTempPath + @"\" + EdiConnectorData.getInstance().SO_FILENAME, EdiConnectorData.getInstance().sSOErrorPath + @"\" + DateTime.Now.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss") + "_" + EdiConnectorData.getInstance().SO_FILENAME);
                 Log("X", "Error: " + errMsg + "(" + errCode + ")", "OrderSave");
-                Log("X", ECD.SO_FILENAME + " copied to the errors folder!", "OrderSave");
+                Log("X", EdiConnectorData.getInstance().SO_FILENAME + " copied to the errors folder!", "OrderSave");
             }
             else
             {
-                if (ECD.iSendNotification == 1)
-                    MailToSOreceiver(ECD.oOrder.DocEntry, ECD.oOrder.DocDate.ToString(), ECD.oOrder.DocNum);
+                if (EdiConnectorData.getInstance().iSendNotification == 1)
+                    MailToSOreceiver(EdiConnectorData.getInstance().oOrder.DocEntry, EdiConnectorData.getInstance().oOrder.DocDate.ToString(), EdiConnectorData.getInstance().oOrder.DocNum);
 
                 Log("V", "Order written in SAP BO!", "OrderSave");
-                File.Move(ECD.sSOTempPath + @"\" + ECD.SO_FILENAME, ECD.sSODonePath + @"\" + DateTime.Now.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss") + "_" + ECD.SO_FILENAME);
+                File.Move(EdiConnectorData.getInstance().sSOTempPath + @"\" + EdiConnectorData.getInstance().SO_FILENAME, EdiConnectorData.getInstance().sSODonePath + @"\" + DateTime.Now.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss") + "_" + EdiConnectorData.getInstance().SO_FILENAME);
             }   
         }
 
         public void CreateUdfFieldsText()
         {
-            if(File.Exists(ECD.sApplicationPath + @"\udf.xml") == false)
+            if(File.Exists(EdiConnectorData.getInstance().sApplicationPath + @"\udf.xml") == false)
             {
                 return;
             }
 
             DataSet dataSet = new DataSet();
-            dataSet.ReadXml(ECD.sApplicationPath + @"\udf.xml");
+            dataSet.ReadXml(EdiConnectorData.getInstance().sApplicationPath + @"\udf.xml");
 
             try
             {
@@ -841,7 +842,7 @@ namespace EdiConnectorService_C_Sharp
             BoFieldTypes _boType, BoFldSubTypes _boSubType, int _editSize, bool _mandatory, bool _default, string _defaultValue)
         {
             IUserFieldsMD oUDF;
-            oUDF = (SAPbobsCOM.IUserFieldsMD)ECD.cmp.GetBusinessObject(BoObjectTypes.oUserFields);
+            oUDF = (SAPbobsCOM.IUserFieldsMD)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.oUserFields);
             int errCode;
             string errMsg = "";
 
@@ -862,7 +863,7 @@ namespace EdiConnectorService_C_Sharp
 
             if (oUDF.Add() != 0)
             {
-                ECD.cmp.GetLastError(out errCode, out errMsg);
+                EdiConnectorData.getInstance().cmp.GetLastError(out errCode, out errMsg);
                 Log("X", "Error: " + errMsg + "(" + errCode + ")", "CreateUdf");
             }
             else
@@ -879,19 +880,19 @@ namespace EdiConnectorService_C_Sharp
             {
                 using (MailMessage mailMsg = new MailMessage())
                 {
-                    SmtpClient smtpMail = new SmtpClient(ECD.sSmpt, ECD.iSmtpPort);
+                    SmtpClient smtpMail = new SmtpClient(EdiConnectorData.getInstance().sSmpt, EdiConnectorData.getInstance().iSmtpPort);
 
-                    if (ECD.bSmtpUserSecurity == true)
-                        smtpMail.Credentials = new NetworkCredential(ECD.sSmtpUser, ECD.sSmtpPassword);
+                    if (EdiConnectorData.getInstance().bSmtpUserSecurity == true)
+                        smtpMail.Credentials = new NetworkCredential(EdiConnectorData.getInstance().sSmtpUser, EdiConnectorData.getInstance().sSmtpPassword);
 
-                    mailMsg.From = new MailAddress(ECD.sSenderEmail, ECD.sSenderName);
-                    mailMsg.To.Add(ECD.sOrderMailTo);
+                    mailMsg.From = new MailAddress(EdiConnectorData.getInstance().sSenderEmail, EdiConnectorData.getInstance().sSenderName);
+                    mailMsg.To.Add(EdiConnectorData.getInstance().sOrderMailTo);
                     mailMsg.Subject = String.Format("Order {0} imported", _docEntry);
 
-                    using(StreamReader reader = new StreamReader(ECD.sApplicationPath + @"\email_o.txt"))
+                    using(StreamReader reader = new StreamReader(EdiConnectorData.getInstance().sApplicationPath + @"\email_o.txt"))
                     {
                         string body = reader.ReadToEnd();
-                        body = body.Replace("::NAME::", ECD.sOrderMailToFullName);
+                        body = body.Replace("::NAME::", EdiConnectorData.getInstance().sOrderMailToFullName);
                         body = body.Replace("::DOCENTRY::", _docEntry.ToString());
                         body = body.Replace("::DOCDATE::", _docDate);
                         body = body.Replace("::DOCNUM::", _docNumber.ToString());
@@ -916,7 +917,7 @@ namespace EdiConnectorService_C_Sharp
         public void CheckAndExportDelivery()
         {
             Recordset oRecordset;
-            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
             try
             {
                 oRecordset.DoQuery("SELECT DocEntry FROM EDLN WHERE Canceled='N' AND U_EDI_BERICHT = 'Ja' " +
@@ -947,7 +948,7 @@ namespace EdiConnectorService_C_Sharp
         public void CreateDeliveryFile(int _docEntry)
         {
             Documents oDelivery;
-            oDelivery = (Documents)ECD.cmp.GetBusinessObject(BoObjectTypes.oDeliveryNotes);
+            oDelivery = (Documents)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.oDeliveryNotes);
             bool foundKey = oDelivery.GetByKey(_docEntry);
 
             if (oDelivery.UserFields.Fields.Item("U_DESADV").Value.ToString() == "1")
@@ -956,107 +957,107 @@ namespace EdiConnectorService_C_Sharp
                 {
                     try
                     {
-                        using (StreamWriter writer = new StreamWriter(ECD.sDeliveryPath + @"\" + "DEL_" + oDelivery.DocNum + ".DAT"))
+                        using (StreamWriter writer = new StreamWriter(EdiConnectorData.getInstance().sDeliveryPath + @"\" + "DEL_" + oDelivery.DocNum + ".DAT"))
                         {
 
                             string header = "";
                             string line = "";
 
-                            ECD.DK_K_EANCODE = "";
-                            ECD.DK_PBTEST = "";
-                            ECD.DK_KNAAM = "";
-                            ECD.DK_BGM = "";
-                            ECD.DK_DTM_137 = "";
-                            ECD.DK_DTM_2 = "";
-                            ECD.DK_TIJD_2 = "";
-                            ECD.DK_DTM_17 = "";
-                            ECD.DK_TIJD_17 = "";
-                            ECD.DK_DTM_64 = "";
-                            ECD.DK_TIJD_64 = "";
-                            ECD.DK_DTM_63 = "";
-                            ECD.DK_TIJD_63 = "";
-                            ECD.DK_BH_DAT = "";
-                            ECD.DK_BH_TIJD = "";
-                            ECD.DK_RFF = "";
-                            ECD.DK_RFFVN = "";
-                            ECD.DK_BH_EAN = "";
-                            ECD.DK_NAD_BY = "";
-                            ECD.DK_NAD_SU = "";
-                            ECD.DK_DESATYPE = "";
-                            ECD.DK_ONTVANGER = "";
+                            EdiConnectorData.getInstance().DK_K_EANCODE = "";
+                            EdiConnectorData.getInstance().DK_PBTEST = "";
+                            EdiConnectorData.getInstance().DK_KNAAM = "";
+                            EdiConnectorData.getInstance().DK_BGM = "";
+                            EdiConnectorData.getInstance().DK_DTM_137 = "";
+                            EdiConnectorData.getInstance().DK_DTM_2 = "";
+                            EdiConnectorData.getInstance().DK_TIJD_2 = "";
+                            EdiConnectorData.getInstance().DK_DTM_17 = "";
+                            EdiConnectorData.getInstance().DK_TIJD_17 = "";
+                            EdiConnectorData.getInstance().DK_DTM_64 = "";
+                            EdiConnectorData.getInstance().DK_TIJD_64 = "";
+                            EdiConnectorData.getInstance().DK_DTM_63 = "";
+                            EdiConnectorData.getInstance().DK_TIJD_63 = "";
+                            EdiConnectorData.getInstance().DK_BH_DAT = "";
+                            EdiConnectorData.getInstance().DK_BH_TIJD = "";
+                            EdiConnectorData.getInstance().DK_RFF = "";
+                            EdiConnectorData.getInstance().DK_RFFVN = "";
+                            EdiConnectorData.getInstance().DK_BH_EAN = "";
+                            EdiConnectorData.getInstance().DK_NAD_BY = "";
+                            EdiConnectorData.getInstance().DK_NAD_SU = "";
+                            EdiConnectorData.getInstance().DK_DESATYPE = "";
+                            EdiConnectorData.getInstance().DK_ONTVANGER = "";
 
-                            ECD.DK_K_EANCODE = FormatField(oDelivery.UserFields.Fields.Item("U_K_EANCODE").Value.ToString(), 13, "STRING");
+                            EdiConnectorData.getInstance().DK_K_EANCODE = FormatField(oDelivery.UserFields.Fields.Item("U_K_EANCODE").Value.ToString(), 13, "STRING");
 
                             if (oDelivery.UserFields.Fields.Item("U_TEST").Value.ToString() == "J")
-                                ECD.DK_PBTEST = FormatField("1", 1, "STRING");
+                                EdiConnectorData.getInstance().DK_PBTEST = FormatField("1", 1, "STRING");
                             else
-                                ECD.DK_PBTEST = FormatField(" ", 1, "STRING");
+                                EdiConnectorData.getInstance().DK_PBTEST = FormatField(" ", 1, "STRING");
 
-                            ECD.DK_KNAAM = FormatField(oDelivery.UserFields.Fields.Item("U_KNAAM").Value.ToString(), 14, "STRING");
-                            ECD.DK_BGM = FormatField(oDelivery.DocNum.ToString(), 35, "STRING");
-                            ECD.DK_DTM_137 = FormatField(oDelivery.DocDate.ToString("yyyyMMdd"), 8, "STIRNG");
+                            EdiConnectorData.getInstance().DK_KNAAM = FormatField(oDelivery.UserFields.Fields.Item("U_KNAAM").Value.ToString(), 14, "STRING");
+                            EdiConnectorData.getInstance().DK_BGM = FormatField(oDelivery.DocNum.ToString(), 35, "STRING");
+                            EdiConnectorData.getInstance().DK_DTM_137 = FormatField(oDelivery.DocDate.ToString("yyyyMMdd"), 8, "STIRNG");
 
                             if (oDelivery.UserFields.Fields.Item("U_DTM_2").Value.ToString().Trim().Length > 0)
-                                ECD.DK_DTM_2 = FormatField(Convert.ToDateTime(oDelivery.UserFields.Fields.Item("U_DTM_2").Value).ToString("yyyyMMdd"), 8, "STRING");
+                                EdiConnectorData.getInstance().DK_DTM_2 = FormatField(Convert.ToDateTime(oDelivery.UserFields.Fields.Item("U_DTM_2").Value).ToString("yyyyMMdd"), 8, "STRING");
                             else
-                                ECD.DK_DTM_2 = FormatField(" ", 8, "STRING");
-                            ECD.DK_TIJD_2 = FormatField(oDelivery.UserFields.Fields.Item("U_TIJD_2").Value.ToString(), 5, "STRING");
+                                EdiConnectorData.getInstance().DK_DTM_2 = FormatField(" ", 8, "STRING");
+                            EdiConnectorData.getInstance().DK_TIJD_2 = FormatField(oDelivery.UserFields.Fields.Item("U_TIJD_2").Value.ToString(), 5, "STRING");
 
                             if (oDelivery.UserFields.Fields.Item("U_DTM_17").Value.ToString().Trim().Length > 0)
-                                ECD.DK_DTM_17 = FormatField(Convert.ToDateTime(oDelivery.UserFields.Fields.Item("U_DTM_17").Value).ToString("yyyyMMdd"), 8, "STRING");
+                                EdiConnectorData.getInstance().DK_DTM_17 = FormatField(Convert.ToDateTime(oDelivery.UserFields.Fields.Item("U_DTM_17").Value).ToString("yyyyMMdd"), 8, "STRING");
                             else
-                                ECD.DK_DTM_17 = FormatField(" ", 8, "STRING");
-                            ECD.DK_TIJD_17 = FormatField(oDelivery.UserFields.Fields.Item("U_TIJD_17").Value.ToString(), 5, "STRING");
+                                EdiConnectorData.getInstance().DK_DTM_17 = FormatField(" ", 8, "STRING");
+                            EdiConnectorData.getInstance().DK_TIJD_17 = FormatField(oDelivery.UserFields.Fields.Item("U_TIJD_17").Value.ToString(), 5, "STRING");
 
                             if (oDelivery.UserFields.Fields.Item("U_DTM_64").Value.ToString().Trim().Length > 0)
-                                ECD.DK_DTM_64 = FormatField(Convert.ToDateTime(oDelivery.UserFields.Fields.Item("U_DTM_64").Value).ToString("yyyyMMdd"), 8, "STRING");
+                                EdiConnectorData.getInstance().DK_DTM_64 = FormatField(Convert.ToDateTime(oDelivery.UserFields.Fields.Item("U_DTM_64").Value).ToString("yyyyMMdd"), 8, "STRING");
                             else
-                                ECD.DK_DTM_64 = FormatField(" ", 8, "STRING");
-                            ECD.DK_TIJD_64 = FormatField(oDelivery.UserFields.Fields.Item("U_TIJD_64").Value.ToString(), 5, "STRING");
+                                EdiConnectorData.getInstance().DK_DTM_64 = FormatField(" ", 8, "STRING");
+                            EdiConnectorData.getInstance().DK_TIJD_64 = FormatField(oDelivery.UserFields.Fields.Item("U_TIJD_64").Value.ToString(), 5, "STRING");
 
                             if (oDelivery.UserFields.Fields.Item("U_DTM_63").Value.ToString().Trim().Length > 0)
-                                ECD.DK_DTM_63 = FormatField(Convert.ToDateTime(oDelivery.UserFields.Fields.Item("U_DTM_63").Value).ToString("yyyyMMdd"), 8, "STRING");
+                                EdiConnectorData.getInstance().DK_DTM_63 = FormatField(Convert.ToDateTime(oDelivery.UserFields.Fields.Item("U_DTM_63").Value).ToString("yyyyMMdd"), 8, "STRING");
                             else
-                                ECD.DK_DTM_63 = FormatField(" ", 8, "STRING");
-                            ECD.DK_TIJD_63 = FormatField(oDelivery.UserFields.Fields.Item("U_TIJD_63").Value.ToString(), 5, "STRING");
+                                EdiConnectorData.getInstance().DK_DTM_63 = FormatField(" ", 8, "STRING");
+                            EdiConnectorData.getInstance().DK_TIJD_63 = FormatField(oDelivery.UserFields.Fields.Item("U_TIJD_63").Value.ToString(), 5, "STRING");
 
-                            ECD.DK_BH_DAT = FormatField(oDelivery.UserFields.Fields.Item("U_BH_DAT").Value.ToString(), 8, "STRING");
-                            ECD.DK_BH_TIJD = FormatField(oDelivery.UserFields.Fields.Item("U_BH_TIJD").Value.ToString(), 5, "STRING");
-                            ECD.DK_RFF = FormatField(oDelivery.UserFields.Fields.Item("U_RFF").Value.ToString(), 35, "STRING");
-                            ECD.DK_RFFVN = FormatField(oDelivery.UserFields.Fields.Item("U_RFFVN").Value.ToString(), 35, "STRING");
-                            ECD.DK_BH_EAN = FormatField(oDelivery.UserFields.Fields.Item("U_BH_EAN").Value.ToString(), 13, "STRING");
-                            ECD.DK_NAD_BY = FormatField(oDelivery.UserFields.Fields.Item("U_NAD_BY").Value.ToString(), 13, "STRING");
-                            ECD.DK_NAD_DP = FormatField(oDelivery.UserFields.Fields.Item("U_NAD_DP").Value.ToString(), 13, "STRING");
-                            ECD.DK_NAD_SU = FormatField(oDelivery.UserFields.Fields.Item("U_NAD_SU").Value.ToString(), 13, "STRING");
-                            ECD.DK_NAD_UC = FormatField(oDelivery.UserFields.Fields.Item("U_NAD_UC").Value.ToString(), 13, "STRING");
+                            EdiConnectorData.getInstance().DK_BH_DAT = FormatField(oDelivery.UserFields.Fields.Item("U_BH_DAT").Value.ToString(), 8, "STRING");
+                            EdiConnectorData.getInstance().DK_BH_TIJD = FormatField(oDelivery.UserFields.Fields.Item("U_BH_TIJD").Value.ToString(), 5, "STRING");
+                            EdiConnectorData.getInstance().DK_RFF = FormatField(oDelivery.UserFields.Fields.Item("U_RFF").Value.ToString(), 35, "STRING");
+                            EdiConnectorData.getInstance().DK_RFFVN = FormatField(oDelivery.UserFields.Fields.Item("U_RFFVN").Value.ToString(), 35, "STRING");
+                            EdiConnectorData.getInstance().DK_BH_EAN = FormatField(oDelivery.UserFields.Fields.Item("U_BH_EAN").Value.ToString(), 13, "STRING");
+                            EdiConnectorData.getInstance().DK_NAD_BY = FormatField(oDelivery.UserFields.Fields.Item("U_NAD_BY").Value.ToString(), 13, "STRING");
+                            EdiConnectorData.getInstance().DK_NAD_DP = FormatField(oDelivery.UserFields.Fields.Item("U_NAD_DP").Value.ToString(), 13, "STRING");
+                            EdiConnectorData.getInstance().DK_NAD_SU = FormatField(oDelivery.UserFields.Fields.Item("U_NAD_SU").Value.ToString(), 13, "STRING");
+                            EdiConnectorData.getInstance().DK_NAD_UC = FormatField(oDelivery.UserFields.Fields.Item("U_NAD_UC").Value.ToString(), 13, "STRING");
                             //DK_DESATYPE = strDesAdvLevel //see desadvlevel in settings file
-                            ECD.DK_DESATYPE = oDelivery.UserFields.Fields.Item("U_DESADV").Value.ToString();
-                            ECD.DK_ONTVANGER = FormatField(oDelivery.UserFields.Fields.Item("U_ONTVANGER").Value.ToString(), 13, "STRING");
+                            EdiConnectorData.getInstance().DK_DESATYPE = oDelivery.UserFields.Fields.Item("U_DESADV").Value.ToString();
+                            EdiConnectorData.getInstance().DK_ONTVANGER = FormatField(oDelivery.UserFields.Fields.Item("U_ONTVANGER").Value.ToString(), 13, "STRING");
 
-                            header = ECD.DK_K_EANCODE +
-                                ECD.DK_PBTEST +
-                                ECD.DK_KNAAM +
-                                ECD.DK_BGM +
-                                ECD.DK_DTM_137 +
-                                ECD.DK_DTM_2 +
-                                ECD.DK_TIJD_2 +
-                                ECD.DK_DTM_17 +
-                                ECD.DK_TIJD_17 +
-                                ECD.DK_DTM_64 +
-                                ECD.DK_TIJD_64 +
-                                ECD.DK_DTM_63 +
-                                ECD.DK_TIJD_63 +
-                                ECD.DK_BH_DAT +
-                                ECD.DK_BH_TIJD +
-                                ECD.DK_RFF +
-                                ECD.DK_RFFVN +
-                                ECD.DK_BH_EAN +
-                                ECD.DK_NAD_BY +
-                                ECD.DK_NAD_DP +
-                                ECD.DK_NAD_SU +
-                                ECD.DK_NAD_UC +
-                                ECD.DK_DESATYPE +
-                                ECD.DK_ONTVANGER;
+                            header = EdiConnectorData.getInstance().DK_K_EANCODE +
+                                EdiConnectorData.getInstance().DK_PBTEST +
+                                EdiConnectorData.getInstance().DK_KNAAM +
+                                EdiConnectorData.getInstance().DK_BGM +
+                                EdiConnectorData.getInstance().DK_DTM_137 +
+                                EdiConnectorData.getInstance().DK_DTM_2 +
+                                EdiConnectorData.getInstance().DK_TIJD_2 +
+                                EdiConnectorData.getInstance().DK_DTM_17 +
+                                EdiConnectorData.getInstance().DK_TIJD_17 +
+                                EdiConnectorData.getInstance().DK_DTM_64 +
+                                EdiConnectorData.getInstance().DK_TIJD_64 +
+                                EdiConnectorData.getInstance().DK_DTM_63 +
+                                EdiConnectorData.getInstance().DK_TIJD_63 +
+                                EdiConnectorData.getInstance().DK_BH_DAT +
+                                EdiConnectorData.getInstance().DK_BH_TIJD +
+                                EdiConnectorData.getInstance().DK_RFF +
+                                EdiConnectorData.getInstance().DK_RFFVN +
+                                EdiConnectorData.getInstance().DK_BH_EAN +
+                                EdiConnectorData.getInstance().DK_NAD_BY +
+                                EdiConnectorData.getInstance().DK_NAD_DP +
+                                EdiConnectorData.getInstance().DK_NAD_SU +
+                                EdiConnectorData.getInstance().DK_NAD_UC +
+                                EdiConnectorData.getInstance().DK_DESATYPE +
+                                EdiConnectorData.getInstance().DK_ONTVANGER;
 
                             writer.WriteLine("0" + header);
 
@@ -1064,69 +1065,69 @@ namespace EdiConnectorService_C_Sharp
                             {
                                 line = "";
 
-                                ECD.DR_DEUAC = "";
-                                ECD.DR_OLDUAC = "";
-                                ECD.DR_DEARTNR = "";
-                                ECD.DR_DEARTOM = "";
-                                ECD.DR_PIA = "";
-                                ECD.DR_BATCH = "";
-                                ECD.DR_QTY = "";
-                                ECD.DR_ARTEENHEID = "";
-                                ECD.DR_RFFONID = "";
-                                ECD.DR_RFFONORD = "";
-                                ECD.DR_DTM_23E = "";
-                                ECD.DR_TGTDATUM = "";
-                                ECD.DR_GEWICHT = "";
-                                ECD.DR_FEENHEID = "";
-                                ECD.DR_QTY_AFW = "";
-                                ECD.DR_REDEN = "";
-                                ECD.DR_GINTYPE = "";
-                                ECD.DR_GINID = "";
-                                ECD.DR_BATCHH = "";
+                                EdiConnectorData.getInstance().DR_DEUAC = "";
+                                EdiConnectorData.getInstance().DR_OLDUAC = "";
+                                EdiConnectorData.getInstance().DR_DEARTNR = "";
+                                EdiConnectorData.getInstance().DR_DEARTOM = "";
+                                EdiConnectorData.getInstance().DR_PIA = "";
+                                EdiConnectorData.getInstance().DR_BATCH = "";
+                                EdiConnectorData.getInstance().DR_QTY = "";
+                                EdiConnectorData.getInstance().DR_ARTEENHEID = "";
+                                EdiConnectorData.getInstance().DR_RFFONID = "";
+                                EdiConnectorData.getInstance().DR_RFFONORD = "";
+                                EdiConnectorData.getInstance().DR_DTM_23E = "";
+                                EdiConnectorData.getInstance().DR_TGTDATUM = "";
+                                EdiConnectorData.getInstance().DR_GEWICHT = "";
+                                EdiConnectorData.getInstance().DR_FEENHEID = "";
+                                EdiConnectorData.getInstance().DR_QTY_AFW = "";
+                                EdiConnectorData.getInstance().DR_REDEN = "";
+                                EdiConnectorData.getInstance().DR_GINTYPE = "";
+                                EdiConnectorData.getInstance().DR_GINID = "";
+                                EdiConnectorData.getInstance().DR_BATCHH = "";
 
                                 oDelivery.Lines.SetCurrentLine(i);
 
-                                ECD.DR_DEUAC = FormatField(ItemEAN(oDelivery.Lines.ItemCode), 14, "STRING");
-                                ECD.DR_OLDUAC = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_OLDUAC").Value.ToString(), 14, "STRING");
-                                ECD.DR_DEARTNR = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_DEARTNR").Value.ToString(), 9, "STRING");
-                                ECD.DR_DEARTOM = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_DEARTOM").Value.ToString(), 35, "STRING");
-                                ECD.DR_PIA = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_PIA").Value.ToString(), 10, "STRING");
-                                ECD.DR_BATCH = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_BATCH").Value.ToString(), 35, "STRING");
+                                EdiConnectorData.getInstance().DR_DEUAC = FormatField(ItemEAN(oDelivery.Lines.ItemCode), 14, "STRING");
+                                EdiConnectorData.getInstance().DR_OLDUAC = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_OLDUAC").Value.ToString(), 14, "STRING");
+                                EdiConnectorData.getInstance().DR_DEARTNR = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_DEARTNR").Value.ToString(), 9, "STRING");
+                                EdiConnectorData.getInstance().DR_DEARTOM = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_DEARTOM").Value.ToString(), 35, "STRING");
+                                EdiConnectorData.getInstance().DR_PIA = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_PIA").Value.ToString(), 10, "STRING");
+                                EdiConnectorData.getInstance().DR_BATCH = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_BATCH").Value.ToString(), 35, "STRING");
 
-                                ECD.DR_QTY = FormatField(oDelivery.Lines.Quantity.ToString(), 17, "STRING");
+                                EdiConnectorData.getInstance().DR_QTY = FormatField(oDelivery.Lines.Quantity.ToString(), 17, "STRING");
 
-                                ECD.DR_ARTEENHEID = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_ARTEENHEID").Value.ToString(), 3, "STRING");
-                                ECD.DR_RFFONID = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_RFFONID").Value.ToString(), 6, "STRING");
-                                ECD.DR_RFFONORD = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_RFFONORD").Value.ToString(), 35, "STRING");
-                                ECD.DR_DTM_23E = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_DTM_23E").Value.ToString(), 8, "STRING");
-                                ECD.DR_TGTDATUM = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_TGTDATUM").Value.ToString(), 1, "STRING");
-                                ECD.DR_GEWICHT = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_GEWICHT").Value.ToString(), 6, "STRING");
-                                ECD.DR_FEENHEID = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_FEENHEID").Value.ToString(), 3, "STRING");
-                                ECD.DR_QTY_AFW = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_QTY_AFW").Value.ToString(), 17, "STRING");
-                                ECD.DR_REDEN = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_REDEN").Value.ToString(), 3, "STRING");
-                                ECD.DR_GINTYPE = FormatField(" ", 3, "STRING");
-                                ECD.DR_GINID = FormatField(" ", 19, "STRING");
-                                ECD.DR_BATCHH = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_BATCHH").Value.ToString(), 35, "STRING");
+                                EdiConnectorData.getInstance().DR_ARTEENHEID = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_ARTEENHEID").Value.ToString(), 3, "STRING");
+                                EdiConnectorData.getInstance().DR_RFFONID = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_RFFONID").Value.ToString(), 6, "STRING");
+                                EdiConnectorData.getInstance().DR_RFFONORD = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_RFFONORD").Value.ToString(), 35, "STRING");
+                                EdiConnectorData.getInstance().DR_DTM_23E = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_DTM_23E").Value.ToString(), 8, "STRING");
+                                EdiConnectorData.getInstance().DR_TGTDATUM = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_TGTDATUM").Value.ToString(), 1, "STRING");
+                                EdiConnectorData.getInstance().DR_GEWICHT = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_GEWICHT").Value.ToString(), 6, "STRING");
+                                EdiConnectorData.getInstance().DR_FEENHEID = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_FEENHEID").Value.ToString(), 3, "STRING");
+                                EdiConnectorData.getInstance().DR_QTY_AFW = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_QTY_AFW").Value.ToString(), 17, "STRING");
+                                EdiConnectorData.getInstance().DR_REDEN = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_REDEN").Value.ToString(), 3, "STRING");
+                                EdiConnectorData.getInstance().DR_GINTYPE = FormatField(" ", 3, "STRING");
+                                EdiConnectorData.getInstance().DR_GINID = FormatField(" ", 19, "STRING");
+                                EdiConnectorData.getInstance().DR_BATCHH = FormatField(oDelivery.Lines.UserFields.Fields.Item("U_BATCHH").Value.ToString(), 35, "STRING");
 
-                                line = ECD.DR_DEUAC +
-                                    ECD.DR_OLDUAC +
-                                    ECD.DR_DEARTNR +
-                                    ECD.DR_DEARTOM +
-                                    ECD.DR_PIA +
-                                    ECD.DR_BATCH +
-                                    ECD.DR_QTY +
-                                    ECD.DR_ARTEENHEID +
-                                    ECD.DR_RFFONID +
-                                    ECD.DR_RFFONORD +
-                                    ECD.DR_DTM_23E +
-                                    ECD.DR_TGTDATUM +
-                                    ECD.DR_GEWICHT +
-                                    ECD.DR_FEENHEID +
-                                    ECD.DR_QTY_AFW +
-                                    ECD.DR_REDEN +
-                                    ECD.DR_GINTYPE +
-                                    ECD.DR_GINID +
-                                    ECD.DR_BATCHH;
+                                line = EdiConnectorData.getInstance().DR_DEUAC +
+                                    EdiConnectorData.getInstance().DR_OLDUAC +
+                                    EdiConnectorData.getInstance().DR_DEARTNR +
+                                    EdiConnectorData.getInstance().DR_DEARTOM +
+                                    EdiConnectorData.getInstance().DR_PIA +
+                                    EdiConnectorData.getInstance().DR_BATCH +
+                                    EdiConnectorData.getInstance().DR_QTY +
+                                    EdiConnectorData.getInstance().DR_ARTEENHEID +
+                                    EdiConnectorData.getInstance().DR_RFFONID +
+                                    EdiConnectorData.getInstance().DR_RFFONORD +
+                                    EdiConnectorData.getInstance().DR_DTM_23E +
+                                    EdiConnectorData.getInstance().DR_TGTDATUM +
+                                    EdiConnectorData.getInstance().DR_GEWICHT +
+                                    EdiConnectorData.getInstance().DR_FEENHEID +
+                                    EdiConnectorData.getInstance().DR_QTY_AFW +
+                                    EdiConnectorData.getInstance().DR_REDEN +
+                                    EdiConnectorData.getInstance().DR_GINTYPE +
+                                    EdiConnectorData.getInstance().DR_GINID +
+                                    EdiConnectorData.getInstance().DR_BATCHH;
 
                                 if (oDelivery.Lines.TreeType != BoItemTreeTypes.iIngredient)
                                     writer.WriteLine("1" + line);
@@ -1138,7 +1139,7 @@ namespace EdiConnectorService_C_Sharp
                             oDelivery.UserFields.Fields.Item("U_EDI_DELEXP_TIJD").Value = DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss");
                             oDelivery.Update();
 
-                            if (ECD.iSendNotification == 1)
+                            if (EdiConnectorData.getInstance().iSendNotification == 1)
                                 MailToDLreceiver(oDelivery.DocEntry, oDelivery.DocDate.ToString(), oDelivery.DocNum);
 
                             Log("V", "Delivery note file created!", "CreateDeliveryFile");
@@ -1146,7 +1147,7 @@ namespace EdiConnectorService_C_Sharp
                     }// End try
                     catch (Exception e)
                     {
-                        File.Delete(ECD.sDeliveryPath + @"\" + "DEL_" + oDelivery.DocNum + ".DAT");
+                        File.Delete(EdiConnectorData.getInstance().sDeliveryPath + @"\" + "DEL_" + oDelivery.DocNum + ".DAT");
                         Log("X", e.Message, "CreateDeliveryFile");
                     }
 
@@ -1162,7 +1163,7 @@ namespace EdiConnectorService_C_Sharp
         {
             string newSSCC;
             Recordset oRecordset;
-            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             oRecordset.DoQuery("SELECT SSCC_Code FROM SSCC WHERE DocEntry = " + _docEntry + " AND RegelNr = " + _lineNr + " AND ItemCode = '" + _itemCode + "'");
             if (oRecordset.RecordCount > 0)
@@ -1184,7 +1185,7 @@ namespace EdiConnectorService_C_Sharp
         {
             string newSSCCqty;
             Recordset oRecordset;
-            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             oRecordset.DoQuery("SELECT Quantity FROM SSCC WHERE DocEntry = " + _docEntry + " AND RegelNr = " + _lineNr);
             if (oRecordset.RecordCount > 0)
@@ -1206,7 +1207,7 @@ namespace EdiConnectorService_C_Sharp
         {
             string i_EAN;
             Recordset oRecordset;
-            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             oRecordset.DoQuery("SELECT U_EAN_Handels_EH FROM OITM WHERE ItemCode = '" + _iCode + "'");
             if (oRecordset.RecordCount > 0)
@@ -1227,7 +1228,7 @@ namespace EdiConnectorService_C_Sharp
         public void CheckAndExportInvoice()
         {
             Recordset oRecordset;
-            oRecordset = (Recordset)ECD.cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
+            oRecordset = (Recordset)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.BoRecordset);
 
             try
             {
@@ -1257,14 +1258,14 @@ namespace EdiConnectorService_C_Sharp
         public void CreateInvoiceFile(string _docEntry)
         {
             Documents oInvoice;
-            oInvoice = (Documents)ECD.cmp.GetBusinessObject(BoObjectTypes.oInvoices);
+            oInvoice = (Documents)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.oInvoices);
             bool foundKey = oInvoice.GetByKey(Convert.ToInt32(_docEntry));
 
             if (foundKey == true)
             {
                 try
                 {
-                    using (StreamWriter writer = new StreamWriter(ECD.sInvoicePath + @"\" + "INV_" + oInvoice.DocNum + ".DAT"))
+                    using (StreamWriter writer = new StreamWriter(EdiConnectorData.getInstance().sInvoicePath + @"\" + "INV_" + oInvoice.DocNum + ".DAT"))
                     {
                         string header = "";
                         string line = "";
@@ -1272,137 +1273,137 @@ namespace EdiConnectorService_C_Sharp
                         string alcHeader = "";
                         //string alcLine = "";
 
-                        ECD.FK_K_EANCODE = "";
-                        ECD.FK_FAKTEST = "";
-                        ECD.FK_KNAAM = "";
-                        ECD.FK_F_SOORT = "";
-                        ECD.FK_FAKT_NUM = "";
-                        ECD.FK_FAKT_DATUM = "";
-                        ECD.FK_AFL_DATUM = "";
-                        ECD.FK_RFFIV = "";
-                        ECD.FK_K_ORDERNR = "";
-                        ECD.FK_K_ORDDAT = "";
-                        ECD.FK_PAKBONNR = "";
-                        ECD.FK_RFFCDN = "";
-                        ECD.FK_RFFALO = "";
-                        ECD.FK_RFFVN = "";
-                        ECD.FK_RFFVNDAT = "";
-                        ECD.FK_NAD_BY = "";
-                        ECD.FK_A_EANCODE = "";
-                        ECD.FK_F_EANCODE = "";
-                        ECD.FK_NAD_SF = "";
-                        ECD.FK_NAD_SU = "";
-                        ECD.FK_NAD_UC = "";
-                        ECD.FK_NAD_PE = "";
-                        ECD.FK_OBNUMMER = "";
-                        ECD.FK_ACT = "";
-                        ECD.FK_CUX = "";
-                        ECD.FK_DAGEN = "";
-                        ECD.FK_KORTPERC = "";
-                        ECD.FK_KORTBEDR = "";
-                        ECD.FK_ONTVANGER = "";
+                        EdiConnectorData.getInstance().FK_K_EANCODE = "";
+                        EdiConnectorData.getInstance().FK_FAKTEST = "";
+                        EdiConnectorData.getInstance().FK_KNAAM = "";
+                        EdiConnectorData.getInstance().FK_F_SOORT = "";
+                        EdiConnectorData.getInstance().FK_FAKT_NUM = "";
+                        EdiConnectorData.getInstance().FK_FAKT_DATUM = "";
+                        EdiConnectorData.getInstance().FK_AFL_DATUM = "";
+                        EdiConnectorData.getInstance().FK_RFFIV = "";
+                        EdiConnectorData.getInstance().FK_K_ORDERNR = "";
+                        EdiConnectorData.getInstance().FK_K_ORDDAT = "";
+                        EdiConnectorData.getInstance().FK_PAKBONNR = "";
+                        EdiConnectorData.getInstance().FK_RFFCDN = "";
+                        EdiConnectorData.getInstance().FK_RFFALO = "";
+                        EdiConnectorData.getInstance().FK_RFFVN = "";
+                        EdiConnectorData.getInstance().FK_RFFVNDAT = "";
+                        EdiConnectorData.getInstance().FK_NAD_BY = "";
+                        EdiConnectorData.getInstance().FK_A_EANCODE = "";
+                        EdiConnectorData.getInstance().FK_F_EANCODE = "";
+                        EdiConnectorData.getInstance().FK_NAD_SF = "";
+                        EdiConnectorData.getInstance().FK_NAD_SU = "";
+                        EdiConnectorData.getInstance().FK_NAD_UC = "";
+                        EdiConnectorData.getInstance().FK_NAD_PE = "";
+                        EdiConnectorData.getInstance().FK_OBNUMMER = "";
+                        EdiConnectorData.getInstance().FK_ACT = "";
+                        EdiConnectorData.getInstance().FK_CUX = "";
+                        EdiConnectorData.getInstance().FK_DAGEN = "";
+                        EdiConnectorData.getInstance().FK_KORTPERC = "";
+                        EdiConnectorData.getInstance().FK_KORTBEDR = "";
+                        EdiConnectorData.getInstance().FK_ONTVANGER = "";
 
-                        ECD.FK_K_EANCODE = FormatField(oInvoice.UserFields.Fields.Item("U_K_EANCODE").Value.ToString(), 13, "STRING");
+                        EdiConnectorData.getInstance().FK_K_EANCODE = FormatField(oInvoice.UserFields.Fields.Item("U_K_EANCODE").Value.ToString(), 13, "STRING");
 
                         if (oInvoice.UserFields.Fields.Item("U_TEST").Value.ToString() == "J")
-                            ECD.FK_FAKTEST = FormatField("1", 1, "STRING");
+                            EdiConnectorData.getInstance().FK_FAKTEST = FormatField("1", 1, "STRING");
                         else
-                            ECD.FK_FAKTEST = FormatField(" ", 1, "STRING");
+                            EdiConnectorData.getInstance().FK_FAKTEST = FormatField(" ", 1, "STRING");
 
-                        ECD.FK_KNAAM = FormatField(oInvoice.UserFields.Fields.Item("U_KNAAM").Value.ToString(), 14, "STRING");
+                        EdiConnectorData.getInstance().FK_KNAAM = FormatField(oInvoice.UserFields.Fields.Item("U_KNAAM").Value.ToString(), 14, "STRING");
 
                         if (oInvoice.UserFields.Fields.Item("U_F_SOORT").Value.ToString().Trim().Length > 0)
-                            ECD.FK_F_SOORT = FormatField(oInvoice.UserFields.Fields.Item("U_F_SOORT").Value.ToString(), 3, "STRING");
+                            EdiConnectorData.getInstance().FK_F_SOORT = FormatField(oInvoice.UserFields.Fields.Item("U_F_SOORT").Value.ToString(), 3, "STRING");
                         else
-                            ECD.FK_F_SOORT = FormatField("380", 3, "STRING");
+                            EdiConnectorData.getInstance().FK_F_SOORT = FormatField("380", 3, "STRING");
 
-                        ECD.FK_FAKT_NUM = FormatField(oInvoice.DocNum.ToString(), 12, "STRING");
+                        EdiConnectorData.getInstance().FK_FAKT_NUM = FormatField(oInvoice.DocNum.ToString(), 12, "STRING");
 
-                        ECD.FK_FAKT_DATUM = FormatField(oInvoice.DocDate.ToString("yyyyMMdd"), 8, "STRING");
-                        ECD.FK_AFL_DATUM = FormatField(Convert.ToDateTime(oInvoice.UserFields.Fields.Item("U_AFL_DATUM").Value).ToString("yyyyMMdd"), 8, "STRING");
-                        ECD.FK_RFFIV = FormatField(oInvoice.UserFields.Fields.Item("U_RFFIV").Value.ToString(), 35, "STRING");
-                        ECD.FK_K_ORDERNR = FormatField(oInvoice.UserFields.Fields.Item("U_K_ORDERNR").Value.ToString(), 35, "STRING");
-                        ECD.FK_K_ORDDAT = FormatField(oInvoice.UserFields.Fields.Item("U_K_ORDDAT").Value.ToString(), 8, "STRING");
-                        ECD.FK_PAKBONNR = FormatField(oInvoice.UserFields.Fields.Item("U_PAKBONNR").Value.ToString(), 35, "STRING");
-                        ECD.FK_RFFCDN = FormatField(oInvoice.UserFields.Fields.Item("U_RFFCDN").Value.ToString(), 35, "STRING");
-                        ECD.FK_RFFALO = FormatField(oInvoice.UserFields.Fields.Item("U_RFFALO").Value.ToString(), 35, "STRING");
-                        ECD.FK_RFFVN = FormatField(oInvoice.UserFields.Fields.Item("U_RFFVN").Value.ToString(), 35, "STRING");
-                        ECD.FK_RFFVNDAT = FormatField(oInvoice.UserFields.Fields.Item("U_RFFVNDAT").Value.ToString(), 8, "STRING");
-                        ECD.FK_NAD_BY = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_BY").Value.ToString(), 13, "STRING");
-                        ECD.FK_A_EANCODE = FormatField(oInvoice.ShipToCode, 13, "STRING");
-                        ECD.FK_F_EANCODE = FormatField(oInvoice.PayToCode, 13, "STRING");
-                        ECD.FK_NAD_SF = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_SF").Value.ToString(), 13, "STRING");
-                        ECD.FK_NAD_SU = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_SU").Value.ToString(), 13, "STRING");
-                        ECD.FK_NAD_UC = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_UC").Value.ToString(), 13, "STRING");
-                        ECD.FK_NAD_PE = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_PE").Value.ToString(), 13, "STRING");
-                        ECD.FK_OBNUMMER = FormatField(CheckBuyerAddress(oInvoice.UserFields.Fields.Item("U_K_EANCODE").Value.ToString()), 15, "STRING");
+                        EdiConnectorData.getInstance().FK_FAKT_DATUM = FormatField(oInvoice.DocDate.ToString("yyyyMMdd"), 8, "STRING");
+                        EdiConnectorData.getInstance().FK_AFL_DATUM = FormatField(Convert.ToDateTime(oInvoice.UserFields.Fields.Item("U_AFL_DATUM").Value).ToString("yyyyMMdd"), 8, "STRING");
+                        EdiConnectorData.getInstance().FK_RFFIV = FormatField(oInvoice.UserFields.Fields.Item("U_RFFIV").Value.ToString(), 35, "STRING");
+                        EdiConnectorData.getInstance().FK_K_ORDERNR = FormatField(oInvoice.UserFields.Fields.Item("U_K_ORDERNR").Value.ToString(), 35, "STRING");
+                        EdiConnectorData.getInstance().FK_K_ORDDAT = FormatField(oInvoice.UserFields.Fields.Item("U_K_ORDDAT").Value.ToString(), 8, "STRING");
+                        EdiConnectorData.getInstance().FK_PAKBONNR = FormatField(oInvoice.UserFields.Fields.Item("U_PAKBONNR").Value.ToString(), 35, "STRING");
+                        EdiConnectorData.getInstance().FK_RFFCDN = FormatField(oInvoice.UserFields.Fields.Item("U_RFFCDN").Value.ToString(), 35, "STRING");
+                        EdiConnectorData.getInstance().FK_RFFALO = FormatField(oInvoice.UserFields.Fields.Item("U_RFFALO").Value.ToString(), 35, "STRING");
+                        EdiConnectorData.getInstance().FK_RFFVN = FormatField(oInvoice.UserFields.Fields.Item("U_RFFVN").Value.ToString(), 35, "STRING");
+                        EdiConnectorData.getInstance().FK_RFFVNDAT = FormatField(oInvoice.UserFields.Fields.Item("U_RFFVNDAT").Value.ToString(), 8, "STRING");
+                        EdiConnectorData.getInstance().FK_NAD_BY = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_BY").Value.ToString(), 13, "STRING");
+                        EdiConnectorData.getInstance().FK_A_EANCODE = FormatField(oInvoice.ShipToCode, 13, "STRING");
+                        EdiConnectorData.getInstance().FK_F_EANCODE = FormatField(oInvoice.PayToCode, 13, "STRING");
+                        EdiConnectorData.getInstance().FK_NAD_SF = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_SF").Value.ToString(), 13, "STRING");
+                        EdiConnectorData.getInstance().FK_NAD_SU = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_SU").Value.ToString(), 13, "STRING");
+                        EdiConnectorData.getInstance().FK_NAD_UC = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_UC").Value.ToString(), 13, "STRING");
+                        EdiConnectorData.getInstance().FK_NAD_PE = FormatField(oInvoice.UserFields.Fields.Item("U_NAD_PE").Value.ToString(), 13, "STRING");
+                        EdiConnectorData.getInstance().FK_OBNUMMER = FormatField(CheckBuyerAddress(oInvoice.UserFields.Fields.Item("U_K_EANCODE").Value.ToString()), 15, "STRING");
 
-                        ECD.FK_ACT = FormatField(oInvoice.UserFields.Fields.Item("U_ACT").Value.ToString(), 1, "STRING");
-                        ECD.FK_CUX = FormatField(oInvoice.DocCurrency, 3, "STRING");
-                        ECD.FK_DAGEN = FormatField(oInvoice.UserFields.Fields.Item("U_DAGEN").Value.ToString(), 3, "STRING");
-                        ECD.FK_KORTPERC = FormatField(oInvoice.UserFields.Fields.Item("U_KORTPERC").Value.ToString(), 8, "STRING");
-                        ECD.FK_KORTBEDR = FormatField(oInvoice.UserFields.Fields.Item("U_KORTBEDR").Value.ToString(), 9, "STRING");
-                        ECD.FK_ONTVANGER = FormatField(oInvoice.UserFields.Fields.Item("U_ONTVANGER").Value.ToString(), 13, "STRING");
+                        EdiConnectorData.getInstance().FK_ACT = FormatField(oInvoice.UserFields.Fields.Item("U_ACT").Value.ToString(), 1, "STRING");
+                        EdiConnectorData.getInstance().FK_CUX = FormatField(oInvoice.DocCurrency, 3, "STRING");
+                        EdiConnectorData.getInstance().FK_DAGEN = FormatField(oInvoice.UserFields.Fields.Item("U_DAGEN").Value.ToString(), 3, "STRING");
+                        EdiConnectorData.getInstance().FK_KORTPERC = FormatField(oInvoice.UserFields.Fields.Item("U_KORTPERC").Value.ToString(), 8, "STRING");
+                        EdiConnectorData.getInstance().FK_KORTBEDR = FormatField(oInvoice.UserFields.Fields.Item("U_KORTBEDR").Value.ToString(), 9, "STRING");
+                        EdiConnectorData.getInstance().FK_ONTVANGER = FormatField(oInvoice.UserFields.Fields.Item("U_ONTVANGER").Value.ToString(), 13, "STRING");
 
-                        header = ECD.FK_K_EANCODE +
-                            ECD.FK_FAKTEST +
-                            ECD.FK_KNAAM +
-                            ECD.FK_F_SOORT +
-                            ECD.FK_FAKT_NUM +
-                            ECD.FK_FAKT_DATUM +
-                            ECD.FK_AFL_DATUM +
-                            ECD.FK_RFFIV +
-                            ECD.FK_K_ORDERNR +
-                            ECD.FK_K_ORDDAT +
-                            ECD.FK_PAKBONNR +
-                            ECD.FK_RFFCDN +
-                            ECD.FK_RFFALO +
-                            ECD.FK_RFFVN +
-                            ECD.FK_RFFVNDAT +
-                            ECD.FK_NAD_BY +
-                            ECD.FK_A_EANCODE +
-                            ECD.FK_F_EANCODE +
-                            ECD.FK_NAD_SF +
-                            ECD.FK_NAD_SU +
-                            ECD.FK_NAD_UC +
-                            ECD.FK_NAD_PE +
-                            ECD.FK_OBNUMMER +
-                            ECD.FK_ACT +
-                            ECD.FK_CUX +
-                            ECD.FK_DAGEN +
-                            ECD.FK_KORTPERC +
-                            ECD.FK_KORTBEDR +
-                            ECD.FK_ONTVANGER;
+                        header = EdiConnectorData.getInstance().FK_K_EANCODE +
+                            EdiConnectorData.getInstance().FK_FAKTEST +
+                            EdiConnectorData.getInstance().FK_KNAAM +
+                            EdiConnectorData.getInstance().FK_F_SOORT +
+                            EdiConnectorData.getInstance().FK_FAKT_NUM +
+                            EdiConnectorData.getInstance().FK_FAKT_DATUM +
+                            EdiConnectorData.getInstance().FK_AFL_DATUM +
+                            EdiConnectorData.getInstance().FK_RFFIV +
+                            EdiConnectorData.getInstance().FK_K_ORDERNR +
+                            EdiConnectorData.getInstance().FK_K_ORDDAT +
+                            EdiConnectorData.getInstance().FK_PAKBONNR +
+                            EdiConnectorData.getInstance().FK_RFFCDN +
+                            EdiConnectorData.getInstance().FK_RFFALO +
+                            EdiConnectorData.getInstance().FK_RFFVN +
+                            EdiConnectorData.getInstance().FK_RFFVNDAT +
+                            EdiConnectorData.getInstance().FK_NAD_BY +
+                            EdiConnectorData.getInstance().FK_A_EANCODE +
+                            EdiConnectorData.getInstance().FK_F_EANCODE +
+                            EdiConnectorData.getInstance().FK_NAD_SF +
+                            EdiConnectorData.getInstance().FK_NAD_SU +
+                            EdiConnectorData.getInstance().FK_NAD_UC +
+                            EdiConnectorData.getInstance().FK_NAD_PE +
+                            EdiConnectorData.getInstance().FK_OBNUMMER +
+                            EdiConnectorData.getInstance().FK_ACT +
+                            EdiConnectorData.getInstance().FK_CUX +
+                            EdiConnectorData.getInstance().FK_DAGEN +
+                            EdiConnectorData.getInstance().FK_KORTPERC +
+                            EdiConnectorData.getInstance().FK_KORTBEDR +
+                            EdiConnectorData.getInstance().FK_ONTVANGER;
 
                         writer.WriteLine("0" + header);
 
-                        ECD.AK_SOORT = "";
-                        ECD.AK_QUAL = "";
-                        ECD.AK_BEDRAG = "";
-                        ECD.AK_BTWSOORT = "";
-                        ECD.AK_FOOTMOA = "";
-                        ECD.AK_NOTINCALC = "";
+                        EdiConnectorData.getInstance().AK_SOORT = "";
+                        EdiConnectorData.getInstance().AK_QUAL = "";
+                        EdiConnectorData.getInstance().AK_BEDRAG = "";
+                        EdiConnectorData.getInstance().AK_BTWSOORT = "";
+                        EdiConnectorData.getInstance().AK_FOOTMOA = "";
+                        EdiConnectorData.getInstance().AK_NOTINCALC = "";
 
                         if (oInvoice.DiscountPercent > 0)
-                            ECD.AK_SOORT = FormatField("C", 1, "STRING");
+                            EdiConnectorData.getInstance().AK_SOORT = FormatField("C", 1, "STRING");
                         else
-                            ECD.AK_SOORT = FormatField("A", 1, "STRING");
+                            EdiConnectorData.getInstance().AK_SOORT = FormatField("A", 1, "STRING");
 
-                        ECD.AK_QUAL = FormatField(oInvoice.UserFields.Fields.Item("U_QUAL").Value.ToString(), 3, "STRING");
-                        ECD.AK_BEDRAG = FormatField(oInvoice.TotalDiscount.ToString(), 9, "STRING");
+                        EdiConnectorData.getInstance().AK_QUAL = FormatField(oInvoice.UserFields.Fields.Item("U_QUAL").Value.ToString(), 3, "STRING");
+                        EdiConnectorData.getInstance().AK_BEDRAG = FormatField(oInvoice.TotalDiscount.ToString(), 9, "STRING");
 
-                        ECD.AK_BTWSOORT = FormatField(oInvoice.UserFields.Fields.Item("U_BTWSOORT").Value.ToString(), 1, "STRING");
-                        ECD.AK_FOOTMOA = FormatField(oInvoice.UserFields.Fields.Item("U_FOOTMOA").Value.ToString(), 1, "STRING");
-                        ECD.AK_NOTINCALC = FormatField(oInvoice.UserFields.Fields.Item("U_NOTINCALC").Value.ToString(), 1, "STRING");
+                        EdiConnectorData.getInstance().AK_BTWSOORT = FormatField(oInvoice.UserFields.Fields.Item("U_BTWSOORT").Value.ToString(), 1, "STRING");
+                        EdiConnectorData.getInstance().AK_FOOTMOA = FormatField(oInvoice.UserFields.Fields.Item("U_FOOTMOA").Value.ToString(), 1, "STRING");
+                        EdiConnectorData.getInstance().AK_NOTINCALC = FormatField(oInvoice.UserFields.Fields.Item("U_NOTINCALC").Value.ToString(), 1, "STRING");
 
-                        alcHeader = ECD.AK_SOORT +
-                            ECD.AK_QUAL +
-                            ECD.AK_BEDRAG +
-                            ECD.AK_BTWSOORT +
-                            ECD.AK_FOOTMOA +
-                            ECD.AK_NOTINCALC;
+                        alcHeader = EdiConnectorData.getInstance().AK_SOORT +
+                            EdiConnectorData.getInstance().AK_QUAL +
+                            EdiConnectorData.getInstance().AK_BEDRAG +
+                            EdiConnectorData.getInstance().AK_BTWSOORT +
+                            EdiConnectorData.getInstance().AK_FOOTMOA +
+                            EdiConnectorData.getInstance().AK_NOTINCALC;
 
-                        if (ECD.AK_SOORT == "C")
+                        if (EdiConnectorData.getInstance().AK_SOORT == "C")
                             writer.WriteLine("1" + alcHeader);
 
                         for (int i = 0; i < oInvoice.Lines.Count - 1; i++)
@@ -1411,78 +1412,78 @@ namespace EdiConnectorService_C_Sharp
 
                             line = "";
 
-                            ECD.FR_DEUAC = "";
-                            ECD.FR_DEARTNR = "";
-                            ECD.FR_DEARTOM = "";
-                            ECD.FR_AANTAL = "";
-                            ECD.FR_FAANTAL = "";
-                            ECD.FR_ARTEENHEID = "";
-                            ECD.FR_FEENHEID = "";
-                            ECD.FR_NETTOBEDR = "";
-                            ECD.FR_PRIJS = "";
-                            ECD.FR_FREKEN = "";
-                            ECD.FR_BTWSOORT = "";
-                            ECD.FR_PV = "";
-                            ECD.FR_ORDER = "";
-                            ECD.FR_REGELID = "";
-                            ECD.FR_INVO = "";
-                            ECD.FR_DESA = "";
-                            ECD.FR_PRIAAA = "";
-                            ECD.FR_PIAPB = "";
+                            EdiConnectorData.getInstance().FR_DEUAC = "";
+                            EdiConnectorData.getInstance().FR_DEARTNR = "";
+                            EdiConnectorData.getInstance().FR_DEARTOM = "";
+                            EdiConnectorData.getInstance().FR_AANTAL = "";
+                            EdiConnectorData.getInstance().FR_FAANTAL = "";
+                            EdiConnectorData.getInstance().FR_ARTEENHEID = "";
+                            EdiConnectorData.getInstance().FR_FEENHEID = "";
+                            EdiConnectorData.getInstance().FR_NETTOBEDR = "";
+                            EdiConnectorData.getInstance().FR_PRIJS = "";
+                            EdiConnectorData.getInstance().FR_FREKEN = "";
+                            EdiConnectorData.getInstance().FR_BTWSOORT = "";
+                            EdiConnectorData.getInstance().FR_PV = "";
+                            EdiConnectorData.getInstance().FR_ORDER = "";
+                            EdiConnectorData.getInstance().FR_REGELID = "";
+                            EdiConnectorData.getInstance().FR_INVO = "";
+                            EdiConnectorData.getInstance().FR_DESA = "";
+                            EdiConnectorData.getInstance().FR_PRIAAA = "";
+                            EdiConnectorData.getInstance().FR_PIAPB = "";
 
-                            ECD.FR_DEUAC = FormatField(oInvoice.UserFields.Fields.Item("U_DEUAC").Value.ToString(), 14, "STRING");
-                            ECD.FR_DEARTNR = FormatField("---------", 9, "STRING");
-                            ECD.FR_DEARTOM = FormatField(oInvoice.Lines.ItemDescription, 70, "STRING");
-                            ECD.FR_AANTAL = FormatField(oInvoice.Lines.Quantity.ToString(), 5, "STRING");
-                            ECD.FR_FAANTAL = FormatField(oInvoice.Lines.Quantity.ToString(), 9, "STRING");
-                            ECD.FR_ARTEENHEID = FormatField(oInvoice.UserFields.Fields.Item("U_ARTEENHEID").Value.ToString(), 3, "STRING");
-                            ECD.FR_FEENHEID = FormatField(oInvoice.UserFields.Fields.Item("U_FEENHEID").Value.ToString(), 3, "STRING");
-                            ECD.FR_NETTOBEDR = FormatField(oInvoice.Lines.LineTotal.ToString(), 11, "STRING");
-                            ECD.FR_PRIJS = FormatField(oInvoice.Lines.Price.ToString(), 10, "STRING");
-                            ECD.FR_FREKEN = FormatField(oInvoice.UserFields.Fields.Item("U_FREKEN").Value.ToString(), 9, "STRING");
+                            EdiConnectorData.getInstance().FR_DEUAC = FormatField(oInvoice.UserFields.Fields.Item("U_DEUAC").Value.ToString(), 14, "STRING");
+                            EdiConnectorData.getInstance().FR_DEARTNR = FormatField("---------", 9, "STRING");
+                            EdiConnectorData.getInstance().FR_DEARTOM = FormatField(oInvoice.Lines.ItemDescription, 70, "STRING");
+                            EdiConnectorData.getInstance().FR_AANTAL = FormatField(oInvoice.Lines.Quantity.ToString(), 5, "STRING");
+                            EdiConnectorData.getInstance().FR_FAANTAL = FormatField(oInvoice.Lines.Quantity.ToString(), 9, "STRING");
+                            EdiConnectorData.getInstance().FR_ARTEENHEID = FormatField(oInvoice.UserFields.Fields.Item("U_ARTEENHEID").Value.ToString(), 3, "STRING");
+                            EdiConnectorData.getInstance().FR_FEENHEID = FormatField(oInvoice.UserFields.Fields.Item("U_FEENHEID").Value.ToString(), 3, "STRING");
+                            EdiConnectorData.getInstance().FR_NETTOBEDR = FormatField(oInvoice.Lines.LineTotal.ToString(), 11, "STRING");
+                            EdiConnectorData.getInstance().FR_PRIJS = FormatField(oInvoice.Lines.Price.ToString(), 10, "STRING");
+                            EdiConnectorData.getInstance().FR_FREKEN = FormatField(oInvoice.UserFields.Fields.Item("U_FREKEN").Value.ToString(), 9, "STRING");
 
                             switch (oInvoice.Lines.VatGroup.Trim())
                             {
                                 case "A0":
-                                    ECD.FR_BTWSOORT = FormatField("0", 1, "STRING");
+                                    EdiConnectorData.getInstance().FR_BTWSOORT = FormatField("0", 1, "STRING");
                                     break;
                                 case "A1":
-                                    ECD.FR_BTWSOORT = FormatField("L", 1, "STRING");
+                                    EdiConnectorData.getInstance().FR_BTWSOORT = FormatField("L", 1, "STRING");
                                     break;
                                 case "A2":
-                                    ECD.FR_BTWSOORT = FormatField("H", 1, "STRING");
+                                    EdiConnectorData.getInstance().FR_BTWSOORT = FormatField("H", 1, "STRING");
                                     break;
                                 default:
-                                    ECD.FR_BTWSOORT = FormatField("9", 1, "STRING");
+                                    EdiConnectorData.getInstance().FR_BTWSOORT = FormatField("9", 1, "STRING");
                                     break;
                             }
 
-                            ECD.FR_PV = FormatField(oInvoice.UserFields.Fields.Item("U_PV").Value.ToString(), 10, "STRING");
-                            ECD.FR_ORDER = FormatField(oInvoice.UserFields.Fields.Item("U_ORDER").Value.ToString(), 35, "STRING");
-                            ECD.FR_REGELID = FormatField(oInvoice.Lines.LineNum.ToString(), 6, "STRING");
-                            ECD.FR_INVO = FormatField(oInvoice.UserFields.Fields.Item("U_INVO").Value.ToString(), 35, "STRING");
-                            ECD.FR_DESA = FormatField(oInvoice.UserFields.Fields.Item("U_DESA").Value.ToString(), 35, "STRING");
-                            ECD.FR_PRIAAA = FormatField(oInvoice.UserFields.Fields.Item("U_PRIAAA").Value.ToString(), 10, "STRING");
-                            ECD.FR_PIAPB = FormatField(oInvoice.Lines.SupplierCatNum, 9, "STRING");
+                            EdiConnectorData.getInstance().FR_PV = FormatField(oInvoice.UserFields.Fields.Item("U_PV").Value.ToString(), 10, "STRING");
+                            EdiConnectorData.getInstance().FR_ORDER = FormatField(oInvoice.UserFields.Fields.Item("U_ORDER").Value.ToString(), 35, "STRING");
+                            EdiConnectorData.getInstance().FR_REGELID = FormatField(oInvoice.Lines.LineNum.ToString(), 6, "STRING");
+                            EdiConnectorData.getInstance().FR_INVO = FormatField(oInvoice.UserFields.Fields.Item("U_INVO").Value.ToString(), 35, "STRING");
+                            EdiConnectorData.getInstance().FR_DESA = FormatField(oInvoice.UserFields.Fields.Item("U_DESA").Value.ToString(), 35, "STRING");
+                            EdiConnectorData.getInstance().FR_PRIAAA = FormatField(oInvoice.UserFields.Fields.Item("U_PRIAAA").Value.ToString(), 10, "STRING");
+                            EdiConnectorData.getInstance().FR_PIAPB = FormatField(oInvoice.Lines.SupplierCatNum, 9, "STRING");
 
-                            line = ECD.FR_DEUAC +
-                            ECD.FR_DEARTNR +
-                            ECD.FR_DEARTOM +
-                            ECD.FR_AANTAL +
-                            ECD.FR_FAANTAL +
-                            ECD.FR_ARTEENHEID +
-                            ECD.FR_FEENHEID +
-                            ECD.FR_NETTOBEDR +
-                            ECD.FR_PRIJS +
-                            ECD.FR_FREKEN +
-                            ECD.FR_BTWSOORT +
-                            ECD.FR_PV +
-                            ECD.FR_ORDER +
-                            ECD.FR_REGELID +
-                            ECD.FR_INVO +
-                            ECD.FR_DESA +
-                            ECD.FR_PRIAAA +
-                            ECD.FR_PIAPB;
+                            line = EdiConnectorData.getInstance().FR_DEUAC +
+                            EdiConnectorData.getInstance().FR_DEARTNR +
+                            EdiConnectorData.getInstance().FR_DEARTOM +
+                            EdiConnectorData.getInstance().FR_AANTAL +
+                            EdiConnectorData.getInstance().FR_FAANTAL +
+                            EdiConnectorData.getInstance().FR_ARTEENHEID +
+                            EdiConnectorData.getInstance().FR_FEENHEID +
+                            EdiConnectorData.getInstance().FR_NETTOBEDR +
+                            EdiConnectorData.getInstance().FR_PRIJS +
+                            EdiConnectorData.getInstance().FR_FREKEN +
+                            EdiConnectorData.getInstance().FR_BTWSOORT +
+                            EdiConnectorData.getInstance().FR_PV +
+                            EdiConnectorData.getInstance().FR_ORDER +
+                            EdiConnectorData.getInstance().FR_REGELID +
+                            EdiConnectorData.getInstance().FR_INVO +
+                            EdiConnectorData.getInstance().FR_DESA +
+                            EdiConnectorData.getInstance().FR_PRIAAA +
+                            EdiConnectorData.getInstance().FR_PIAPB;
 
                             if (oInvoice.Lines.TreeType != BoItemTreeTypes.iIngredient)
                                 writer.WriteLine("2" + line);
@@ -1495,7 +1496,7 @@ namespace EdiConnectorService_C_Sharp
 
                         oInvoice.Update();
 
-                        if (ECD.iSendNotification == 1)
+                        if (EdiConnectorData.getInstance().iSendNotification == 1)
                             MailToDLreceiver(oInvoice.DocEntry, oInvoice.DocDate.ToString(), oInvoice.DocNum);
 
                         Log("V", "Invoice file created!", "CreateInvoiceFile");
@@ -1504,7 +1505,7 @@ namespace EdiConnectorService_C_Sharp
                 }
                 catch (Exception e)
                 {
-                    File.Delete(ECD.sInvoicePath + @"\" + "INV_" + oInvoice.DocNum + ".DAT");
+                    File.Delete(EdiConnectorData.getInstance().sInvoicePath + @"\" + "INV_" + oInvoice.DocNum + ".DAT");
                     Log("X", e.Message, "CreateInvoiceFile");
                 }
             }// Key not found
@@ -1540,20 +1541,20 @@ namespace EdiConnectorService_C_Sharp
             {
                 using (MailMessage mailMsg = new MailMessage())
                 {
-                    SmtpClient smtpMail = new SmtpClient(ECD.sSmpt, ECD.iSmtpPort);
+                    SmtpClient smtpMail = new SmtpClient(EdiConnectorData.getInstance().sSmpt, EdiConnectorData.getInstance().iSmtpPort);
 
-                    if (ECD.bSmtpUserSecurity == true)
-                        smtpMail.Credentials = new NetworkCredential(ECD.sSmtpUser, ECD.sSmtpPassword);
+                    if (EdiConnectorData.getInstance().bSmtpUserSecurity == true)
+                        smtpMail.Credentials = new NetworkCredential(EdiConnectorData.getInstance().sSmtpUser, EdiConnectorData.getInstance().sSmtpPassword);
 
-                    mailMsg.From = new MailAddress(ECD.sSenderEmail, ECD.sSenderName);
-                    mailMsg.To.Add(ECD.sDeliveryMailTo);
+                    mailMsg.From = new MailAddress(EdiConnectorData.getInstance().sSenderEmail, EdiConnectorData.getInstance().sSenderName);
+                    mailMsg.To.Add(EdiConnectorData.getInstance().sDeliveryMailTo);
                     mailMsg.Subject = String.Format("Delivery {0} exported", _docEntry);
 
-                    using (StreamReader fileReader = new StreamReader(ECD.sApplicationPath + @"\email_d.txt"))
+                    using (StreamReader fileReader = new StreamReader(EdiConnectorData.getInstance().sApplicationPath + @"\email_d.txt"))
                     {
                         string body;
                         body = fileReader.ReadToEnd();
-                        body = body.Replace("::NAME::", ECD.sDeliveryMailToFullName);
+                        body = body.Replace("::NAME::", EdiConnectorData.getInstance().sDeliveryMailToFullName);
                         body = body.Replace("::DOCENTRY::", _docEntry.ToString());
                         body = body.Replace("::DOCDATE::", _docDate);
                         body = body.Replace("::DOCNUM::", _docNum.ToString());
@@ -1580,20 +1581,20 @@ namespace EdiConnectorService_C_Sharp
             {
                 using (MailMessage mailMsg = new MailMessage())
                 {
-                    SmtpClient smtpMail = new SmtpClient(ECD.sSmpt, ECD.iSmtpPort);
+                    SmtpClient smtpMail = new SmtpClient(EdiConnectorData.getInstance().sSmpt, EdiConnectorData.getInstance().iSmtpPort);
 
-                    if (ECD.bSmtpUserSecurity == true)
-                        smtpMail.Credentials = new NetworkCredential(ECD.sSmtpUser, ECD.sSmtpPassword);
+                    if (EdiConnectorData.getInstance().bSmtpUserSecurity == true)
+                        smtpMail.Credentials = new NetworkCredential(EdiConnectorData.getInstance().sSmtpUser, EdiConnectorData.getInstance().sSmtpPassword);
 
-                    mailMsg.From = new MailAddress(ECD.sSenderEmail, ECD.sSenderName);
-                    mailMsg.To.Add(ECD.sInvoiceMailTo);
+                    mailMsg.From = new MailAddress(EdiConnectorData.getInstance().sSenderEmail, EdiConnectorData.getInstance().sSenderName);
+                    mailMsg.To.Add(EdiConnectorData.getInstance().sInvoiceMailTo);
                     mailMsg.Subject = String.Format("Invoice {0} imported", _docEntry);
 
-                    using (StreamReader fileReader = new StreamReader(ECD.sApplicationPath + @"\email_i.txt"))
+                    using (StreamReader fileReader = new StreamReader(EdiConnectorData.getInstance().sApplicationPath + @"\email_i.txt"))
                     {
                         string body;
                         body = fileReader.ReadToEnd();
-                        body = body.Replace("::NAME::", ECD.sInvoiceMailToFullName);
+                        body = body.Replace("::NAME::", EdiConnectorData.getInstance().sInvoiceMailToFullName);
                         body = body.Replace("::DOCENTRY::", _docEntry.ToString());
                         body = body.Replace("::DOCDATE::", _docDate);
                         body = body.Replace("::DOCNUM::", _docNum.ToString());
