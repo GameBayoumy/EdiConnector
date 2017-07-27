@@ -40,7 +40,7 @@
             // 
             this.ServiceName = "EdiConnectorService";
             ((System.ComponentModel.ISupportInitialize)(this.eventLog1)).EndInit();
-
+            EventLogger.setInstance(this.eventLog1);
         }
 
         #endregion

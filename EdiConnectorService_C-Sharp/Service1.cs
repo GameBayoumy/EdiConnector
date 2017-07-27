@@ -22,12 +22,11 @@ namespace EdiConnectorService_C_Sharp
         private EdiConnectorData ECD;
 
         private SAPConnection connection = new SAPConnection();
-        public EventLogger eventLogger;
 
         public EdiConnectorService()
         {
             InitializeComponent();
-            EventLogger.setInstance(eventLog1);
+            
             this.stoppedEvent = new ManualResetEvent(false);
             this.stopping = false;
 
@@ -59,7 +58,7 @@ namespace EdiConnectorService_C_Sharp
          * */
         protected override void OnStart(string[] args)
         {
-            this.eventLog1.WriteEntry("EdiService in OnStart.");
+            EventLogger.getInstance().EventInfo("EdiService in OnStart.");
             ECD.sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
 
             ReadSettings();
@@ -82,7 +81,6 @@ namespace EdiConnectorService_C_Sharp
             do
             {
                 //Perform main service function here...
-
                 if (ECD.cmp.Connected == true && ECD.cn.State == ConnectionState.Open)
                 {
                     CheckAndExportDelivery();
@@ -320,7 +318,7 @@ namespace EdiConnectorService_C_Sharp
                 Log("V", "SAP is disconneted.", "DisconnectToSAP");
             }
             else
-                Log("X", "SAP is already disconneted.", "DisconnectToSAP");
+                Log("X", "SAP is already disconnected.", "DisconnectToSAP");
         }
 
         public void SplitOrder()

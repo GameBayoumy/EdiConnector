@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Xml;
 
 namespace EdiConnectorService_C_Sharp
 {
@@ -13,7 +14,7 @@ namespace EdiConnectorService_C_Sharp
         /// <summary>
         /// Sets this instance.
         /// </summary>
-        public abstract void Set();
+        public abstract void Set(XmlNode _xmlNode);
         /// <summary>
         /// Connects this instance.
         /// </summary>
@@ -23,6 +24,6 @@ namespace EdiConnectorService_C_Sharp
         /// Disconnects this instance.
         /// </summary>
         /// <returns></returns>
-        public abstract void Disconnect();
+        public abstract bool Disconnect();
     }
 }

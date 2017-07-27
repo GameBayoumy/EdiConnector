@@ -54,7 +54,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractClasses\Connection.cs" />
+    <Compile Include="AbstractClasses\AConnection.cs" />
+    <Compile Include="Behavior\EventLogger.cs" />
+    <Compile Include="Behavior\SAPConnection.cs" />
     <Compile Include="EdiConnectorData.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
