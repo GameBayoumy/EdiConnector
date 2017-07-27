@@ -59,6 +59,7 @@
     <Compile Include="Behaviors\CreateConnections.cs" />
     <Compile Include="Behaviors\EventLogger.cs" />
     <Compile Include="Behaviors\SAPConnection.cs" />
+    <Compile Include="Behaviors\UdfFields.cs" />
     <Compile Include="EdiConnectorData.cs" />
     <Compile Include="Interfaces\Command.cs" />
     <Compile Include="ProjectInstaller.cs">
