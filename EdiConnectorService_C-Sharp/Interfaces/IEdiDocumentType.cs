@@ -2,14 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Collections;
+using System.Xml.Linq;
 
 namespace EdiConnectorService_C_Sharp
 {
-    /// <summary>
-    /// Command interface
-    /// </summary>
-    public interface Command
+    interface IEdiDocumentType
     {
-        void execute();
+        Object ReadXMLData(XElement _xMessages);
     }
 }

@@ -9,8 +9,8 @@ namespace EdiConnectorService_C_Sharp
     /// <summary>
     /// Concrete Command class
     /// </summary>
-    /// <seealso cref="EdiConnectorService_C_Sharp.Command" />
-    public class CreateConnectionsCommand : Command
+    /// <seealso cref="EdiConnectorService_C_Sharp.ICommand" />
+    public class CreateConnectionsCommand : ICommand
     {
         public CreateConnectionsCommand()
         {

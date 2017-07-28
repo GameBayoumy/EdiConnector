@@ -9,8 +9,8 @@ namespace EdiConnectorService_C_Sharp
     /// <summary>
     /// Concrete Command class
     /// </summary>
-    /// <seealso cref="EdiConnectorService_C_Sharp.Command" />
-    public class CreateUfdFieldsCommand : Command
+    /// <seealso cref="EdiConnectorService_C_Sharp.ICommand" />
+    public class CreateUfdFieldsCommand : ICommand
     {
         public CreateUfdFieldsCommand()
         {

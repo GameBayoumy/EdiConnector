@@ -12,7 +12,7 @@ using System.Data.SqlClient;
 using SAPbobsCOM;
 using System.Net.Mail;
 using System.Net;
-using System.Xml;
+using System.Xml.Linq;
 
 namespace EdiConnectorService_C_Sharp
 {
@@ -33,8 +33,19 @@ namespace EdiConnectorService_C_Sharp
             EdiConnectorData.getInstance();
             ConnectionManager.getInstance();
             agent = new Agent();
-            
-            
+
+            EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
+
+            XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"\orders.xml");
+            XElement xMessages = xDoc.Element("Messages");
+            if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Count() > 0)
+            {
+                EdiDocument orderDocument = new EdiDocument();
+                orderDocument.SetDocumentType(new OrderDocument());
+
+                List<OrderDocument> odl = (List<OrderDocument>)orderDocument.ReadXMLData(xMessages);
+            }
+
         }
 
         /* <summary>
@@ -65,7 +76,6 @@ namespace EdiConnectorService_C_Sharp
             EventLogger.getInstance().EventInfo("EdiService in OnStart.");
 
             EdiConnectorData.getInstance().sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-            EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
 
             // Create connections from config.xml and try to connect all servers
             agent.QueueCommand(new CreateConnectionsCommand());
