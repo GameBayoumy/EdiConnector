@@ -67,10 +67,12 @@ namespace EdiConnectorService_C_Sharp
             EdiConnectorData.getInstance().sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
             EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
 
+            // Create connections from config.xml and try to connect all servers
             agent.QueueCommand(new CreateConnectionsCommand());
+            ConnectionManager.getInstance().ConnectAll();
+
+            // Creates udf fields for every connected server
             agent.QueueCommand(new CreateUfdFieldsCommand());
-
-
 
             //ReadSettings();
             //ConnectToSAP();

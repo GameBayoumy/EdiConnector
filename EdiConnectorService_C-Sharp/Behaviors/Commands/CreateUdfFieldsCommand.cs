@@ -19,7 +19,11 @@ namespace EdiConnectorService_C_Sharp
 
         public void execute()
         {
-            UdfFields.CreateUdfFields();
+            // For each connected server it will try to create udf fields for that server
+            foreach (string connectedServer in ConnectionManager.getInstance().GetAllConnectedServers())
+            {
+                UdfFields.CreateUdfFields(connectedServer);
+            }
         }
     }
 }

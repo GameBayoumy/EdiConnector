@@ -10,7 +10,11 @@ namespace EdiConnectorService_C_Sharp
 {
     class UdfFields
     {
-        public static void CreateUdfFields()
+        /// <summary>
+        /// Creates the udf fields.
+        /// </summary>
+        /// <param name="_connectedServer">The connected server.</param>
+        public static void CreateUdfFields(string _connectedServer)
         {
             try
             {
@@ -19,7 +23,7 @@ namespace EdiConnectorService_C_Sharp
                 XmlNodeList xmlList = xmlDoc.SelectNodes("/fields/udffield");
                 foreach (XmlNode xmlNode in xmlList)
                 {
-                    CreateUdf(xmlNode["udf"].GetAttribute("table"), xmlNode["udf"].GetAttribute("name"), xmlNode["udf"].GetAttribute("description"), Convert.ToInt32(xmlNode["udf"].GetAttribute("size")),
+                    CreateUdf(_connectedServer, xmlNode["udf"].GetAttribute("table"), xmlNode["udf"].GetAttribute("name"), xmlNode["udf"].GetAttribute("description"), Convert.ToInt32(xmlNode["udf"].GetAttribute("size")),
                         BoFieldTypes.db_Alpha, BoFldSubTypes.st_None, false, false, "");
                 }
             }
@@ -29,11 +33,11 @@ namespace EdiConnectorService_C_Sharp
             }
         }
 
-        private static void CreateUdf(string _tableName, string _fieldName, string _description, int _editSize, 
+        private static void CreateUdf(string _connectedServer, string _tableName, string _fieldName, string _description, int _editSize, 
             BoFieldTypes _boType, BoFldSubTypes _boSubType, bool _mandatory, bool _default, string _defaultValue)
         {
             IUserFieldsMD oUDF;
-            oUDF = (SAPbobsCOM.IUserFieldsMD)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.oUserFields);
+            oUDF = (SAPbobsCOM.IUserFieldsMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserFields);
             int errCode;
             string errMsg = "";
 
@@ -54,7 +58,7 @@ namespace EdiConnectorService_C_Sharp
 
             if (oUDF.Add() != 0)
             {
-                EdiConnectorData.getInstance().cmp.GetLastError(out errCode, out errMsg);
+                ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out errCode, out errMsg);
                 EventLogger.getInstance().EventError("Error creating UDF: " + errMsg + " (" + errCode + ")");
             }
             else

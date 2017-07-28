@@ -28,7 +28,6 @@ namespace EdiConnectorService_C_Sharp
                 ConnectionManager.getInstance().Connections.Add(xmlList[i]["Server"].InnerText, new SAPConnection());
                 ConnectionManager.getInstance().Connections.Last().Value.Set(xmlList[i]);
             }
-            ConnectionManager.getInstance().ConnectAll();
         }
     }
 }
