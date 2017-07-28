@@ -38,9 +38,9 @@
     </StartupObject>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SAPbobsCOM">
-      <HintPath>..\..\..\..\SAP DLL 64 bit\SAPbobsCOM.dll</HintPath>
-      <EmbedInteropTypes>True</EmbedInteropTypes>
+    <Reference Include="SAPBusinessOneSDK, Version=1.0.0.1, Culture=neutral, PublicKeyToken=c7c3cb60e45d119f, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\SAPBusinessOneSDK.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration.Install" />
@@ -54,7 +54,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="EdiConnectorData.cs" />
+    <Compile Include="AbstractClasses\AConnection.cs" />
+    <Compile Include="Behaviors\Agent.cs" />
+    <Compile Include="Behaviors\Commands\CreateUdfFieldsCommand.cs" />
+    <Compile Include="Behaviors\ConnectionManager.cs" />
+    <Compile Include="Behaviors\Commands\CreateConnectionsCommand.cs" />
+    <Compile Include="Behaviors\EventLogger.cs" />
+    <Compile Include="Behaviors\SAPConnection.cs" />
+    <Compile Include="Behaviors\UdfFields.cs" />
+    <Compile Include="Structure\EdiConnectorData.cs" />
+    <Compile Include="Interfaces\Command.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -77,6 +86,9 @@
     <EmbeddedResource Include="Service1.resx">
       <DependentUpon>Service1.cs</DependentUpon>
     </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="config.xml" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
