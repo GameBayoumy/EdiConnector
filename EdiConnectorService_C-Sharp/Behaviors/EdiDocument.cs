@@ -16,6 +16,10 @@ namespace EdiConnectorService_C_Sharp
 
         }
 
+        /// <summary>
+        /// Sets the type of the document.
+        /// </summary>
+        /// <param name="_documentType">Type of the document.</param>
         public void SetDocumentType(IEdiDocumentType _documentType)
         {
             this.documentType = _documentType;

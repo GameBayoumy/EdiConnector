@@ -36,7 +36,7 @@ namespace EdiConnectorService_C_Sharp
 
             EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
 
-            XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"\orders.xml");
+            XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"\invoice.xml");
             XElement xMessages = xDoc.Element("Messages");
             if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Count() > 0)
             {
@@ -44,6 +44,13 @@ namespace EdiConnectorService_C_Sharp
                 orderDocument.SetDocumentType(new OrderDocument());
 
                 List<OrderDocument> odl = (List<OrderDocument>)orderDocument.ReadXMLData(xMessages);
+            } 
+            else if(xMessages.Elements().Where(x => x.Element("MessageType").Value == "8").Count() > 0)
+            {
+                EdiDocument invoiceDocument = new EdiDocument();
+                invoiceDocument.SetDocumentType(new InvoiceDocument());
+
+                List<InvoiceDocument> odl = (List<InvoiceDocument>)invoiceDocument.ReadXMLData(xMessages);
             }
 
         }

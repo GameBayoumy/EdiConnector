@@ -62,6 +62,8 @@
     <Compile Include="Behaviors\EdiDocument.cs" />
     <Compile Include="Behaviors\EventLogger.cs" />
     <Compile Include="Behaviors\SAPConnection.cs" />
+    <Compile Include="Behaviors\Strategy\InvoiceDocument.cs" />
+    <Compile Include="Behaviors\Strategy\OrderResponseDocument.cs" />
     <Compile Include="Behaviors\Strategy\OrderDocument.cs" />
     <Compile Include="Behaviors\UdfFields.cs" />
     <Compile Include="Interfaces\IEdiDocumentType.cs" />
