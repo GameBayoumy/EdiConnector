@@ -36,29 +36,7 @@ namespace EdiConnectorService_C_Sharp
 
             EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
 
-            XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"\invoice.xml");
-            XElement xMessages = xDoc.Element("Messages");
-            if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Count() > 0)
-            {
-                EdiDocument orderDocument = new EdiDocument();
-                orderDocument.SetDocumentType(new OrderDocument());
-
-                List<OrderDocument> odl = (List<OrderDocument>)orderDocument.ReadXMLData(xMessages);
-            }
-            else if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "5").Count() > 0)
-            {
-                EdiDocument orderResponseDocument = new EdiDocument();
-                orderResponseDocument.SetDocumentType(new OrderResponseDocument());
-
-                List<OrderResponseDocument> ordl = (List<OrderResponseDocument>)orderResponseDocument.ReadXMLData(xMessages);
-            }
-            else if(xMessages.Elements().Where(x => x.Element("MessageType").Value == "8").Count() > 0)
-            {
-                EdiDocument invoiceDocument = new EdiDocument();
-                invoiceDocument.SetDocumentType(new InvoiceDocument());
-
-                List<InvoiceDocument> idl = (List<InvoiceDocument>)invoiceDocument.ReadXMLData(xMessages);
-            }
+            agent.QueueCommand(new ProcessMessage(EdiConnectorData.getInstance().sApplicationPath, @"\orders.xml"));
 
         }
 
