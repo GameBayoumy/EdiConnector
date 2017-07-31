@@ -44,13 +44,20 @@ namespace EdiConnectorService_C_Sharp
                 orderDocument.SetDocumentType(new OrderDocument());
 
                 List<OrderDocument> odl = (List<OrderDocument>)orderDocument.ReadXMLData(xMessages);
-            } 
+            }
+            else if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "5").Count() > 0)
+            {
+                EdiDocument orderResponseDocument = new EdiDocument();
+                orderResponseDocument.SetDocumentType(new OrderResponseDocument());
+
+                List<OrderResponseDocument> ordl = (List<OrderResponseDocument>)orderResponseDocument.ReadXMLData(xMessages);
+            }
             else if(xMessages.Elements().Where(x => x.Element("MessageType").Value == "8").Count() > 0)
             {
                 EdiDocument invoiceDocument = new EdiDocument();
                 invoiceDocument.SetDocumentType(new InvoiceDocument());
 
-                List<InvoiceDocument> odl = (List<InvoiceDocument>)invoiceDocument.ReadXMLData(xMessages);
+                List<InvoiceDocument> idl = (List<InvoiceDocument>)invoiceDocument.ReadXMLData(xMessages);
             }
 
         }

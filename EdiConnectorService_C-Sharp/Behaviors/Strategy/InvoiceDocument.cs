@@ -96,22 +96,22 @@ namespace EdiConnectorService_C_Sharp
                         ArticleDescription = a.Element("ArticleDescription").Value,
                         GTIN = a.Element("GTIN").Value,
                         ArticleNetPrice = a.Element("ArticleNetPrice").Value,
-                        ArticleNetPriceUnitCode = a.Element("OrderedQuantity").Value,
+                        ArticleNetPriceUnitCode = a.Element("ArticleNetPriceUnitCode").Value,
                         InvoicedQuantity = a.Element("InvoicedQuantity").Value,
                         DeliveredQuantity = a.Element("DeliveredQuantity").Value
                     }).ToList(),
                     InvoiceTotals = x.Elements("InvoiceTotals").Select(ia => new InvoiceTotal()
                     {
-                        InvoiceAmount = ia.Element("LineNumber").Value,
-                        NetLineAmount = ia.Element("ArticleDescription").Value,
-                        VATAmount = ia.Element("GTIN").Value,
-                        DiscountAmount = ia.Element("ArticleNetPrice").Value,
+                        InvoiceAmount = ia.Element("InvoiceAmount").Value,
+                        NetLineAmount = ia.Element("NetLineAmount").Value,
+                        VATAmount = ia.Element("VATAmount").Value,
+                        DiscountAmount = ia.Element("DiscountAmount").Value,
                         InvoiceVATTotals = ia.Elements("InvoiceVATTotals").Select(ivat => new InvoiceVATTotal()
                         {
-                            IsDutyFree = ivat.Element("ArticleNetPrice").Value,
-                            VATPercentage = ivat.Element("ArticleNetPrice").Value,
-                            VATAmount = ivat.Element("ArticleNetPrice").Value,
-                            VATBaseAmount = ivat.Element("ArticleNetPrice").Value
+                            IsDutyFree = ivat.Element("IsDutyFree").Value,
+                            VATPercentage = ivat.Element("VATPercentage").Value,
+                            VATAmount = ivat.Element("VATAmount").Value,
+                            VATBaseAmount = ivat.Element("VATBaseAmount").Value
                         }).ToList()
                     }).ToList()
                 }).ToList();
