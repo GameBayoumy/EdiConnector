@@ -30,7 +30,7 @@ namespace EdiConnectorService_C_Sharp
         public string InvoiceeGLN { get; set; }
         public string DeliveryPartyGLN { get; set; }
         public List<Article> Articles { get; set; }
-        public List<InvoiceTotal> InvoiceTotals { get; set; }
+        public InvoiceTotal InvoiceTotals { get; set; }
         
         public class Article
         {
@@ -49,7 +49,7 @@ namespace EdiConnectorService_C_Sharp
             public string NetLineAmount { get; set; }
             public string VATAmount { get; set; }
             public string DiscountAmount { get; set; }
-            public List<InvoiceVATTotal> InvoiceVATTotals { get; set; }
+            public InvoiceVATTotal InvoiceVATTotals { get; set; }
         }
 
         public class InvoiceVATTotal
@@ -112,8 +112,8 @@ namespace EdiConnectorService_C_Sharp
                             VATPercentage = ivat.Element("VATPercentage").Value,
                             VATAmount = ivat.Element("VATAmount").Value,
                             VATBaseAmount = ivat.Element("VATBaseAmount").Value
-                        }).ToList()
-                    }).ToList()
+                        }).First()
+                    }).First()
                 }).ToList();
              return InvoiceMsgList;
         }
