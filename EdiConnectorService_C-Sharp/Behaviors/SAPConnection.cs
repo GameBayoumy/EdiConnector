@@ -9,8 +9,6 @@ namespace EdiConnectorService_C_Sharp
 {
     class SAPConnection : AConnection
     {
-        XmlNode xmlNode;
-
         /// <summary>
         /// Gets or sets the company.
         /// </summary>
@@ -42,7 +40,7 @@ namespace EdiConnectorService_C_Sharp
         {
             try
             {
-                this.xmlNode = _xmlNode;
+                XmlNode xmlNode = _xmlNode;
                 Company.Server = xmlNode["Server"].InnerText;
                 Company.LicenseServer = xmlNode["LicenceServer"].InnerText;
                 Company.UserName = xmlNode["Username"].InnerText;
@@ -62,6 +60,7 @@ namespace EdiConnectorService_C_Sharp
                     Company.DbServerType = BoDataServerTypes.dst_MSSQL;
                 Company.DbUserName = xmlNode["DbUsername"].InnerText;
                 Company.DbPassword = xmlNode["DbPassword"].InnerText;
+                Company.UseTrusted = true;
                 
                 EventLogger.getInstance().EventInfo("Set connection - Server: " + Company.Server);
             }
@@ -89,7 +88,7 @@ namespace EdiConnectorService_C_Sharp
                 }
                 else
                 {
-                    EventLogger.getInstance().EventError(Company.GetLastErrorDescription());
+                    EventLogger.getInstance().EventError(Company.GetLastErrorDescription() + Company.Server);
                     ConnectedToSAP = false;
                     return ConnectedToSAP;
                 }

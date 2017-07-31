@@ -67,6 +67,25 @@ namespace EdiConnectorService_C_Sharp
                 }).ToList();
              return OrderMsgList;
         }
+
+        /// <summary>
+        /// Saves specific document data object to SAP.
+        /// </summary>
+        /// <param name="_dataObject">The data object.</param>
+        public void SaveToSAP(Object _dataObject)
+        {
+            foreach (OrderDocument orderDocument in (List<OrderDocument>)_dataObject)
+            {
+                try
+                {
+
+                }
+                catch (Exception e)
+                {
+                    EventLogger.getInstance().EventError("Error saving to SAP: " + e.Message + " with order document: " + orderDocument);
+                }
+            }
+        }
     }
 
 }

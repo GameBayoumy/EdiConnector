@@ -24,6 +24,7 @@ namespace EdiConnectorService_C_Sharp
             EdiDocument ediDocument = new EdiDocument();
             Object ediDocumentData = new Object();
 
+            // Checks which kind of document type gets through the system
             if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Count() > 0)
             {
                 ediDocument.SetDocumentType(new OrderDocument());
@@ -37,8 +38,11 @@ namespace EdiConnectorService_C_Sharp
                 ediDocument.SetDocumentType(new InvoiceDocument());
             }
 
+            // Reads the XML Data for the specified document type
             ediDocumentData = ediDocument.ReadXMLData(xMessages);
 
+            // Save the data object for the specified document type to SAP
+            ediDocument.SaveToSAP(ediDocumentData);
         }
     }
 }
