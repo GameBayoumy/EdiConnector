@@ -10,8 +10,58 @@ namespace EdiConnectorService_C_Sharp
 {
     class UdfFields
     {
+
         /// <summary>
-        /// Creates the udf fields.
+        /// Creates the UDT tables.
+        /// </summary>
+        /// <param name="_connectedServer">The connected server.</param>
+        public static void CreateUdtTables(string _connectedServer)
+        {
+            try
+            {
+                XmlDocument xmlDoc = new XmlDocument();
+                xmlDoc.Load(EdiConnectorData.getInstance().sApplicationPath + @"\udf.xml");
+                XmlNodeList xmlList = xmlDoc.SelectNodes("/UserDefined/Tables");
+                foreach (XmlNode xmlNode in xmlList)
+                {
+                    CreateUdt(_connectedServer, xmlNode["Udt"].GetAttribute("name"), BoUTBTableType.bott_NoObjectAutoIncrement);
+                }
+            }
+            catch (Exception e)
+            {
+                EventLogger.getInstance().EventError("Error creating UDT - Message: " + e.Message);
+            }  
+        }
+
+        private static void CreateUdt(string _connectedServer, string _tableName, SAPbobsCOM.BoUTBTableType _tableType)
+        {
+            SAPbobsCOM.UserTablesMD oUDT;
+            oUDT = (SAPbobsCOM.UserTablesMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserTables);
+            int errCode;
+            string errMsg = "";
+
+            if (!oUDT.GetByKey(_tableName))
+            {
+                oUDT.TableName = _tableName;
+                oUDT.TableDescription = _tableName;
+                oUDT.TableType = _tableType;
+
+                if (oUDT.Add() != 0)
+                {
+                    ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out errCode, out errMsg);
+                    EventLogger.getInstance().EventError("Error creating UDT: " + errMsg + " (" + errCode + ")");
+                }
+                else
+                {
+                    EventLogger.getInstance().EventInfo("UDT " + _tableName + " successfully created!");
+                }
+            }
+
+            EdiConnectorService.ClearObject(oUDT);
+        }
+
+        /// <summary>
+        /// Creates the UDF fields.
         /// </summary>
         /// <param name="_connectedServer">The connected server.</param>
         public static void CreateUdfFields(string _connectedServer)
@@ -20,16 +70,16 @@ namespace EdiConnectorService_C_Sharp
             {
                 XmlDocument xmlDoc = new XmlDocument();
                 xmlDoc.Load(EdiConnectorData.getInstance().sApplicationPath + @"\udf.xml");
-                XmlNodeList xmlList = xmlDoc.SelectNodes("/fields/udffield");
+                XmlNodeList xmlList = xmlDoc.SelectNodes("/UserDefined/Fields");
                 foreach (XmlNode xmlNode in xmlList)
                 {
-                    CreateUdf(_connectedServer, xmlNode["udf"].GetAttribute("table"), xmlNode["udf"].GetAttribute("name"), xmlNode["udf"].GetAttribute("description"), Convert.ToInt32(xmlNode["udf"].GetAttribute("size")),
+                    CreateUdf(_connectedServer, xmlNode["Udf"].GetAttribute("table"), xmlNode["Udf"].GetAttribute("name"), xmlNode["Udf"].GetAttribute("description"), Convert.ToInt32(xmlNode["Udf"].GetAttribute("size")),
                         BoFieldTypes.db_Alpha, BoFldSubTypes.st_None, false, false, "");
                 }
             }
             catch (Exception e)
             {
-                EventLogger.getInstance().EventError("Error reading udf.xml: " + e.Message);
+                EventLogger.getInstance().EventError("Error creating UDF: " + e.Message);
             }
         }
 
@@ -63,10 +113,26 @@ namespace EdiConnectorService_C_Sharp
             }
             else
             {
-                EventLogger.getInstance().EventInfo("Udf " + _fieldName + " successfully created!");
+                EventLogger.getInstance().EventInfo("UDF " + _fieldName + " successfully created!");
             }
 
             EdiConnectorService.ClearObject(oUDF);
+        }
+
+        private SAPbobsCOM.BoFieldTypes GetFieldType(string _type)
+        {
+            if (_type == "alpha")
+                return BoFieldTypes.db_Alpha;
+            else if (_type == "memo")
+                return BoFieldTypes.db_Memo;
+            else if (_type == "date")
+                return BoFieldTypes.db_Date;
+            else if (_type == "float")
+                return BoFieldTypes.db_Float;
+            else if (_type == "numeric")
+                return BoFieldTypes.db_Numeric;
+            else
+                return BoFieldTypes.db_Alpha;
         }
     }
 }

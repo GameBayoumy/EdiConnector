@@ -33,8 +33,15 @@ namespace EdiConnectorService_C_Sharp
             EdiConnectorData.getInstance();
             ConnectionManager.getInstance();
             agent = new Agent();
-            
-            
+
+            EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
+            agent.QueueCommand(new CreateConnectionsCommand());
+            ConnectionManager.getInstance().ConnectAll();
+
+            // Creates udf fields for every connected server
+            agent.QueueCommand(new CreateUfdFieldsCommand());
+
+
         }
 
         /* <summary>
@@ -71,8 +78,6 @@ namespace EdiConnectorService_C_Sharp
             agent.QueueCommand(new CreateConnectionsCommand());
             ConnectionManager.getInstance().ConnectAll();
 
-            // Creates udf fields for every connected server
-            agent.QueueCommand(new CreateUfdFieldsCommand());
 
             //ReadSettings();
             //ConnectToSAP();

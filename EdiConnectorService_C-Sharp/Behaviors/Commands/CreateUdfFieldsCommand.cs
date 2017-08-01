@@ -22,6 +22,7 @@ namespace EdiConnectorService_C_Sharp
             // For each connected server it will try to create udf fields for that server
             foreach (string connectedServer in ConnectionManager.getInstance().GetAllConnectedServers())
             {
+                UdfFields.CreateUdtTables(connectedServer);
                 UdfFields.CreateUdfFields(connectedServer);
             }
         }
