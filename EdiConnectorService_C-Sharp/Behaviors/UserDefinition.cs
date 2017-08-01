@@ -8,21 +8,21 @@ using System.Xml.Linq;
 
 namespace EdiConnectorService_C_Sharp
 {
-    class UdfFields
+    class UserDefined
     {
 
         /// <summary>
         /// Creates the UDT tables from the "udf.xml".
         /// </summary>
         /// <param name="_connectedServer">The connected server.</param>
-        public static void CreateUdtTables(string _connectedServer)
+        public static void CreateTables(string _connectedServer)
         {
             try
             {
                 XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"\udf.xml");
                 foreach (XElement xEle in xDoc.Element("UserDefined").Element("Tables").Descendants("Udt"))
                 {
-                    CreateUdt(_connectedServer, xEle.Attribute("name").Value, BoUTBTableType.bott_NoObjectAutoIncrement);
+                    CreateTable(_connectedServer, xEle.Attribute("name").Value, BoUTBTableType.bott_NoObjectAutoIncrement);
                 }
             }
             catch (Exception e)
@@ -31,7 +31,7 @@ namespace EdiConnectorService_C_Sharp
             }  
         }
 
-        private static void CreateUdt(string _connectedServer, string _tableName, SAPbobsCOM.BoUTBTableType _tableType)
+        private static void CreateTable(string _connectedServer, string _tableName, SAPbobsCOM.BoUTBTableType _tableType)
         {
             SAPbobsCOM.UserTablesMD oUDT;
             oUDT = (SAPbobsCOM.UserTablesMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserTables);
@@ -62,14 +62,14 @@ namespace EdiConnectorService_C_Sharp
         /// Creates the UDF fields from the "udf.xml".
         /// </summary>
         /// <param name="_connectedServer">The connected server.</param>
-        public static void CreateUdfFields(string _connectedServer)
+        public static void CreateFields(string _connectedServer)
         {
             try
             {
                 XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"\udf.xml");
                 foreach (XElement xEle in xDoc.Element("UserDefined").Element("Fields").Descendants("Udf"))
                 {
-                    CreateUdf(_connectedServer, xEle.Attribute("table").Value, xEle.Attribute("name").Value, xEle.Attribute("description").Value, 
+                    CreateField(_connectedServer, xEle.Attribute("table").Value, xEle.Attribute("name").Value, xEle.Attribute("description").Value, 
                         Convert.ToInt32(xEle.Attribute("size").Value), GetFieldType(xEle.Attribute("type").Value), BoFldSubTypes.st_None, false, false, "");
                 }
             }
@@ -79,7 +79,7 @@ namespace EdiConnectorService_C_Sharp
             }
         }
 
-        private static void CreateUdf(string _connectedServer, string _tableName, string _fieldName, string _description, int _editSize, 
+        private static void CreateField(string _connectedServer, string _tableName, string _fieldName, string _description, int _editSize, 
             BoFieldTypes _boType, BoFldSubTypes _boSubType, bool _mandatory, bool _default, string _defaultValue)
         {
             IUserFieldsMD oUDF;
