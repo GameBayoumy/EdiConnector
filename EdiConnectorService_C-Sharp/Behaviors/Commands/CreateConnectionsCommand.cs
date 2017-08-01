@@ -21,7 +21,7 @@ namespace EdiConnectorService_C_Sharp
         {
             // Create and set connections from config.xml
             XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(EdiConnectorData.getInstance().sApplicationPath + @"\config.xml");
+            xmlDoc.Load(EdiConnectorData.getInstance().sApplicationPath + @"config.xml");
             XmlNodeList xmlList = xmlDoc.SelectNodes("/Connections/Connection");
             for (int i = 0; i < xmlList.Count; i++)
             {

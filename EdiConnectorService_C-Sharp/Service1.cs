@@ -34,14 +34,18 @@ namespace EdiConnectorService_C_Sharp
             ConnectionManager.getInstance();
             agent = new Agent();
 
-            EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
+            EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp\";
             agent.QueueCommand(new CreateConnectionsCommand());
             ConnectionManager.getInstance().ConnectAll();
 
             // Creates udf fields for every connected server
             agent.QueueCommand(new CreateUserDefinitionsCommand());
 
-
+            // Processes incoming messages
+            foreach (string connectedServer in ConnectionManager.getInstance().GetAllConnectedServers())
+            {
+                agent.QueueCommand(new ProcessMessage(connectedServer, EdiConnectorData.getInstance().sApplicationPath, @"orders.xml"));
+            }
         }
 
         /* <summary>
@@ -78,8 +82,7 @@ namespace EdiConnectorService_C_Sharp
             ConnectionManager.getInstance().ConnectAll();
 
 
-            // Processes incoming messages
-            agent.QueueCommand(new ProcessMessage(EdiConnectorData.getInstance().sApplicationPath, @"\orders.xml"));
+            
             //ReadSettings();
             //ConnectToSAP();
             //CreateUdfFieldsText();
@@ -238,7 +241,7 @@ namespace EdiConnectorService_C_Sharp
             try
             {
                 DataSet dataSet = new DataSet();
-                dataSet.ReadXml(EdiConnectorData.getInstance().sApplicationPath + @"\settings.xml");
+                dataSet.ReadXml(EdiConnectorData.getInstance().sApplicationPath + @"settings.xml");
 
                 if (dataSet.Tables["server"].Rows[0]["sqlversion"].ToString() == "2005")
                     EdiConnectorData.getInstance().bstDBServerType = BoDataServerTypes.dst_MSSQL2005;
@@ -303,7 +306,7 @@ namespace EdiConnectorService_C_Sharp
         public void ReadInterface()
         {
             DataSet dataSet = new DataSet();
-            dataSet.ReadXml(EdiConnectorData.getInstance().sApplicationPath + @"\orderfld.xml");
+            dataSet.ReadXml(EdiConnectorData.getInstance().sApplicationPath + @"orderfld.xml");
 
             for (int orderHead = 0; orderHead < dataSet.Tables["OK"].Rows.Count - 1; orderHead++ )
             {
