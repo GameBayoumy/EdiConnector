@@ -41,7 +41,7 @@ namespace EdiConnectorService_C_Sharp
             {
                 ediDocument.SetDocumentType(new InvoiceDocument());
             }
-            UpdateIncomingXmlMessage(connectedServer, recordCode, "Processing..", "Set document type to: " + ediDocument.GetDocumentType().ToString());
+            UpdateIncomingXmlMessage(connectedServer, "Processing..", "Set document type to: " + ediDocument.GetDocumentType().ToString());
 
             // Reads the XML Data for the specified document type
             ediDocumentData = ediDocument.ReadXMLData(xMessages);
