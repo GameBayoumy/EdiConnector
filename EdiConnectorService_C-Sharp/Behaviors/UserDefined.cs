@@ -44,10 +44,7 @@ namespace EdiConnectorService_C_Sharp
 
                 if (oUDT.Add() != 0)
                 {
-                    int errCode;
-                    string errMsg = "";
-                    ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out errCode, out errMsg);
-                    EventLogger.getInstance().EventError("Error creating UDT: " + errMsg + " (" + errCode + ")");
+                    EventLogger.getInstance().EventError("Error creating UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
                 }
                 else
                 {
@@ -103,10 +100,7 @@ namespace EdiConnectorService_C_Sharp
 
             if (oUDF.Add() != 0)
             {
-                int errCode;
-                string errMsg = "";
-                ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out errCode, out errMsg);
-                EventLogger.getInstance().EventError("Error creating UDF: " + errMsg + " (" + errCode + ")");
+                EventLogger.getInstance().EventError("Error creating UDG: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
             }
             else
             {
@@ -137,27 +131,38 @@ namespace EdiConnectorService_C_Sharp
                 return BoFieldTypes.db_Alpha;
         }
 
-        public static void AddIncomingXmlMessage(string _connectedServer, string _filePath, string _fileName, string _status, string _logMessage, DateTime _createDate)
+        public static string AddIncomingXmlMessage(string _connectedServer, string _filePath, string _fileName, string _status, string _logMessage, DateTime _createDate)
         {
             SAPbobsCOM.UserTable oUDT;
             oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item("0_SWS_EDI");
 
-            oUDT.UserFields.Fields.Item("U_XML_FILE_PATH").Value = _filePath;
-            oUDT.UserFields.Fields.Item("U_XML_FILE_NAME").Value = _fileName;
-            oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
-            oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = _logMessage;
-            oUDT.UserFields.Fields.Item("U_CREATE_DATE").Value = _createDate;
+            try
+            {
+                oUDT.UserFields.Fields.Item("U_XML_FILE_PATH").Value = _filePath;
+                oUDT.UserFields.Fields.Item("U_XML_FILE_NAME").Value = _fileName;
+                oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
+                oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = _logMessage;
+                oUDT.UserFields.Fields.Item("U_CREATE_DATE").Value = _createDate;
 
-            if (oUDT.Add() == 0)
-            {
-                EventLogger.getInstance().EventInfo("Succesfully added incoming xml message to UDT: " + oUDT.Name);
+                if (oUDT.Add() == 0)
+                {
+                    EventLogger.getInstance().EventInfo("Succesfully added incoming xml message to UDT: " + oUDT.Name);
+                    return oUDT.Code;
+                }
+                else
+                {
+                    EventLogger.getInstance().EventError("Error adding items to UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
+                    return null;
+                }
             }
-            else
+            catch
             {
-                int errCode;
-                string errMsg = "";
-                ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out errCode, out errMsg);
-                EventLogger.getInstance().EventError("Error adding items to UDT: " + errMsg + " (" + errCode + ")");
+                EventLogger.getInstance().EventError("Error adding items to UDF: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
+                return null;
+            }
+            finally
+            {
+                EdiConnectorService.ClearObject(oUDT);
             }
         }
     }
