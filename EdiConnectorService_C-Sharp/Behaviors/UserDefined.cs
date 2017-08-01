@@ -140,32 +140,24 @@ namespace EdiConnectorService_C_Sharp
         public static void AddIncomingXmlMessage(string _connectedServer, string _filePath, string _fileName, string _status, string _logMessage, DateTime _createDate)
         {
             SAPbobsCOM.UserTable oUDT;
-            oUDT = (SAPbobsCOM.UserTable)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserTables);
+            oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item("0_SWS_EDI");
 
-            if (oUDT.GetByKey("0_SWS_EDI"))
+            oUDT.UserFields.Fields.Item("U_XML_FILE_PATH").Value = _filePath;
+            oUDT.UserFields.Fields.Item("U_XML_FILE_NAME").Value = _fileName;
+            oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
+            oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = _logMessage;
+            oUDT.UserFields.Fields.Item("U_CREATE_DATE").Value = _createDate;
+
+            if (oUDT.Add() == 0)
             {
-
-                oUDT.UserFields.Fields.Item("XML_FILE_PATH").Value = _filePath;
-                oUDT.UserFields.Fields.Item("XML_FILE_NAME").Value = _fileName;
-                oUDT.UserFields.Fields.Item("STATUS").Value = _status;
-                oUDT.UserFields.Fields.Item("LOG_MESSAGE").Value = _logMessage;
-                oUDT.UserFields.Fields.Item("CREATE_DATE").Value = _createDate;
-
-                if (oUDT.Add() == 0)
-                {
-                    EventLogger.getInstance().EventInfo("Succesfully added incoming xml message to UDT: " + oUDT.Name);
-                }
-                else
-                {
-                    int errCode;
-                    string errMsg = "";
-                    ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out errCode, out errMsg);
-                    EventLogger.getInstance().EventError("Error adding items to UDT: " + errMsg + " (" + errCode + ")");
-                }
+                EventLogger.getInstance().EventInfo("Succesfully added incoming xml message to UDT: " + oUDT.Name);
             }
             else
             {
-                EventLogger.getInstance().EventError("Error adding items to UDT: Cannot find table 0_SWS_EDI");
+                int errCode;
+                string errMsg = "";
+                ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out errCode, out errMsg);
+                EventLogger.getInstance().EventError("Error adding items to UDT: " + errMsg + " (" + errCode + ")");
             }
         }
     }
