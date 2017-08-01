@@ -89,12 +89,12 @@ namespace EdiConnectorService_C_Sharp
             }
         }
 
-        private void UpdateIncomingXmlMessage(string _connectedServer, string _recordCode, string _status, string _logMessage)
+        private void UpdateIncomingXmlMessage(string _connectedServer, string _status, string _logMessage)
         {
             SAPbobsCOM.UserTable oUDT;
             oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item("0_SWS_EDI");
 
-            oUDT.GetByKey(_recordCode);
+            oUDT.GetByKey(recordCode);
 
             oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
             oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = _logMessage;
