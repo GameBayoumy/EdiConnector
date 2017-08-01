@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.IO;
-using System.Xml;
 using SAPbobsCOM;
+using System.Xml.Linq;
 
 namespace EdiConnectorService_C_Sharp
 {
@@ -12,19 +12,17 @@ namespace EdiConnectorService_C_Sharp
     {
 
         /// <summary>
-        /// Creates the UDT tables.
+        /// Creates the UDT tables from the "udf.xml".
         /// </summary>
         /// <param name="_connectedServer">The connected server.</param>
         public static void CreateUdtTables(string _connectedServer)
         {
             try
             {
-                XmlDocument xmlDoc = new XmlDocument();
-                xmlDoc.Load(EdiConnectorData.getInstance().sApplicationPath + @"\udf.xml");
-                XmlNodeList xmlList = xmlDoc.SelectNodes("/UserDefined/Tables");
-                foreach (XmlNode xmlNode in xmlList)
+                XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"\udf.xml");
+                foreach (XElement xEle in xDoc.Element("UserDefined").Element("Tables").Descendants("Udt"))
                 {
-                    CreateUdt(_connectedServer, xmlNode["Udt"].GetAttribute("name"), BoUTBTableType.bott_NoObjectAutoIncrement);
+                    CreateUdt(_connectedServer, xEle.Attribute("name").Value, BoUTBTableType.bott_NoObjectAutoIncrement);
                 }
             }
             catch (Exception e)
@@ -61,20 +59,18 @@ namespace EdiConnectorService_C_Sharp
         }
 
         /// <summary>
-        /// Creates the UDF fields.
+        /// Creates the UDF fields from the "udf.xml".
         /// </summary>
         /// <param name="_connectedServer">The connected server.</param>
         public static void CreateUdfFields(string _connectedServer)
         {
             try
             {
-                XmlDocument xmlDoc = new XmlDocument();
-                xmlDoc.Load(EdiConnectorData.getInstance().sApplicationPath + @"\udf.xml");
-                XmlNodeList xmlList = xmlDoc.SelectNodes("/UserDefined/Fields");
-                foreach (XmlNode xmlNode in xmlList)
+                XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"\udf.xml");
+                foreach (XElement xEle in xDoc.Element("UserDefined").Element("Fields").Descendants("Udf"))
                 {
-                    CreateUdf(_connectedServer, xmlNode["Udf"].GetAttribute("table"), xmlNode["Udf"].GetAttribute("name"), xmlNode["Udf"].GetAttribute("description"), Convert.ToInt32(xmlNode["Udf"].GetAttribute("size")),
-                        BoFieldTypes.db_Alpha, BoFldSubTypes.st_None, false, false, "");
+                    CreateUdf(_connectedServer, xEle.Attribute("table").Value, xEle.Attribute("name").Value, xEle.Attribute("description").Value, 
+                        Convert.ToInt32(xEle.Attribute("size").Value), GetFieldType(xEle.Attribute("type").Value), BoFldSubTypes.st_None, false, false, "");
                 }
             }
             catch (Exception e)
@@ -88,9 +84,7 @@ namespace EdiConnectorService_C_Sharp
         {
             IUserFieldsMD oUDF;
             oUDF = (SAPbobsCOM.IUserFieldsMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserFields);
-            int errCode;
-            string errMsg = "";
-
+            
             oUDF.TableName = _tableName;
             oUDF.Name = _fieldName;
             oUDF.Description = _description;
@@ -108,6 +102,8 @@ namespace EdiConnectorService_C_Sharp
 
             if (oUDF.Add() != 0)
             {
+                int errCode;
+                string errMsg = "";
                 ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out errCode, out errMsg);
                 EventLogger.getInstance().EventError("Error creating UDF: " + errMsg + " (" + errCode + ")");
             }
@@ -119,7 +115,7 @@ namespace EdiConnectorService_C_Sharp
             EdiConnectorService.ClearObject(oUDF);
         }
 
-        private SAPbobsCOM.BoFieldTypes GetFieldType(string _type)
+        private static SAPbobsCOM.BoFieldTypes GetFieldType(string _type)
         {
             if (_type == "alpha")
                 return BoFieldTypes.db_Alpha;
