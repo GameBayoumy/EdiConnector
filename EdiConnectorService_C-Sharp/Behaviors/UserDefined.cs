@@ -35,8 +35,6 @@ namespace EdiConnectorService_C_Sharp
         {
             SAPbobsCOM.UserTablesMD oUDT;
             oUDT = (SAPbobsCOM.UserTablesMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserTables);
-            int errCode;
-            string errMsg = "";
 
             if (!oUDT.GetByKey(_tableName))
             {
@@ -46,6 +44,8 @@ namespace EdiConnectorService_C_Sharp
 
                 if (oUDT.Add() != 0)
                 {
+                    int errCode;
+                    string errMsg = "";
                     ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out errCode, out errMsg);
                     EventLogger.getInstance().EventError("Error creating UDT: " + errMsg + " (" + errCode + ")");
                 }
@@ -55,6 +55,7 @@ namespace EdiConnectorService_C_Sharp
                 }
             }
 
+            EdiConnectorData.getInstance().sUdtName.Add(_tableName);
             EdiConnectorService.ClearObject(oUDT);
         }
 
@@ -115,6 +116,11 @@ namespace EdiConnectorService_C_Sharp
             EdiConnectorService.ClearObject(oUDF);
         }
 
+        /// <summary>
+        /// Gets the type of the field.
+        /// </summary>
+        /// <param name="_type">The type.</param>
+        /// <returns></returns>
         private static SAPbobsCOM.BoFieldTypes GetFieldType(string _type)
         {
             if (_type == "alpha")
@@ -129,6 +135,38 @@ namespace EdiConnectorService_C_Sharp
                 return BoFieldTypes.db_Numeric;
             else
                 return BoFieldTypes.db_Alpha;
+        }
+
+        public static void AddIncomingXmlMessage(string _connectedServer, string _filePath, string _fileName, string _status, string _logMessage, DateTime _createDate)
+        {
+            SAPbobsCOM.UserTable oUDT;
+            oUDT = (SAPbobsCOM.UserTable)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserTables);
+
+            if (oUDT.GetByKey("0_SWS_EDI"))
+            {
+
+                oUDT.UserFields.Fields.Item("XML_FILE_PATH").Value = _filePath;
+                oUDT.UserFields.Fields.Item("XML_FILE_NAME").Value = _fileName;
+                oUDT.UserFields.Fields.Item("STATUS").Value = _status;
+                oUDT.UserFields.Fields.Item("LOG_MESSAGE").Value = _logMessage;
+                oUDT.UserFields.Fields.Item("CREATE_DATE").Value = _createDate;
+
+                if (oUDT.Add() == 0)
+                {
+                    EventLogger.getInstance().EventInfo("Succesfully added incoming xml message to UDT: " + oUDT.Name);
+                }
+                else
+                {
+                    int errCode;
+                    string errMsg = "";
+                    ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out errCode, out errMsg);
+                    EventLogger.getInstance().EventError("Error adding items to UDT: " + errMsg + " (" + errCode + ")");
+                }
+            }
+            else
+            {
+                EventLogger.getInstance().EventError("Error adding items to UDT: Cannot find table 0_SWS_EDI");
+            }
         }
     }
 }

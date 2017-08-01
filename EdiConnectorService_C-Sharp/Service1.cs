@@ -39,7 +39,7 @@ namespace EdiConnectorService_C_Sharp
             ConnectionManager.getInstance().ConnectAll();
 
             // Creates udf fields for every connected server
-            agent.QueueCommand(new CreateUfdFieldsCommand());
+            agent.QueueCommand(new CreateUserDefinitionsCommand());
 
 
         }

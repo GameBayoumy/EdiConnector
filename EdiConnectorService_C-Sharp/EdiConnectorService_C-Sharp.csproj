@@ -56,12 +56,12 @@
   <ItemGroup>
     <Compile Include="AbstractClasses\AConnection.cs" />
     <Compile Include="Behaviors\Agent.cs" />
-    <Compile Include="Behaviors\Commands\CreateUdfFieldsCommand.cs" />
+    <Compile Include="Behaviors\Commands\CreateUserDefinitionsCommand.cs" />
     <Compile Include="Behaviors\ConnectionManager.cs" />
     <Compile Include="Behaviors\Commands\CreateConnectionsCommand.cs" />
     <Compile Include="Behaviors\EventLogger.cs" />
     <Compile Include="Behaviors\SAPConnection.cs" />
-    <Compile Include="Behaviors\UserDefinition.cs" />
+    <Compile Include="Behaviors\UserDefined.cs" />
     <Compile Include="Structure\EdiConnectorData.cs" />
     <Compile Include="Interfaces\Command.cs" />
     <Compile Include="ProjectInstaller.cs">
