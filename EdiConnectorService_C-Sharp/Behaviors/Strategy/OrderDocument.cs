@@ -76,6 +76,9 @@ namespace EdiConnectorService_C_Sharp
         {
             foreach (OrderDocument orderDocument in (List<OrderDocument>)_dataObject)
             {
+                SAPbobsCOM.Documents oInv;
+                oInv = (SAPbobsCOM.Documents)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
+                
                 try
                 {
 
