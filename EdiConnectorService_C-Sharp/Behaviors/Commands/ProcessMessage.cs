@@ -48,7 +48,7 @@ namespace EdiConnectorService_C_Sharp
             UpdateIncomingXmlMessage(connectedServer, "Processing..", "Read document with type: " + ediDocument.GetDocumentType().ToString());
 
             // Save the data object for the specified document type to SAP
-            ediDocument.SaveToSAP(ediDocumentData);
+            ediDocument.SaveToSAP(ediDocumentData, connectedServer);
             UpdateIncomingXmlMessage(connectedServer, "Saved.", "Saved document with type: " + ediDocument.GetDocumentType().ToString());
         }
 

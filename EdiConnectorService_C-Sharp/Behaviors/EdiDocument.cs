@@ -35,7 +35,7 @@ namespace EdiConnectorService_C_Sharp
             return documentType.ReadXMLData(_xMessages);
         }
 
-        public void SaveToSAP(Object _dataObject)
+        public void SaveToSAP(Object _dataObject, string _connectedServer)
         {
 
         }

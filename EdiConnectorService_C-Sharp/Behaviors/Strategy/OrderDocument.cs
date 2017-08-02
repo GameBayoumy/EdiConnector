@@ -72,21 +72,64 @@ namespace EdiConnectorService_C_Sharp
         /// Saves specific document data object to SAP.
         /// </summary>
         /// <param name="_dataObject">The data object.</param>
-        public void SaveToSAP(Object _dataObject)
+        public void SaveToSAP(Object _dataObject, string _connectedServer)
         {
+            SAPbobsCOM.Recordset oRs;
+            oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
+
             foreach (OrderDocument orderDocument in (List<OrderDocument>)_dataObject)
             {
-                SAPbobsCOM.Documents oInv;
-                oInv = (SAPbobsCOM.Documents)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
-                
+                SAPbobsCOM.Documents oOrd;
+                oOrd = (SAPbobsCOM.Documents)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oOrders));
+
                 try
                 {
+                    //oOrd.CardName = orderDocument.Sender;
+                    oRs.DoQuery(@"SELECT ""Address"", ""CardCode"", ""CardName"" FROM CRD1 WHERE ""GlblLocNum"" = '" + orderDocument.SenderGLN + "'");
+                    if (oRs.RecordCount > 0)
+                    {
+                        oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString();
+                        oOrd.CardCode = oRs.Fields.Item(1).Value.ToString();
+                        oOrd.CardName = oRs.Fields.Item(2).Value.ToString();
+                    }
 
+                    oRs.DoQuery(@"SELECT ""Address"" FROM CRD1 WHERE ""GlblLocNum"" = '" + orderDocument.BuyerGLN + "'");
+                    if (oRs.RecordCount > 0)
+                    {
+                        oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString();
+                    }
+
+                    foreach (Article article in orderDocument.Articles)
+                    {
+                        oRs.DoQuery(@"SELECT ""ItemCode"" FROM OITM WHERE ""CodeBars"" = '" + article.GTIN + "'");
+                        if (oRs.RecordCount > 0)
+                            oOrd.Lines.ItemCode = oRs.Fields.Item(0).Value.ToString();
+                        else
+                            EventLogger.getInstance().EventError("Error CodeBars:" + article.GTIN + " not found!");
+
+                        oOrd.Lines.UserFields.Fields.Item("U_LineNumber").Value = article.LineNumber;
+                        oOrd.Lines.ItemDescription = article.ArticleDescription;
+                        oOrd.Lines.Quantity = Convert.ToDouble(article.OrderedQuantity);
+
+                        oOrd.Lines.Add();
+                    }
+                    oOrd.NumAtCard = orderDocument.OrderNumberBuyer;
+                    oOrd.UserFields.Fields.Item("U_IsTestMessage").Value = orderDocument.IsTestMessage;
+
+                    if(oOrd.Add() == 0)
+                        EventLogger.getInstance().EventInfo("Succesfully added Sales Order: " + oOrd.DocNum);
+                    else
+                    {
+                        ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
+                        EventLogger.getInstance().EventError("Error adding Sales Order: (" + errCode + ") " + errMsg);
+                    }
                 }
                 catch (Exception e)
                 {
                     EventLogger.getInstance().EventError("Error saving to SAP: " + e.Message + " with order document: " + orderDocument);
                 }
+
+                EdiConnectorService.ClearObject(oOrd);
             }
         }
     }
