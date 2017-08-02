@@ -66,6 +66,11 @@ namespace EdiConnectorService_C_Sharp
                 }).ToList();
              return OrderMsgList;
         }
+
+        public void SaveToSAP(Object _dataObject, string _connectedServer)
+        {
+
+        }
     }
 
 }

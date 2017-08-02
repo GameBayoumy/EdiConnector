@@ -26,7 +26,7 @@ namespace EdiConnectorService_C_Sharp
             XElement xMessages = xDoc.Element("Messages");
             EdiDocument ediDocument = new EdiDocument();
             Object ediDocumentData = new Object();
-            recordCode = AddIncomingXmlMessage(connectedServer, filePath, fileName, "Processing..", "Loaded new document", DateTime.Now);
+            //recordCode = AddIncomingXmlMessage(connectedServer, filePath, fileName, "Processing..", "Loaded new document", DateTime.Now);
 
             // Checks which kind of document type gets through the system
             if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Count() > 0)
@@ -41,15 +41,15 @@ namespace EdiConnectorService_C_Sharp
             {
                 ediDocument.SetDocumentType(new InvoiceDocument());
             }
-            UpdateIncomingXmlMessage(connectedServer, "Processing..", "Set document type to: " + ediDocument.GetDocumentType().ToString());
+            //UpdateIncomingXmlMessage(connectedServer, "Processing..", "Set document type to: " + ediDocument.GetDocumentType().ToString());
 
             // Reads the XML Data for the specified document type
             ediDocumentData = ediDocument.ReadXMLData(xMessages);
-            UpdateIncomingXmlMessage(connectedServer, "Processing..", "Read document with type: " + ediDocument.GetDocumentType().ToString());
+            //UpdateIncomingXmlMessage(connectedServer, "Processing..", "Read document with type: " + ediDocument.GetDocumentType().ToString());
 
             // Save the data object for the specified document type to SAP
             ediDocument.SaveToSAP(ediDocumentData, connectedServer);
-            UpdateIncomingXmlMessage(connectedServer, "Saved.", "Saved document with type: " + ediDocument.GetDocumentType().ToString());
+            //UpdateIncomingXmlMessage(connectedServer, "Saved.", "Saved document with type: " + ediDocument.GetDocumentType().ToString());
         }
 
         private string AddIncomingXmlMessage(string _connectedServer, string _filePath, string _fileName, string _status, string _logMessage, DateTime _createDate)

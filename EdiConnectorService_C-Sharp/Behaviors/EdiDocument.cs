@@ -37,7 +37,7 @@ namespace EdiConnectorService_C_Sharp
 
         public void SaveToSAP(Object _dataObject, string _connectedServer)
         {
-
+            documentType.SaveToSAP(_dataObject, _connectedServer);
         }
     }
 }

@@ -81,24 +81,23 @@ namespace EdiConnectorService_C_Sharp
             {
                 SAPbobsCOM.Documents oOrd;
                 oOrd = (SAPbobsCOM.Documents)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oOrders));
-
                 try
                 {
+                    // TO DO:   "Enter due date  [ORDR.DocDueDate]"
+
                     //oOrd.CardName = orderDocument.Sender;
-                    oRs.DoQuery(@"SELECT ""Address"", ""CardCode"", ""CardName"" FROM CRD1 WHERE ""GlblLocNum"" = '" + orderDocument.SenderGLN + "'");
+                    oRs.DoQuery(@"SELECT T0.""Address"", T1.""CardCode"", T1.""CardName"" FROM CRD1 T0 INNER JOIN OCRD T1 ON T0.""CardCode"" = T1.""CardCode"" WHERE T0.""GlblLocNum"" = '" + orderDocument.SenderGLN + "'");
                     if (oRs.RecordCount > 0)
                     {
                         oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString();
-                        oOrd.CardCode = oRs.Fields.Item(1).Value.ToString();
-                        oOrd.CardName = oRs.Fields.Item(2).Value.ToString();
                     }
-
-                    oRs.DoQuery(@"SELECT ""Address"" FROM CRD1 WHERE ""GlblLocNum"" = '" + orderDocument.BuyerGLN + "'");
+                    oRs.DoQuery(@"SELECT T0.""Address"", T1.""CardCode"", T1.""CardName"" FROM CRD1 T0 INNER JOIN OCRD T1 ON T0.""CardCode"" = T1.""CardCode"" WHERE T0.""GlblLocNum"" = '" + orderDocument.BuyerGLN + "'");
                     if (oRs.RecordCount > 0)
                     {
                         oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString();
+                        oOrd.CardCode = oRs.Fields.Item(1).Value.ToString();
+                        oOrd.CardName = oRs.Fields.Item(2).Value.ToString();
                     }
-
                     foreach (Article article in orderDocument.Articles)
                     {
                         oRs.DoQuery(@"SELECT ""ItemCode"" FROM OITM WHERE ""CodeBars"" = '" + article.GTIN + "'");
@@ -107,7 +106,7 @@ namespace EdiConnectorService_C_Sharp
                         else
                             EventLogger.getInstance().EventError("Error CodeBars:" + article.GTIN + " not found!");
 
-                        oOrd.Lines.UserFields.Fields.Item("U_LineNumber").Value = article.LineNumber;
+                        oOrd.Lines.UserFields.Fields.Item("U_EdiLineNumber").Value = article.LineNumber;
                         oOrd.Lines.ItemDescription = article.ArticleDescription;
                         oOrd.Lines.Quantity = Convert.ToDouble(article.OrderedQuantity);
 
@@ -130,6 +129,7 @@ namespace EdiConnectorService_C_Sharp
                 }
 
                 EdiConnectorService.ClearObject(oOrd);
+                EdiConnectorService.ClearObject(oRs);
             }
         }
     }

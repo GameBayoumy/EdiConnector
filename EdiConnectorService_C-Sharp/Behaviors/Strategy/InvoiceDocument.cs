@@ -117,6 +117,11 @@ namespace EdiConnectorService_C_Sharp
                 }).ToList();
              return InvoiceMsgList;
         }
+
+        public void SaveToSAP(Object _dataObject, string _connectedServer)
+        {
+
+        }
     }
 
 }

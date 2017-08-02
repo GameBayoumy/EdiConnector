@@ -10,5 +10,6 @@ namespace EdiConnectorService_C_Sharp
     interface IEdiDocumentType
     {
         Object ReadXMLData(XElement _xMessages);
+        void SaveToSAP(Object _dataObject, string _connectedServer);
     }
 }
