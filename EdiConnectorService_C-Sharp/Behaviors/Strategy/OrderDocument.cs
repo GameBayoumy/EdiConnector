@@ -18,6 +18,7 @@ namespace EdiConnectorService_C_Sharp
         public string RecipientGLN { get; set; }
         public string IsTestMessage { get; set; }
         public string OrderNumberBuyer { get; set; }
+        public string RequestedDeliveryDate { get; set; }
         public string BuyerGLN { get; set; }
         public string BuyerVATNumber { get; set; }
         public string SupplierGLN { get; set; }
@@ -42,7 +43,7 @@ namespace EdiConnectorService_C_Sharp
         {
             // Checks if the MessageType is for a Order Response Document.
             // Then it will create new OrderDocuments for every message
-             List<OrderDocument>OrderMsgList = _xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Select(x =>
+            List<OrderDocument> OrderMsgList = _xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Select(x =>
                 new OrderDocument()
                 {
                     MessageStandard = x.Element("MessageStandard").Value,
@@ -52,6 +53,7 @@ namespace EdiConnectorService_C_Sharp
                     RecipientGLN = x.Element("RecipientGLN").Value,
                     IsTestMessage = x.Element("IsTestMessage").Value,
                     OrderNumberBuyer = x.Element("OrderNumberBuyer").Value,
+                    RequestedDeliveryDate = x.Element("RequestedDeliveryDate").Value,
                     BuyerGLN = x.Element("BuyerGLN").Value,
                     BuyerVATNumber = x.Element("BuyerVATNumber").Value,
                     SupplierGLN = x.Element("SupplierGLN").Value,
@@ -83,8 +85,6 @@ namespace EdiConnectorService_C_Sharp
                 oOrd = (SAPbobsCOM.Documents)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oOrders));
                 try
                 {
-                    // TO DO:   "Enter due date  [ORDR.DocDueDate]"
-
                     //oOrd.CardName = orderDocument.Sender;
                     oRs.DoQuery(@"SELECT T0.""Address"", T1.""CardCode"", T1.""CardName"" FROM CRD1 T0 INNER JOIN OCRD T1 ON T0.""CardCode"" = T1.""CardCode"" WHERE T0.""GlblLocNum"" = '" + orderDocument.SenderGLN + "'");
                     if (oRs.RecordCount > 0)
@@ -113,6 +113,7 @@ namespace EdiConnectorService_C_Sharp
                         oOrd.Lines.Add();
                     }
                     oOrd.NumAtCard = orderDocument.OrderNumberBuyer;
+                    oOrd.DocDueDate = Convert.ToDateTime(orderDocument.RequestedDeliveryDate);
                     oOrd.UserFields.Fields.Item("U_IsTestMessage").Value = orderDocument.IsTestMessage;
 
                     if(oOrd.Add() == 0)
