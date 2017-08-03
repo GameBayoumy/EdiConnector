@@ -60,7 +60,7 @@
     <Compile Include="Behaviors\Commands\ProcessMessage.cs" />
     <Compile Include="Behaviors\ConnectionManager.cs" />
     <Compile Include="Behaviors\Commands\CreateConnectionsCommand.cs" />
-    <Compile Include="Behaviors\EdiDocument.cs" />
+    <Compile Include="Behaviors\Strategy\EdiDocument.cs" />
     <Compile Include="Behaviors\EventLogger.cs" />
     <Compile Include="Behaviors\SAPConnection.cs" />
     <Compile Include="Behaviors\UserDefined.cs" />
