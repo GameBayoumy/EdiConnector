@@ -9,8 +9,8 @@ namespace EdiConnectorService_C_Sharp
     /// <summary>
     /// Concrete Command class
     /// </summary>
-    /// <seealso cref="EdiConnectorService_C_Sharp.Command" />
-    public class CreateConnectionsCommand : Command
+    /// <seealso cref="EdiConnectorService_C_Sharp.ICommand" />
+    public class CreateConnectionsCommand : ICommand
     {
         public CreateConnectionsCommand()
         {
@@ -21,7 +21,7 @@ namespace EdiConnectorService_C_Sharp
         {
             // Create and set connections from config.xml
             XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(EdiConnectorData.getInstance().sApplicationPath + @"\config.xml");
+            xmlDoc.Load(EdiConnectorData.getInstance().sApplicationPath + @"config.xml");
             XmlNodeList xmlList = xmlDoc.SelectNodes("/Connections/Connection");
             for (int i = 0; i < xmlList.Count; i++)
             {

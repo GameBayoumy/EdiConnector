@@ -10,9 +10,9 @@ namespace EdiConnectorService_C_Sharp
     /// Concrete Command class
     /// </summary>
     /// <seealso cref="EdiConnectorService_C_Sharp.Command" />
-    public class CreateUfdFieldsCommand : Command
+    public class CreateUserDefinitionsCommand : ICommand
     {
-        public CreateUfdFieldsCommand()
+        public CreateUserDefinitionsCommand()
         {
 
         }
@@ -22,7 +22,8 @@ namespace EdiConnectorService_C_Sharp
             // For each connected server it will try to create udf fields for that server
             foreach (string connectedServer in ConnectionManager.getInstance().GetAllConnectedServers())
             {
-                UdfFields.CreateUdfFields(connectedServer);
+                UserDefined.CreateTables(connectedServer);
+                UserDefined.CreateFields(connectedServer);
             }
         }
     }

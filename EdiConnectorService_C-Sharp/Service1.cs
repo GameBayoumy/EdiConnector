@@ -12,7 +12,7 @@ using System.Data.SqlClient;
 using SAPbobsCOM;
 using System.Net.Mail;
 using System.Net;
-using System.Xml;
+using System.Xml.Linq;
 
 namespace EdiConnectorService_C_Sharp
 {
@@ -33,8 +33,19 @@ namespace EdiConnectorService_C_Sharp
             EdiConnectorData.getInstance();
             ConnectionManager.getInstance();
             agent = new Agent();
-            
-            
+
+            EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp\";
+            agent.QueueCommand(new CreateConnectionsCommand());
+            ConnectionManager.getInstance().ConnectAll();
+
+            // Creates udf fields for every connected server
+            agent.QueueCommand(new CreateUserDefinitionsCommand());
+
+            // Processes incoming messages
+            foreach (string connectedServer in ConnectionManager.getInstance().GetAllConnectedServers())
+            {
+                agent.QueueCommand(new ProcessMessage(connectedServer, EdiConnectorData.getInstance().sApplicationPath, @"orders.xml"));
+            }
         }
 
         /* <summary>
@@ -65,15 +76,13 @@ namespace EdiConnectorService_C_Sharp
             EventLogger.getInstance().EventInfo("EdiService in OnStart.");
 
             EdiConnectorData.getInstance().sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
-            EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp";
 
             // Create connections from config.xml and try to connect all servers
             agent.QueueCommand(new CreateConnectionsCommand());
             ConnectionManager.getInstance().ConnectAll();
 
-            // Creates udf fields for every connected server
-            agent.QueueCommand(new CreateUfdFieldsCommand());
 
+            
             //ReadSettings();
             //ConnectToSAP();
             //CreateUdfFieldsText();
@@ -232,7 +241,7 @@ namespace EdiConnectorService_C_Sharp
             try
             {
                 DataSet dataSet = new DataSet();
-                dataSet.ReadXml(EdiConnectorData.getInstance().sApplicationPath + @"\settings.xml");
+                dataSet.ReadXml(EdiConnectorData.getInstance().sApplicationPath + @"settings.xml");
 
                 if (dataSet.Tables["server"].Rows[0]["sqlversion"].ToString() == "2005")
                     EdiConnectorData.getInstance().bstDBServerType = BoDataServerTypes.dst_MSSQL2005;
@@ -297,7 +306,7 @@ namespace EdiConnectorService_C_Sharp
         public void ReadInterface()
         {
             DataSet dataSet = new DataSet();
-            dataSet.ReadXml(EdiConnectorData.getInstance().sApplicationPath + @"\orderfld.xml");
+            dataSet.ReadXml(EdiConnectorData.getInstance().sApplicationPath + @"orderfld.xml");
 
             for (int orderHead = 0; orderHead < dataSet.Tables["OK"].Rows.Count - 1; orderHead++ )
             {

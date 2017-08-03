@@ -5,10 +5,6 @@ Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "EdiConnectorService", "EdiC
 EndProject
 Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "TestEdiConnector", "TestEdiConnector\TestEdiConnector.vbproj", "{6E81B7ED-8717-4B41-83C6-CBE36493BEDB}"
 EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "EC", "EC\EC.vdproj", "{79912E31-573B-447F-93FE-C0E992D55C50}"
-EndProject
-Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "ECServiceSetup", "ECServiceSetup\ECServiceSetup.vdproj", "{BE5F7034-4AA7-4FDF-879D-BABB4236CA7A}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EdiConnectorService_C-Sharp", "EdiConnectorService_C-Sharp\EdiConnectorService_C-Sharp.csproj", "{9A7D3036-37F4-440C-ACA9-940FEDEBCD05}"
 EndProject
 Global
@@ -23,10 +19,6 @@ Global
 		{6E81B7ED-8717-4B41-83C6-CBE36493BEDB}.Debug|x86.ActiveCfg = Debug|x86
 		{6E81B7ED-8717-4B41-83C6-CBE36493BEDB}.Release|x86.ActiveCfg = Release|x86
 		{6E81B7ED-8717-4B41-83C6-CBE36493BEDB}.Release|x86.Build.0 = Release|x86
-		{79912E31-573B-447F-93FE-C0E992D55C50}.Debug|x86.ActiveCfg = Debug
-		{79912E31-573B-447F-93FE-C0E992D55C50}.Release|x86.ActiveCfg = Release
-		{BE5F7034-4AA7-4FDF-879D-BABB4236CA7A}.Debug|x86.ActiveCfg = Debug
-		{BE5F7034-4AA7-4FDF-879D-BABB4236CA7A}.Release|x86.ActiveCfg = Release
 		{9A7D3036-37F4-440C-ACA9-940FEDEBCD05}.Debug|x86.ActiveCfg = Debug|x86
 		{9A7D3036-37F4-440C-ACA9-940FEDEBCD05}.Debug|x86.Build.0 = Debug|x86
 		{9A7D3036-37F4-440C-ACA9-940FEDEBCD05}.Release|x86.ActiveCfg = Release|x86

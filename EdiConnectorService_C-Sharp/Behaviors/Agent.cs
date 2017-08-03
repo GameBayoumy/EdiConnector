@@ -8,13 +8,13 @@ namespace EdiConnectorService_C_Sharp
 {
     public class Agent
     {
-        private Queue<Command> commandsQueue = new Queue<Command>();
+        private Queue<ICommand> commandsQueue = new Queue<ICommand>();
 
         public Agent()
         {
         }
 
-        public void QueueCommand(Command _command)
+        public void QueueCommand(ICommand _command)
         {
             commandsQueue.Enqueue(_command);
             _command.execute();

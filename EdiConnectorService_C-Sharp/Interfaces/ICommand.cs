@@ -8,7 +8,7 @@ namespace EdiConnectorService_C_Sharp
     /// <summary>
     /// Command interface
     /// </summary>
-    public interface Command
+    public interface ICommand
     {
         void execute();
     }
