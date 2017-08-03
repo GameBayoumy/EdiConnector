@@ -25,17 +25,17 @@ namespace EdiConnectorService_C_Sharp
 
         public EdiConnectorService()
         {
-            InitializeComponent();
-            EventLogger.setInstance(this.eventLog1);
-            this.stoppedEvent = new ManualResetEvent(false);
-            this.stopping = false;
-
             // Initialize objects
-            EdiConnectorData.getInstance();
+            InitializeComponent();
+            EventLogger.setInstance(this.eventLog);
             ConnectionManager.getInstance();
-            agent = new Agent();
-
+            EdiConnectorData.getInstance();
             EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp\";
+            agent = new Agent();
+            stoppedEvent = new ManualResetEvent(false);
+            stopping = false;
+
+
             agent.QueueCommand(new CreateConnectionsCommand());
             ConnectionManager.getInstance().ConnectAll();
 
@@ -77,6 +77,12 @@ namespace EdiConnectorService_C_Sharp
             EventLogger.getInstance().EventInfo("EdiService in OnStart.");
 
             EdiConnectorData.getInstance().sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
+            
+            // Sets up the file system watcher to read xml files in the execution directory
+            fileSystemWatcher.Filter = "*.xml";
+            fileSystemWatcher.Path = EdiConnectorData.getInstance().sApplicationPath;
+            fileSystemWatcher.InternalBufferSize = 25 * 4096;
+            fileSystemWatcher.EnableRaisingEvents = true;
 
             // Create connections from config.xml and try to connect all servers
             agent.QueueCommand(new CreateConnectionsCommand());
@@ -91,12 +97,12 @@ namespace EdiConnectorService_C_Sharp
             ThreadPool.QueueUserWorkItem(new WaitCallback(ServiceWorkerThread));
         }
 
-        /*''' <summary>
-    ''' The method performs the main function of the service. It runs on a 
-    ''' thread pool worker thread.
-    ''' </summary>
-    ''' <param name="state"></param>
-         * */
+
+        /// <summary>
+        /// The method performs the main function of the service. It runs on a 
+        /// thread pool worker thread.
+        /// </summary>
+        /// <param name="state"></param>
         private void ServiceWorkerThread(Object state)
         {
             //Periodically check if the service is stopping.
@@ -104,8 +110,11 @@ namespace EdiConnectorService_C_Sharp
             {
                 //Perform main service function here...
 
+                fileSystemWatcher.Changed += new FileSystemEventHandler(OnChanged);
+                fileSystemWatcher.Created += new FileSystemEventHandler(OnCreated);
+
                 //If there are any servers connected to SAP
-                if(ConnectionManager.getInstance().GetAllConnectedServers().Count > 0)
+                if (ConnectionManager.getInstance().GetAllConnectedServers().Count > 0)
                 {
 
                 }
@@ -145,12 +154,32 @@ namespace EdiConnectorService_C_Sharp
             DisconnectToSAP();
 
             //Log a service stop message to the Application log.
-            this.eventLog1.WriteEntry("EdiService in OnStop.");
+            this.eventLog.WriteEntry("EdiService in OnStop.");
 
             //Indicate that the service is stopping and wait for the finish of 
             //the main service function (ServiceWorkerThread).
             this.stopping = true;
             this.stoppedEvent.WaitOne();
+        }
+
+        /// <summary>
+        /// Called when a xml file has been [changed].
+        /// </summary>
+        /// /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
+        private static void OnChanged(object source, FileSystemEventArgs e)
+        {
+            // Specify what is done when a file is changed, created, or deleted.
+            Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
+        }
+
+        /// <summary>
+        /// Called when a xml file has been [created].
+        /// </summary>
+        /// <param name="e">The <see cref="FileSystemEventArgs"/> instance containing the event data.</param>
+        private static void OnCreated(object source, FileSystemEventArgs e)
+        {
+            // Specify what is done when a file is changed, created, or deleted.
+            Console.WriteLine("File: " + e.FullPath + " " + e.ChangeType);
         }
 
         #region
@@ -327,13 +356,13 @@ namespace EdiConnectorService_C_Sharp
             switch(sType)
             {
                 case "V":
-                    this.eventLog1.WriteEntry(sType + " - " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " - " + functionSender.Replace("_", " ") + " - " + msg, System.Diagnostics.EventLogEntryType.Information);
+                    this.eventLog.WriteEntry(sType + " - " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " - " + functionSender.Replace("_", " ") + " - " + msg, System.Diagnostics.EventLogEntryType.Information);
                     break;
                 case "X":
-                    this.eventLog1.WriteEntry(sType + " - " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " - " + functionSender.Replace("_", " ") + " - " + msg, System.Diagnostics.EventLogEntryType.Error);
+                    this.eventLog.WriteEntry(sType + " - " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " - " + functionSender.Replace("_", " ") + " - " + msg, System.Diagnostics.EventLogEntryType.Error);
                     break;
                 default:
-                    this.eventLog1.WriteEntry(sType + " - " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " - " + functionSender.Replace("_", " ") + " - " + msg);
+                    this.eventLog.WriteEntry(sType + " - " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " - " + functionSender.Replace("_", " ") + " - " + msg);
                     break;
             }
         }

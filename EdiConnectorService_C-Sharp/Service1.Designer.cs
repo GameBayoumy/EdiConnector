@@ -28,31 +28,32 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.eventLog1 = new System.Diagnostics.EventLog();
-            this.fileSystemWatcher1 = new System.IO.FileSystemWatcher();
-            ((System.ComponentModel.ISupportInitialize)(this.eventLog1)).BeginInit();
-            ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
+            this.eventLog = new System.Diagnostics.EventLog();
+            this.fileSystemWatcher = new System.IO.FileSystemWatcher();
+            ((System.ComponentModel.ISupportInitialize)(this.eventLog)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher)).BeginInit();
             // 
-            // eventLog1
+            // eventLog
             // 
-            this.eventLog1.Log = "Application";
-            this.eventLog1.Source = "EdiConnectorService";
+            this.eventLog.Log = "Application";
+            this.eventLog.Source = "EdiConnectorService";
             // 
-            // fileSystemWatcher1
+            // fileSystemWatcher
             // 
-            this.fileSystemWatcher1.EnableRaisingEvents = true;
+            this.fileSystemWatcher.EnableRaisingEvents = true;
+            this.fileSystemWatcher.Filter = "*.xml";
             // 
             // EdiConnectorService
             // 
             this.ServiceName = "EdiConnectorService";
-            ((System.ComponentModel.ISupportInitialize)(this.eventLog1)).EndInit();
-            ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.eventLog)).EndInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher)).EndInit();
 
         }
 
         #endregion
 
-        private System.Diagnostics.EventLog eventLog1;
-        private System.IO.FileSystemWatcher fileSystemWatcher1;
+        private System.Diagnostics.EventLog eventLog;
+        private System.IO.FileSystemWatcher fileSystemWatcher;
     }
 }
