@@ -69,8 +69,9 @@ namespace EdiConnectorService_C_Sharp
                 {
                     var typeAttribute = (string)xEle.Attribute("type") ?? "alpha";
                     var subTypeAttribute = (string)xEle.Attribute("subtype") ?? "none";
+                    var sizeAttribute = (string)xEle.Attribute("size") ?? "1";
                     CreateField(_connectedServer, xEle.Attribute("table").Value, xEle.Attribute("name").Value, xEle.Attribute("description").Value, 
-                        Convert.ToInt32(xEle.Attribute("size").Value), GetFieldType(typeAttribute), GetFieldSubType(subTypeAttribute), false, false, "");
+                        Convert.ToInt32(sizeAttribute), GetFieldType(typeAttribute), GetFieldSubType(subTypeAttribute), false, false, "");
                 }
             }
             catch (Exception e)
