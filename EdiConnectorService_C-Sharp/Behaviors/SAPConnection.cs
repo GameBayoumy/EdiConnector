@@ -115,5 +115,30 @@ namespace EdiConnectorService_C_Sharp
                 return ConnectedToSAP;
             }
         }
+
+        public void SendMailNotification(string _subject, string _body, string _mailAddress)
+        {
+            Messages objMsg = (Messages)Company.GetBusinessObject(BoObjectTypes.oMessages);
+            objMsg.Subject = _subject;
+            objMsg.MessageText = _body;
+            objMsg.Recipients.Add();
+            objMsg.Recipients.SetCurrentLine(0);
+            objMsg.Recipients.UserCode = Company.UserName;
+            objMsg.Recipients.NameTo = Company.UserName;
+            objMsg.Recipients.UserType = BoMsgRcpTypes.rt_InternalUser;
+            objMsg.Recipients.SendInternal = BoYesNoEnum.tNO;
+            objMsg.Recipients.SendEmail = BoYesNoEnum.tYES;
+            objMsg.Recipients.EmailAddress = _mailAddress;
+            objMsg.Priority = BoMsgPriorities.pr_Normal;
+            //objMsg.Attachments.Add();
+            //objMsg.Attachments.Item(0).FileName = Attachment;
+
+            if (objMsg.Add() != 0)
+                EventLogger.getInstance().EventInfo("Error sending mail notification from: " + Company.Server);
+            else
+                EventLogger.getInstance().EventInfo("Message send from: " + Company.Server);
+
+            EdiConnectorService.ClearObject(objMsg);
+        }
     }
 }
