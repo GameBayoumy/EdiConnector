@@ -52,7 +52,7 @@ namespace EdiConnectorService_C_Sharp
             //UpdateIncomingXmlMessage(connectedServer, "Saved.", "Saved document with type: " + ediDocument.GetDocumentType().ToString());
         }
 
-        private string AddIncomingXmlMessage(string _connectedServer, string _filePath, string _fileName, string _status, string _logMessage, DateTime _createDate)
+        private string AddIncomingXmlMessage(string _connectedServer, string _filePath, string _fileName, string _status, string _logMessage, DateTime _createDateTime)
         {
             SAPbobsCOM.UserTable oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item("0_SWS_EDI_LOG");
             SAPbobsCOM.Recordset oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
@@ -79,7 +79,8 @@ namespace EdiConnectorService_C_Sharp
 
                 oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
                 oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = _logMessage;
-                oUDT.UserFields.Fields.Item("U_CREATE_DATE").Value = _createDate;
+                oUDT.UserFields.Fields.Item("U_CREATE_DATE").Value = _createDateTime.Date;
+                oUDT.UserFields.Fields.Item("U_CREATE_TIME").Value = _createDateTime.TimeOfDay;
 
                 if (oUDT.Add() == 0)
                 {
