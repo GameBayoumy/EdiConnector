@@ -181,9 +181,7 @@ namespace EdiConnectorService_C_Sharp
 
                 if (EdiConnectorData.getInstance().cmp.Connect() != 0)
                 {
-                    int errCode;
-                    string errMsg = "";
-                    EdiConnectorData.getInstance().cmp.GetLastError(out errCode, out errMsg);
+                    EdiConnectorData.getInstance().cmp.GetLastError(out var errCode, out var errMsg);
                     if (errCode != 0)
                     {
                         Log("X", "Error: " + errMsg + "(" + errCode.ToString() + ")", "ConnectToSAP");
@@ -804,12 +802,9 @@ namespace EdiConnectorService_C_Sharp
 
         public void OrderSave()
         {
-            int errCode;
-            string errMsg = "";
-
             if (EdiConnectorData.getInstance().oOrder.Add() != 0)
             {
-                EdiConnectorData.getInstance().cmp.GetLastError(out errCode, out errMsg);
+                EdiConnectorData.getInstance().cmp.GetLastError(out var errCode, out var errMsg);
 
                 File.Move(EdiConnectorData.getInstance().sSOTempPath + @"\" + EdiConnectorData.getInstance().SO_FILENAME, EdiConnectorData.getInstance().sSOErrorPath + @"\" + DateTime.Now.ToString("yyyyMMdd") + "_" + DateTime.Now.ToString("HHmmss") + "_" + EdiConnectorData.getInstance().SO_FILENAME);
                 Log("X", "Error: " + errMsg + "(" + errCode + ")", "OrderSave");
@@ -856,8 +851,6 @@ namespace EdiConnectorService_C_Sharp
         {
             IUserFieldsMD oUDF;
             oUDF = (SAPbobsCOM.IUserFieldsMD)EdiConnectorData.getInstance().cmp.GetBusinessObject(BoObjectTypes.oUserFields);
-            int errCode;
-            string errMsg = "";
 
             oUDF.TableName = _tableName;
             oUDF.Name = _fieldName;
@@ -876,7 +869,7 @@ namespace EdiConnectorService_C_Sharp
 
             if (oUDF.Add() != 0)
             {
-                EdiConnectorData.getInstance().cmp.GetLastError(out errCode, out errMsg);
+                EdiConnectorData.getInstance().cmp.GetLastError(out var errCode, out var errMsg);
                 Log("X", "Error: " + errMsg + "(" + errCode + ")", "CreateUdf");
             }
             else

@@ -78,6 +78,7 @@ namespace EdiConnectorService_C_Sharp
         {
             SAPbobsCOM.Recordset oRs;
             oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
+            string buyerMailAddress ="";
 
             foreach (OrderDocument orderDocument in (List<OrderDocument>)_dataObject)
             {
@@ -91,12 +92,13 @@ namespace EdiConnectorService_C_Sharp
                     {
                         oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString();
                     }
-                    oRs.DoQuery(@"SELECT T0.""Address"", T1.""CardCode"", T1.""CardName"" FROM CRD1 T0 INNER JOIN OCRD T1 ON T0.""CardCode"" = T1.""CardCode"" WHERE T0.""GlblLocNum"" = '" + orderDocument.BuyerGLN + "'");
+                    oRs.DoQuery(@"SELECT T2.""Address"", T0.""CardCode"", T0.""CardName"", T1.""E_MailL"" FROM OCRD T0 INNER JOIN OCPR T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN CRD1 T2 ON T0.""CardCode"" = T2.""CardCode"" WHERE T2.""GlblLocNum"" = '" + orderDocument.BuyerGLN + "'");
                     if (oRs.RecordCount > 0)
                     {
                         oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString();
                         oOrd.CardCode = oRs.Fields.Item(1).Value.ToString();
                         oOrd.CardName = oRs.Fields.Item(2).Value.ToString();
+                        buyerMailAddress = oRs.Fields.Item(3).Value.ToString();
                     }
                     foreach (Article article in orderDocument.Articles)
                     {
@@ -117,7 +119,10 @@ namespace EdiConnectorService_C_Sharp
                     oOrd.UserFields.Fields.Item("U_IsTestMessage").Value = orderDocument.IsTestMessage;
 
                     if(oOrd.Add() == 0)
+                    {
+                        ConnectionManager.getInstance().GetConnection(_connectedServer).SendMailNotification("New sales order created:" + oOrd.DocNum, "", buyerMailAddress);
                         EventLogger.getInstance().EventInfo("Succesfully added Sales Order: " + oOrd.DocNum);
+                    }
                     else
                     {
                         ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
