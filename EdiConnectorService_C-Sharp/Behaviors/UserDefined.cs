@@ -67,8 +67,10 @@ namespace EdiConnectorService_C_Sharp
                 XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"udf.xml");
                 foreach (XElement xEle in xDoc.Element("UserDefined").Element("Fields").Descendants("Udf"))
                 {
+                    var typeAttribute = (string)xEle.Attribute("type") ?? "alpha";
+                    var subTypeAttribute = (string)xEle.Attribute("subtype") ?? "none";
                     CreateField(_connectedServer, xEle.Attribute("table").Value, xEle.Attribute("name").Value, xEle.Attribute("description").Value, 
-                        Convert.ToInt32(xEle.Attribute("size").Value), GetFieldType(xEle.Attribute("type").Value), BoFldSubTypes.st_None, false, false, "");
+                        Convert.ToInt32(xEle.Attribute("size").Value), GetFieldType(typeAttribute), GetFieldSubType(subTypeAttribute), false, false, "");
                 }
             }
             catch (Exception e)
@@ -100,7 +102,8 @@ namespace EdiConnectorService_C_Sharp
 
             if (oUDF.Add() != 0)
             {
-                EventLogger.getInstance().EventError("Error creating UDG: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
+                ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
+                EventLogger.getInstance().EventError("Error creating UDF: " + errMsg);
             }
             else
             {
@@ -129,6 +132,18 @@ namespace EdiConnectorService_C_Sharp
                 return BoFieldTypes.db_Numeric;
             else
                 return BoFieldTypes.db_Alpha;
+        }
+
+        private static SAPbobsCOM.BoFldSubTypes GetFieldSubType(string _type)
+        {
+            if (_type == "none")
+                return BoFldSubTypes.st_None;
+            else if (_type == "link")
+                return BoFldSubTypes.st_Link;
+            else if (_type == "time")
+                return BoFldSubTypes.st_Time;
+            else
+                return BoFldSubTypes.st_None;
         }
     }
 }

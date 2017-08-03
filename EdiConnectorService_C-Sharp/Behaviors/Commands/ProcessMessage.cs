@@ -26,7 +26,7 @@ namespace EdiConnectorService_C_Sharp
             XElement xMessages = xDoc.Element("Messages");
             EdiDocument ediDocument = new EdiDocument();
             Object ediDocumentData = new Object();
-            //recordCode = AddIncomingXmlMessage(connectedServer, filePath, fileName, "Processing..", "Loaded new document", DateTime.Now);
+            recordCode = AddIncomingXmlMessage(connectedServer, filePath, fileName, "Processing..", "Loaded new document", DateTime.Now);
 
             // Checks which kind of document type gets through the system
             if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Count() > 0)
@@ -54,21 +54,36 @@ namespace EdiConnectorService_C_Sharp
 
         private string AddIncomingXmlMessage(string _connectedServer, string _filePath, string _fileName, string _status, string _logMessage, DateTime _createDate)
         {
-            SAPbobsCOM.UserTable oUDT;
-            oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item("0_SWS_EDI");
+            SAPbobsCOM.UserTable oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item("0_SWS_EDI_LOG");
             SAPbobsCOM.Recordset oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
+            SAPbobsCOM.Attachments2 oAtt = (SAPbobsCOM.Attachments2)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oAttachments2));
 
             try
             {
-                oUDT.UserFields.Fields.Item("U_XML_FILE_PATH").Value = _filePath;
-                oUDT.UserFields.Fields.Item("U_XML_FILE_NAME").Value = _fileName;
+
+                oAtt.Lines.SourcePath = _filePath;
+                oAtt.Lines.FileName = _fileName;
+                oAtt.Lines.Override = SAPbobsCOM.BoYesNoEnum.tYES;
+
+                if (oAtt.Add() == 0)
+                {
+                    int attEnt = int.Parse(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetNewObjectKey());
+                    oUDT.UserFields.Fields.Item("U_XML_ATTACHMENT").Value = attEnt;
+                    //DeliveryV.UserFields.Fields.Item("U_ReadyForInvoice").Value = "Y";
+                }
+                else
+                {
+                    ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
+                    EventLogger.getInstance().EventError("Error adding attachment to UDF: " + errMsg);
+                }
+
                 oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
                 oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = _logMessage;
                 oUDT.UserFields.Fields.Item("U_CREATE_DATE").Value = _createDate;
 
                 if (oUDT.Add() == 0)
                 {
-                    oRs.DoQuery(@"SELECT Max(""Code"") FROM ""@0_SWS_EDI""");
+                    oRs.DoQuery(@"SELECT Max(""Code"") FROM ""@0_SWS_EDI_LOG""");
                     recordCode = oRs.Fields.Item(0).Value.ToString();
                     EventLogger.getInstance().EventInfo("Succesfully added incoming xml message to UDT: " + oUDT.TableName);
                     return recordCode;
@@ -81,11 +96,13 @@ namespace EdiConnectorService_C_Sharp
             }
             catch
             {
-                EventLogger.getInstance().EventError("Error adding items to UDF: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
+                ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
+                EventLogger.getInstance().EventError("Error adding items to UDF: " + errMsg);
                 return recordCode = null;
             }
             finally
             {
+                EdiConnectorService.ClearObject(oAtt);
                 EdiConnectorService.ClearObject(oUDT);
                 EdiConnectorService.ClearObject(oRs);
             }
@@ -94,7 +111,7 @@ namespace EdiConnectorService_C_Sharp
         private void UpdateIncomingXmlMessage(string _connectedServer, string _status, string _logMessage)
         {
             SAPbobsCOM.UserTable oUDT;
-            oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item("0_SWS_EDI");
+            oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item("0_SWS_EDI_LOG");
 
             oUDT.GetByKey(recordCode);
 

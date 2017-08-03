@@ -60,16 +60,16 @@
     <Compile Include="Behaviors\Commands\ProcessMessage.cs" />
     <Compile Include="Behaviors\ConnectionManager.cs" />
     <Compile Include="Behaviors\Commands\CreateConnectionsCommand.cs" />
-    <Compile Include="Behaviors\Strategy\EdiDocument.cs" />
     <Compile Include="Behaviors\EventLogger.cs" />
     <Compile Include="Behaviors\SAPConnection.cs" />
-    <Compile Include="Behaviors\UserDefined.cs" />
+    <Compile Include="Behaviors\Strategy\EdiDocument.cs" />
     <Compile Include="Behaviors\Strategy\InvoiceDocument.cs" />
-    <Compile Include="Behaviors\Strategy\OrderResponseDocument.cs" />
     <Compile Include="Behaviors\Strategy\OrderDocument.cs" />
+    <Compile Include="Behaviors\Strategy\OrderResponseDocument.cs" />
+    <Compile Include="Behaviors\UserDefined.cs" />
+    <Compile Include="Interfaces\ICommand.cs" />
     <Compile Include="Interfaces\IEdiDocumentType.cs" />
     <Compile Include="Structure\EdiConnectorData.cs" />
-    <Compile Include="Interfaces\ICommand.cs" />
     <Compile Include="ProjectInstaller.cs">
       <SubType>Component</SubType>
     </Compile>
