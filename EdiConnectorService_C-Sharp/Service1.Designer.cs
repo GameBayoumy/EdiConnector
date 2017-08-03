@@ -29,22 +29,30 @@
         private void InitializeComponent()
         {
             this.eventLog1 = new System.Diagnostics.EventLog();
+            this.fileSystemWatcher1 = new System.IO.FileSystemWatcher();
             ((System.ComponentModel.ISupportInitialize)(this.eventLog1)).BeginInit();
+            ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).BeginInit();
             // 
             // eventLog1
             // 
             this.eventLog1.Log = "Application";
             this.eventLog1.Source = "EdiConnectorService";
             // 
+            // fileSystemWatcher1
+            // 
+            this.fileSystemWatcher1.EnableRaisingEvents = true;
+            // 
             // EdiConnectorService
             // 
             this.ServiceName = "EdiConnectorService";
             ((System.ComponentModel.ISupportInitialize)(this.eventLog1)).EndInit();
-            EventLogger.setInstance(this.eventLog1);
+            ((System.ComponentModel.ISupportInitialize)(this.fileSystemWatcher1)).EndInit();
+
         }
 
         #endregion
 
         private System.Diagnostics.EventLog eventLog1;
+        private System.IO.FileSystemWatcher fileSystemWatcher1;
     }
 }

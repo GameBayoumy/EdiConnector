@@ -26,6 +26,7 @@ namespace EdiConnectorService_C_Sharp
         public EdiConnectorService()
         {
             InitializeComponent();
+            EventLogger.setInstance(this.eventLog1);
             this.stoppedEvent = new ManualResetEvent(false);
             this.stopping = false;
 
