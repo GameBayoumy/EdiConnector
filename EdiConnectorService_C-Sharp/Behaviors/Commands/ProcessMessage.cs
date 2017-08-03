@@ -67,9 +67,7 @@ namespace EdiConnectorService_C_Sharp
 
                 if (oAtt.Add() == 0)
                 {
-                    int attEnt = int.Parse(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetNewObjectKey());
-                    oUDT.UserFields.Fields.Item("U_XML_ATTACHMENT").Value = attEnt;
-                    //DeliveryV.UserFields.Fields.Item("U_ReadyForInvoice").Value = "Y";
+                    oUDT.UserFields.Fields.Item("U_XML_ATTACHMENT").Value = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.AttachMentPath + _fileName;
                 }
                 else
                 {
@@ -80,7 +78,7 @@ namespace EdiConnectorService_C_Sharp
                 oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
                 oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = _logMessage;
                 oUDT.UserFields.Fields.Item("U_CREATE_DATE").Value = _createDateTime.Date;
-                oUDT.UserFields.Fields.Item("U_CREATE_TIME").Value = _createDateTime.TimeOfDay;
+                oUDT.UserFields.Fields.Item("U_CREATE_TIME").Value = _createDateTime.ToShortTimeString();
 
                 if (oUDT.Add() == 0)
                 {
