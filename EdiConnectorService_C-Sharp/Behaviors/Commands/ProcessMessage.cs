@@ -30,27 +30,42 @@ namespace EdiConnectorService_C_Sharp
             AddIncomingXmlMessage("Processing..", "Loaded new document: " + fileName, DateTime.Now);
 
             // Checks which kind of document type gets through the system
-            if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Count() > 0)
+            try
             {
-                ediDocument.SetDocumentType(new OrderDocument());
+                if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Count() > 0)
+                {
+                    ediDocument.SetDocumentType(new OrderDocument());
+                }
+                else if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "5").Count() > 0)
+                {
+                    ediDocument.SetDocumentType(new OrderResponseDocument());
+                }
+                else if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "8").Count() > 0)
+                {
+                    ediDocument.SetDocumentType(new InvoiceDocument());
+                }
+                UpdateIncomingXmlMessage("Processing..", "Set document type to: " + ediDocument.GetDocumentType().ToString());
             }
-            else if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "5").Count() > 0)
+            catch (Exception e)
             {
-                ediDocument.SetDocumentType(new OrderResponseDocument());
+                UpdateIncomingXmlMessage("Error!", "Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". Exception: " + e.Message);
+                EventLogger.getInstance().EventError("Error processing message - Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". Exception: " + e.Message);
             }
-            else if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "8").Count() > 0)
-            {
-                ediDocument.SetDocumentType(new InvoiceDocument());
-            }
-            UpdateIncomingXmlMessage("Processing..", "Set document type to: " + ediDocument.GetDocumentType().ToString());
+
 
             // Reads the XML Data for the specified document type
-            ediDocumentData = ediDocument.ReadXMLData(xMessages);
-            UpdateIncomingXmlMessage("Processing..", "Read document with type: " + ediDocument.GetDocumentType().ToString());
+            ediDocumentData = ediDocument.ReadXMLData(xMessages, out Exception exR);
+            if (exR != null)
+                UpdateIncomingXmlMessage("Error!", "Reading document with type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exR.Message);
+            else
+                UpdateIncomingXmlMessage("Processing..", "Read document with type: " + ediDocument.GetDocumentType().ToString());
 
             // Save the data object for the specified document type to SAP
-            ediDocument.SaveToSAP(ediDocumentData, connectedServer);
-            UpdateIncomingXmlMessage("Processed.", "Saved document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString());
+            ediDocument.SaveToSAP(ediDocumentData, connectedServer, out Exception exS);
+            if(exS != null)
+                UpdateIncomingXmlMessage("Error!", "Saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exS.Message);
+            else
+                UpdateIncomingXmlMessage("Processed.", "Saved document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString());
         }
 
         private void AddIncomingXmlMessage(string _status, string _logMessage, DateTime _createDateTime)

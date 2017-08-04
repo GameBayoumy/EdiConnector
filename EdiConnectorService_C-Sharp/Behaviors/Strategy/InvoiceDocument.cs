@@ -65,11 +65,14 @@ namespace EdiConnectorService_C_Sharp
         /// </summary>
         /// <param name="_xMessages">The incoming XML messages.</param>
         /// <returns>List of InvoiceDocuments</returns>
-        public Object ReadXMLData(XElement _xMessages)
+        public Object ReadXMLData(XElement _xMessages, out Exception _ex)
         {
             // Checks if the MessageType is for a Invoice Document.
             // Then it will create new InvoiceDocuments for every message
-             List<InvoiceDocument>InvoiceMsgList = _xMessages.Elements().Where(x => x.Element("MessageType").Value == "8").Select(x =>
+            _ex = null;
+            try
+            {
+                List<InvoiceDocument>InvoiceMsgList = _xMessages.Elements().Where(x => x.Element("MessageType").Value == "8").Select(x =>
                 new InvoiceDocument()
                 {
                     MessageStandard = x.Element("MessageStandard").Value,
@@ -115,12 +118,26 @@ namespace EdiConnectorService_C_Sharp
                         }).First()
                     }).First()
                 }).ToList();
-             return InvoiceMsgList;
+                return InvoiceMsgList;
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+                return null;
+            }
         }
 
-        public void SaveToSAP(Object _dataObject, string _connectedServer)
+        public void SaveToSAP(Object _dataObject, string _connectedServer, out Exception _ex)
         {
+            _ex = null;
+            try
+            {
 
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+            }
         }
     }
 

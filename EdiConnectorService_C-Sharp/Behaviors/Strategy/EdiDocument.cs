@@ -30,14 +30,14 @@ namespace EdiConnectorService_C_Sharp
             return documentType;
         }
 
-        public Object ReadXMLData(XElement _xMessages)
+        public Object ReadXMLData(XElement _xMessages, out Exception _ex)
         {
-            return documentType.ReadXMLData(_xMessages);
+            return documentType.ReadXMLData(_xMessages, out _ex);
         }
 
-        public void SaveToSAP(Object _dataObject, string _connectedServer)
+        public void SaveToSAP(Object _dataObject, string _connectedServer, out Exception _ex)
         {
-            documentType.SaveToSAP(_dataObject, _connectedServer);
+            documentType.SaveToSAP(_dataObject, _connectedServer, out _ex);
         }
     }
 }

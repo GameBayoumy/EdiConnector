@@ -39,46 +39,56 @@ namespace EdiConnectorService_C_Sharp
         /// </summary>
         /// <param name="_xMessages">The incoming XML messages.</param>
         /// <returns>List of OrderDocuments</returns>
-        public Object ReadXMLData(XElement _xMessages)
+        public Object ReadXMLData(XElement _xMessages, out Exception errMsg)
         {
             // Checks if the MessageType is for a Order Response Document.
             // Then it will create new OrderDocuments for every message
-            List<OrderDocument> OrderMsgList = _xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Select(x =>
-                new OrderDocument()
-                {
-                    MessageStandard = x.Element("MessageStandard").Value,
-                    MessageType = x.Element("MessageType").Value,
-                    Sender = x.Element("Sender").Value,
-                    SenderGLN = x.Element("SenderGLN").Value,
-                    RecipientGLN = x.Element("RecipientGLN").Value,
-                    IsTestMessage = x.Element("IsTestMessage").Value,
-                    OrderNumberBuyer = x.Element("OrderNumberBuyer").Value,
-                    RequestedDeliveryDate = x.Element("RequestedDeliveryDate").Value,
-                    BuyerGLN = x.Element("BuyerGLN").Value,
-                    BuyerVATNumber = x.Element("BuyerVATNumber").Value,
-                    SupplierGLN = x.Element("SupplierGLN").Value,
-                    SupplierVATNumber = x.Element("SupplierVATNumber").Value,
-                    Articles = x.Elements("Article").Select(a => new Article()
+            errMsg = null;
+            try
+            {
+                List<OrderDocument> OrderMsgList = _xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Select(x =>
+                    new OrderDocument()
                     {
-                        LineNumber = a.Element("LineNumber").Value,
-                        ArticleDescription = a.Element("ArticleDescription").Value,
-                        GTIN = a.Element("GTIN").Value,
-                        ArticleNetPrice = a.Element("ArticleNetPrice").Value,
-                        OrderedQuantity = a.Element("OrderedQuantity").Value
-                    }).ToList()
-                }).ToList();
-             return OrderMsgList;
+                        MessageStandard = x.Element("MessageStandard").Value,
+                        MessageType = x.Element("MessageType").Value,
+                        Sender = x.Element("Sender").Value,
+                        SenderGLN = x.Element("SenderGLN").Value,
+                        RecipientGLN = x.Element("RecipientGLN").Value,
+                        IsTestMessage = x.Element("IsTestMessage").Value,
+                        OrderNumberBuyer = x.Element("OrderNumberBuyer").Value,
+                        RequestedDeliveryDate = x.Element("RequestedDeliveryDate").Value,
+                        BuyerGLN = x.Element("BuyerGLN").Value,
+                        BuyerVATNumber = x.Element("BuyerVATNumber").Value,
+                        SupplierGLN = x.Element("SupplierGLN").Value,
+                        SupplierVATNumber = x.Element("SupplierVATNumber").Value,
+                        Articles = x.Elements("Article").Select(a => new Article()
+                        {
+                            LineNumber = a.Element("LineNumber").Value,
+                            ArticleDescription = a.Element("ArticleDescription").Value,
+                            GTIN = a.Element("GTIN").Value,
+                            ArticleNetPrice = a.Element("ArticleNetPrice").Value,
+                            OrderedQuantity = a.Element("OrderedQuantity").Value
+                        }).ToList()
+                    }).ToList();
+                 return OrderMsgList;
+            }
+            catch (Exception e)
+            {
+                errMsg = e;
+                return null;
+            }
         }
 
         /// <summary>
         /// Saves specific document data object to SAP.
         /// </summary>
         /// <param name="_dataObject">The data object.</param>
-        public void SaveToSAP(Object _dataObject, string _connectedServer)
+        public void SaveToSAP(Object _dataObject, string _connectedServer, out Exception ex)
         {
             SAPbobsCOM.Recordset oRs;
             oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
             string buyerMailAddress ="";
+            ex = null;
 
             foreach (OrderDocument orderDocument in (List<OrderDocument>)_dataObject)
             {
@@ -131,6 +141,7 @@ namespace EdiConnectorService_C_Sharp
                 }
                 catch (Exception e)
                 {
+                    ex = e;
                     EventLogger.getInstance().EventError("Error saving to SAP: " + e.Message + " with order document: " + orderDocument);
                 }
 

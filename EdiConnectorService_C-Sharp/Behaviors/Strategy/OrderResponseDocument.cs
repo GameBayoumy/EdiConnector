@@ -37,11 +37,14 @@ namespace EdiConnectorService_C_Sharp
         /// </summary>
         /// <param name="_xMessages">The incoming XML messages.</param>
         /// <returns>List of OrderResponseDocuments</returns>
-        public Object ReadXMLData(XElement _xMessages)
+        public Object ReadXMLData(XElement _xMessages, out Exception _ex)
         {
             // Checks if the MessageType is for a Order document.
             // Then it will create new OrderResponseDocuments for every message
-             List<OrderResponseDocument>OrderMsgList = _xMessages.Elements().Where(x => x.Element("MessageType").Value == "5").Select(x =>
+            _ex = null;
+            try
+            {
+                List<OrderResponseDocument>OrderMsgList = _xMessages.Elements().Where(x => x.Element("MessageType").Value == "5").Select(x =>
                 new OrderResponseDocument()
                 {
                     MessageStandard = x.Element("MessageStandard").Value,
@@ -64,11 +67,26 @@ namespace EdiConnectorService_C_Sharp
                         OrderedQuantity = a.Element("OrderedQuantity").Value,
                     }).ToList()
                 }).ToList();
-             return OrderMsgList;
+                return OrderMsgList;
+            }
+            catch (Exception e)
+            {
+                _ex = e;
+                return null;
+            }
         }
 
-        public void SaveToSAP(Object _dataObject, string _connectedServer)
+        public void SaveToSAP(Object _dataObject, string _connectedServer, out Exception _ex)
         {
+            _ex = null;
+            try
+            {
+
+            }
+            catch(Exception e)
+            {
+                _ex = e;
+            }
 
         }
     }
