@@ -14,15 +14,15 @@ namespace EdiConnectorService_C_Sharp
         string recordCode;
         XDocument xDoc;
 
-        public ProcessMessage(string _connectedServer, string _filePath, string _fileName)
+        public ProcessMessage(string _connectedServer, string _fileName)
         {
             connectedServer = _connectedServer;
-            filePath = _filePath;
             fileName = _fileName;
         }
 
         public void execute()
         {
+            filePath = ConnectionManager.getInstance().GetConnection(connectedServer).FilePath;
             xDoc = XDocument.Load(filePath + fileName);
             XElement xMessages = xDoc.Element("Messages");
             EdiDocument ediDocument = new EdiDocument();

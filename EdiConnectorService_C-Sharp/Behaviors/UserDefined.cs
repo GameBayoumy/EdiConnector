@@ -25,16 +25,16 @@ namespace EdiConnectorService_C_Sharp
                     CreateTable(_connectedServer, xEle.Attribute("name").Value, BoUTBTableType.bott_NoObjectAutoIncrement);
                 }
             }
-            catch (Exception e)
+            catch 
             {
-                EventLogger.getInstance().EventError("Error creating UDT - Message: " + e.Message);
+                //EventLogger.getInstance().EventError("Error creating UDT - Message: " + e.Message);
             }  
         }
 
-        private static void CreateTable(string _connectedServer, string _tableName, SAPbobsCOM.BoUTBTableType _tableType)
+        private static void CreateTable(string _connectedServer, string _tableName, BoUTBTableType _tableType)
         {
-            SAPbobsCOM.UserTablesMD oUDT;
-            oUDT = (SAPbobsCOM.UserTablesMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserTables);
+            UserTablesMD oUDT;
+            oUDT = (UserTablesMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserTables);
 
             if (!oUDT.GetByKey(_tableName))
             {
@@ -74,9 +74,9 @@ namespace EdiConnectorService_C_Sharp
                         Convert.ToInt32(sizeAttribute), GetFieldType(typeAttribute), GetFieldSubType(subTypeAttribute), false, false, "");
                 }
             }
-            catch (Exception e)
+            catch
             {
-                EventLogger.getInstance().EventError("Error creating UDF: " + e.Message);
+                //EventLogger.getInstance().EventError("Error creating UDF: " + e.Message);
             }
         }
 
@@ -84,7 +84,7 @@ namespace EdiConnectorService_C_Sharp
             BoFieldTypes _boType, BoFldSubTypes _boSubType, bool _mandatory, bool _default, string _defaultValue)
         {
             IUserFieldsMD oUDF;
-            oUDF = (SAPbobsCOM.IUserFieldsMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserFields);
+            oUDF = (IUserFieldsMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserFields);
             
             oUDF.TableName = _tableName;
             oUDF.Name = _fieldName;
@@ -119,7 +119,7 @@ namespace EdiConnectorService_C_Sharp
         /// </summary>
         /// <param name="_type">The type.</param>
         /// <returns></returns>
-        private static SAPbobsCOM.BoFieldTypes GetFieldType(string _type)
+        private static BoFieldTypes GetFieldType(string _type)
         {
             if (_type == "alpha")
                 return BoFieldTypes.db_Alpha;
@@ -135,7 +135,7 @@ namespace EdiConnectorService_C_Sharp
                 return BoFieldTypes.db_Alpha;
         }
 
-        private static SAPbobsCOM.BoFldSubTypes GetFieldSubType(string _type)
+        private static BoFldSubTypes GetFieldSubType(string _type)
         {
             if (_type == "none")
                 return BoFldSubTypes.st_None;
