@@ -65,6 +65,7 @@ namespace EdiConnectorService_C_Sharp
         {
             EventLogger.getInstance().EventInfo("EdiService in OnStart.");
             EdiConnectorData.getInstance().sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase) + @"\";
+            EdiConnectorData.getInstance().sProcessedDirName = "Processed";
 
             // Create connections from config.xml and try to connect all servers
             agent.QueueCommand(new CreateConnectionsCommand());
@@ -92,7 +93,20 @@ namespace EdiConnectorService_C_Sharp
                 // Processes incoming messages
                 foreach (string connectedServer in ConnectionManager.getInstance().GetAllConnectedServers())
                 {
-                    //agent.QueueCommand(new ProcessMessage(connectedServer, @"orders.xml"));
+                    string messagesFilePath = ConnectionManager.getInstance().GetConnection(connectedServer).MessagesFilePath;
+                    if (Directory.Exists(messagesFilePath))
+                    {
+                        FileInfo[] Files = new DirectoryInfo(messagesFilePath).GetFiles("*.xml", SearchOption.TopDirectoryOnly);
+
+                        foreach (FileInfo file in Files)
+                        {
+                            agent.QueueCommand(new ProcessMessage(connectedServer, file.Name));
+                        }
+                    }
+                    else
+                    {
+                        EventLogger.getInstance().EventError("Messages file path does not exist!: " + messagesFilePath);
+                    }
                 }
 
                 Thread.Sleep(10000);

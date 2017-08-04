@@ -22,12 +22,13 @@ namespace EdiConnectorService_C_Sharp
 
         public void execute()
         {
-            filePath = ConnectionManager.getInstance().GetConnection(connectedServer).FilePath;
+            filePath = ConnectionManager.getInstance().GetConnection(connectedServer).MessagesFilePath;
             xDoc = XDocument.Load(filePath + fileName);
             XElement xMessages = xDoc.Element("Messages");
             EdiDocument ediDocument = new EdiDocument();
             Object ediDocumentData = new Object();
             AddIncomingXmlMessage("Processing..", "Loaded new document: " + fileName, DateTime.Now);
+            System.IO.File.Move((filePath + fileName), (filePath + EdiConnectorData.getInstance().sProcessedDirName + @"\" + fileName));
 
             // Checks which kind of document type gets through the system
             try
@@ -69,7 +70,7 @@ namespace EdiConnectorService_C_Sharp
             if(exS != null)
             {
                 UpdateIncomingXmlMessage("Error!", "Saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exS.Message);
-                EventLogger.getInstance().EventError("Error saving document - Error saving document" + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exS.Message);
+                EventLogger.getInstance().EventError("Error saving document - Error saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exS.Message);
             }
             else
                 UpdateIncomingXmlMessage("Processed.", "Saved document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString());

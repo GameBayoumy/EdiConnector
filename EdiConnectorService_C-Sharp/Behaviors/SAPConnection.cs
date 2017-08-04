@@ -17,7 +17,7 @@ namespace EdiConnectorService_C_Sharp
         /// <summary>
         /// Gets or sets the file path.
         /// </summary>
-        public string FilePath { get; set; }
+        public string MessagesFilePath { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [connected to sap].
@@ -67,7 +67,11 @@ namespace EdiConnectorService_C_Sharp
                 Company.DbPassword = xmlNode["DbPassword"].InnerText;
                 Company.UseTrusted = true;
 
-                FilePath = xmlNode["FilePath"].InnerText;
+                MessagesFilePath = xmlNode["MessagesFilePath"].InnerText;
+                if (!System.IO.Directory.Exists(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName))
+                {
+                    System.IO.Directory.CreateDirectory(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName);
+                }
 
                 EventLogger.getInstance().EventInfo("Set connection - Server: " + Company.Server);
             }

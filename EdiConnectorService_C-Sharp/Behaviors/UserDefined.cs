@@ -33,8 +33,7 @@ namespace EdiConnectorService_C_Sharp
 
         private static void CreateTable(string _connectedServer, string _tableName, BoUTBTableType _tableType)
         {
-            UserTablesMD oUDT;
-            oUDT = (UserTablesMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserTables);
+            UserTablesMD oUDT = (UserTablesMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserTables);
 
             if (!oUDT.GetByKey(_tableName))
             {
@@ -51,8 +50,7 @@ namespace EdiConnectorService_C_Sharp
                     EventLogger.getInstance().EventInfo("UDT " + _tableName + " successfully created!");
                 }
             }
-
-            EdiConnectorData.getInstance().sUdtName.Add(_tableName);
+            
             EdiConnectorService.ClearObject(oUDT);
         }
 

@@ -20,7 +20,7 @@ namespace EdiConnectorService_C_Sharp
         }
 
         public string sApplicationPath;
-        public List<string>sUdtName = new List<string>();
+        public string sProcessedDirName;
 
         public SAPbobsCOM.Documents oOrder;
         public string CARDCODE;
