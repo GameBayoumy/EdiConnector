@@ -12,6 +12,7 @@ namespace EdiConnectorService_C_Sharp
         string fileName;
         string connectedServer;
         string recordCode;
+        XDocument xDoc;
 
         public ProcessMessage(string _connectedServer, string _filePath, string _fileName)
         {
@@ -22,7 +23,7 @@ namespace EdiConnectorService_C_Sharp
 
         public void execute()
         {
-            XDocument xDoc = XDocument.Load(filePath + fileName);
+            xDoc = XDocument.Load(filePath + fileName);
             XElement xMessages = xDoc.Element("Messages");
             EdiDocument ediDocument = new EdiDocument();
             Object ediDocumentData = new Object();
@@ -56,24 +57,11 @@ namespace EdiConnectorService_C_Sharp
         {
             SAPbobsCOM.UserTable oUDT = ConnectionManager.getInstance().GetConnection(connectedServer).Company.UserTables.Item("0_SWS_EDI_LOG");
             SAPbobsCOM.Recordset oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
-            SAPbobsCOM.Attachments2 oAtt = (SAPbobsCOM.Attachments2)(ConnectionManager.getInstance().GetConnection(connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oAttachments2));
 
             try
             {
-                oAtt.Lines.SourcePath = filePath;
-                oAtt.Lines.FileName = fileName;
-                oAtt.Lines.Override = SAPbobsCOM.BoYesNoEnum.tYES;
-
-                if (oAtt.Add() == 0)
-                {
-                    oUDT.UserFields.Fields.Item("U_XML_ATTACHMENT").Value = ConnectionManager.getInstance().GetConnection(connectedServer).Company.AttachMentPath + fileName;
-                }
-                else
-                {
-                    ConnectionManager.getInstance().GetConnection(connectedServer).Company.GetLastError(out var errCode, out var errMsg);
-                    EventLogger.getInstance().EventError("Error adding attachment to UDF: " + errMsg);
-                }
-
+                oUDT.Name = fileName;
+                oUDT.UserFields.Fields.Item("U_XML_ATTACHMENT").Value = xDoc.ToString();
                 oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
                 oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = _logMessage;
                 oUDT.UserFields.Fields.Item("U_CREATE_DATE").Value = _createDateTime.Date;
@@ -99,7 +87,6 @@ namespace EdiConnectorService_C_Sharp
             }
             finally
             {
-                EdiConnectorService.ClearObject(oAtt);
                 EdiConnectorService.ClearObject(oUDT);
                 EdiConnectorService.ClearObject(oRs);
             }
