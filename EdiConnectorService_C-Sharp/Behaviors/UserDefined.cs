@@ -83,9 +83,14 @@ namespace EdiConnectorService_C_Sharp
         private static void CreateField(string _connectedServer, string _tableName, string _fieldName, string _description, int _editSize, 
             BoFieldTypes _boType, BoFldSubTypes _boSubType, bool _mandatory, bool _default, string _defaultValue)
         {
-            IUserFieldsMD oUDF;
-            oUDF = (IUserFieldsMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserFields);
-            
+            IUserFieldsMD oUDF = (IUserFieldsMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserFields);
+            UserTable oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item(_tableName);
+
+            foreach(IField existingUDF in oUDT.UserFields.Fields)
+            {
+                if (existingUDF.Name == "U_"+_fieldName)
+                    return;
+            }
             oUDF.TableName = _tableName;
             oUDF.Name = _fieldName;
             oUDF.Description = _description;
@@ -112,6 +117,7 @@ namespace EdiConnectorService_C_Sharp
             }
 
             EdiConnectorService.ClearObject(oUDF);
+            EdiConnectorService.ClearObject(oUDT);
         }
 
         /// <summary>

@@ -92,7 +92,7 @@ namespace EdiConnectorService_C_Sharp
                 // Processes incoming messages
                 foreach (string connectedServer in ConnectionManager.getInstance().GetAllConnectedServers())
                 {
-                    agent.QueueCommand(new ProcessMessage(connectedServer, @"orders.xml"));
+                    //agent.QueueCommand(new ProcessMessage(connectedServer, @"orders.xml"));
                 }
 
                 Thread.Sleep(10000);
