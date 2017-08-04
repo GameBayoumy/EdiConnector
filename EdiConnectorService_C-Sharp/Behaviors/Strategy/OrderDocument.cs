@@ -85,15 +85,13 @@ namespace EdiConnectorService_C_Sharp
         /// <param name="_dataObject">The data object.</param>
         public void SaveToSAP(Object _dataObject, string _connectedServer, out Exception ex)
         {
-            SAPbobsCOM.Recordset oRs;
-            oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
+            SAPbobsCOM.Recordset oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
+            SAPbobsCOM.Documents oOrd = (SAPbobsCOM.Documents)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oOrders));
             string buyerMailAddress ="";
             ex = null;
 
             foreach (OrderDocument orderDocument in (List<OrderDocument>)_dataObject)
             {
-                SAPbobsCOM.Documents oOrd;
-                oOrd = (SAPbobsCOM.Documents)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oOrders));
                 try
                 {
                     //oOrd.CardName = orderDocument.Sender;
