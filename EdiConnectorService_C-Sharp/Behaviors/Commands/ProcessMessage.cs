@@ -44,26 +44,33 @@ namespace EdiConnectorService_C_Sharp
                 {
                     ediDocument.SetDocumentType(new InvoiceDocument());
                 }
+
                 UpdateIncomingXmlMessage("Processing..", "Set document type to: " + ediDocument.GetDocumentType().ToString());
             }
             catch (Exception e)
             {
                 UpdateIncomingXmlMessage("Error!", "Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". Exception: " + e.Message);
-                EventLogger.getInstance().EventError("Error processing message - Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". Exception: " + e.Message);
+                EventLogger.getInstance().EventError("Error setting message - Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". Exception: " + e.Message);
             }
 
 
             // Reads the XML Data for the specified document type
             ediDocumentData = ediDocument.ReadXMLData(xMessages, out Exception exR);
             if (exR != null)
-                UpdateIncomingXmlMessage("Error!", "Reading document with type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exR.Message);
+            {
+                UpdateIncomingXmlMessage("Error!", "Error reading document with type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exR.Message + " XML node probably missing/incorrect!!!");
+                EventLogger.getInstance().EventError("Error reading message - Error reading document with type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exR.Message + " XML node probably missing / incorrect!!!");
+            }
             else
                 UpdateIncomingXmlMessage("Processing..", "Read document with type: " + ediDocument.GetDocumentType().ToString());
 
             // Save the data object for the specified document type to SAP
             ediDocument.SaveToSAP(ediDocumentData, connectedServer, out Exception exS);
             if(exS != null)
+            {
                 UpdateIncomingXmlMessage("Error!", "Saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exS.Message);
+                EventLogger.getInstance().EventError("Error saving document - Error saving document" + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exS.Message);
+            }
             else
                 UpdateIncomingXmlMessage("Processed.", "Saved document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString());
         }
