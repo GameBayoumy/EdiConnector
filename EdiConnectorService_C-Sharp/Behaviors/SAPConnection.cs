@@ -15,6 +15,11 @@ namespace EdiConnectorService_C_Sharp
         public SAPbobsCOM.Company Company { get; set; }
 
         /// <summary>
+        /// Gets or sets the file path.
+        /// </summary>
+        public string FilePath { get; set; }
+
+        /// <summary>
         /// Gets or sets a value indicating whether [connected to sap].
         /// </summary>
         public bool ConnectedToSAP { get; set; }
@@ -61,7 +66,9 @@ namespace EdiConnectorService_C_Sharp
                 Company.DbUserName = xmlNode["DbUsername"].InnerText;
                 Company.DbPassword = xmlNode["DbPassword"].InnerText;
                 Company.UseTrusted = true;
-                
+
+                FilePath = xmlNode["FilePath"].InnerText;
+
                 EventLogger.getInstance().EventInfo("Set connection - Server: " + Company.Server);
             }
             catch (Exception e)
