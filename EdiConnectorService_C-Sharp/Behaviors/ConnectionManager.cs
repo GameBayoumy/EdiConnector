@@ -25,24 +25,24 @@ namespace EdiConnectorService_C_Sharp
         }
 
         /// <summary>
-        /// Connects all connections in the list.
+        /// Connects all disconnected servers in the list.
         /// </summary>
         public void ConnectAll()
         {
-            foreach (SAPConnection connection in Connections.Values)
+            foreach (string disconnectedServer in GetAllDisconnectedServers())
             {
-                connection.Connect();
+                GetConnection(disconnectedServer).Connect();
             }
         }
 
         /// <summary>
-        /// Disconnects all connections in the list.
+        /// Disconnects all connected servers in the list.
         /// </summary>
         public void DisconnectAll()
         {
-            foreach (SAPConnection connection in Connections.Values)
+            foreach (string connectedServer in GetAllConnectedServers())
             {
-                connection.Disconnect();
+                GetConnection(connectedServer).Disconnect();
             }
         }
 

@@ -46,15 +46,20 @@ namespace EdiConnectorService_C_Sharp
             errMsg = null;
             try
             {
+                /// <summary>
+                /// ?? "" null-coalescing operator is used to check if the xml element is existant, else it will return ""
+                /// By not using this operator this will not fill the document and crash the program.
+                /// This method is used to make sure the important values are read from the xml files and optional values will be set to ""
+                /// </summary>
                 List<OrderDocument> OrderMsgList = _xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Select(x =>
                     new OrderDocument()
                     {
-                        MessageStandard = x.Element("MessageStandard").Value,
+                        MessageStandard = x.Element("MessageStandard").Value ?? "",
                         MessageType = x.Element("MessageType").Value,
                         Sender = x.Element("Sender").Value,
                         SenderGLN = x.Element("SenderGLN").Value,
                         RecipientGLN = x.Element("RecipientGLN").Value,
-                        IsTestMessage = x.Element("IsTestMessage").Value,
+                        IsTestMessage = x.Element("IsTestMessage").Value ?? "",
                         OrderNumberBuyer = x.Element("OrderNumberBuyer").Value,
                         RequestedDeliveryDate = x.Element("RequestedDeliveryDate").Value,
                         BuyerGLN = x.Element("BuyerGLN").Value,
@@ -63,10 +68,10 @@ namespace EdiConnectorService_C_Sharp
                         SupplierVATNumber = x.Element("SupplierVATNumber").Value,
                         Articles = x.Elements("Article").Select(a => new Article()
                         {
-                            LineNumber = a.Element("LineNumber").Value,
-                            ArticleDescription = a.Element("ArticleDescription").Value,
+                            LineNumber = a.Element("LineNumber").Value ?? "",
+                            ArticleDescription = a.Element("ArticleDescription").Value ?? "",
                             GTIN = a.Element("GTIN").Value,
-                            ArticleNetPrice = a.Element("ArticleNetPrice").Value,
+                            ArticleNetPrice = a.Element("ArticleNetPrice").Value ?? "",
                             OrderedQuantity = a.Element("OrderedQuantity").Value
                         }).ToList()
                     }).ToList();
