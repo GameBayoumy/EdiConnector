@@ -134,8 +134,6 @@ namespace EdiConnectorService_C_Sharp
         }
 
         #region
-        
-
         private bool ConnectToDatabase()
         {
             try
