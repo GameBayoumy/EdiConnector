@@ -35,7 +35,7 @@ namespace EdiConnectorService_C_Sharp
             agent = new Agent();
 
             EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp\";
-            
+
         }
 
         /// <summary>
@@ -93,12 +93,16 @@ namespace EdiConnectorService_C_Sharp
                     string messagesFilePath = ConnectionManager.getInstance().GetConnection(connectedServer).MessagesFilePath;
                     if (Directory.Exists(messagesFilePath))
                     {
-                        FileInfo[] Files = new DirectoryInfo(messagesFilePath).GetFiles("*.xml", SearchOption.TopDirectoryOnly);
+                        DirectoryInfo dirInfo = new DirectoryInfo(messagesFilePath);
 
-                        foreach (FileInfo file in Files)
+                        foreach (var file in dirInfo.EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly))
                         {
                             agent.QueueCommand(new ProcessMessage(connectedServer, file.Name));
                         }
+                        //foreach (FileInfo file in Files)
+                        //{
+                        //    agent.QueueCommand(new ProcessMessage(connectedServer, file.Name));
+                        //}
                     }
                     else
                     {
@@ -167,7 +171,7 @@ namespace EdiConnectorService_C_Sharp
 
         public void Log(string sType, string msg, string functionSender)
         {
-            switch(sType)
+            switch (sType)
             {
                 case "V":
                     this.eventLog1.WriteEntry(sType + " - " + DateTime.Now.ToString("dd/MM/yyyy HH:mm:ss") + " - " + functionSender.Replace("_", " ") + " - " + msg, System.Diagnostics.EventLogEntryType.Information);
