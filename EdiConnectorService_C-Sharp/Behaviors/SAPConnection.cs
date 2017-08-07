@@ -68,9 +68,12 @@ namespace EdiConnectorService_C_Sharp
                 Company.UseTrusted = true;
 
                 MessagesFilePath = xmlNode["MessagesFilePath"].InnerText;
-                if (!System.IO.Directory.Exists(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName))
+                if (System.IO.Directory.Exists(MessagesFilePath))
                 {
-                    System.IO.Directory.CreateDirectory(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName);
+                    if (!System.IO.Directory.Exists(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName))
+                    {
+                        System.IO.Directory.CreateDirectory(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName);
+                    }
                 }
 
                 EventLogger.getInstance().EventInfo("Set connection - Server: " + Company.Server);
