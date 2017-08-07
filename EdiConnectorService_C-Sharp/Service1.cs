@@ -35,17 +35,7 @@ namespace EdiConnectorService_C_Sharp
             agent = new Agent();
 
             EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp\";
-            agent.QueueCommand(new CreateConnectionsCommand());
-            ConnectionManager.getInstance().ConnectAll();
-
-            // Creates udf fields for every connected server
-            agent.QueueCommand(new CreateUserDefinitionsCommand());
-
-            // Processes incoming messages
-            foreach (string connectedServer in ConnectionManager.getInstance().GetAllConnectedServers())
-            {
-                agent.QueueCommand(new ProcessMessage(connectedServer, EdiConnectorData.getInstance().sApplicationPath, @"orders.xml"));
-            }
+            
         }
 
         /* <summary>
@@ -74,18 +64,15 @@ namespace EdiConnectorService_C_Sharp
         protected override void OnStart(string[] args)
         {
             EventLogger.getInstance().EventInfo("EdiService in OnStart.");
-
-            EdiConnectorData.getInstance().sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase);
+            EdiConnectorData.getInstance().sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase) + @"\";
+            EdiConnectorData.getInstance().sProcessedDirName = "Processed";
 
             // Create connections from config.xml and try to connect all servers
             agent.QueueCommand(new CreateConnectionsCommand());
             ConnectionManager.getInstance().ConnectAll();
 
-
-            
-            //ReadSettings();
-            //ConnectToSAP();
-            //CreateUdfFieldsText();
+            // Creates udf fields for every connected server
+            agent.QueueCommand(new CreateUserDefinitionsCommand());
 
             ThreadPool.QueueUserWorkItem(new WaitCallback(ServiceWorkerThread));
         }
@@ -103,27 +90,26 @@ namespace EdiConnectorService_C_Sharp
             {
                 //Perform main service function here...
 
-                //If there are any servers connected to SAP
-                if(ConnectionManager.getInstance().GetAllConnectedServers().Count > 0)
+                // Processes incoming messages
+                foreach (string connectedServer in ConnectionManager.getInstance().GetAllConnectedServers())
                 {
+                    string messagesFilePath = ConnectionManager.getInstance().GetConnection(connectedServer).MessagesFilePath;
+                    if (Directory.Exists(messagesFilePath))
+                    {
+                        FileInfo[] Files = new DirectoryInfo(messagesFilePath).GetFiles("*.xml", SearchOption.TopDirectoryOnly);
 
+                        foreach (FileInfo file in Files)
+                        {
+                            agent.QueueCommand(new ProcessMessage(connectedServer, file.Name));
+                        }
+                    }
+                    else
+                    {
+                        EventLogger.getInstance().EventError("Messages file path does not exist!: " + messagesFilePath);
+                    }
                 }
 
-
-                if (EdiConnectorData.getInstance().cmp.Connected == true && EdiConnectorData.getInstance().cn.State == ConnectionState.Open)
-                {
-                    CheckAndExportDelivery();
-                    CheckAndExportInvoice();
-                    SplitOrder();
-                    ReadSOFile();
-                }
-                else
-                {
-                    ConnectToSAP();
-                }
-
-                Thread.Sleep(6000);
-
+                Thread.Sleep(10000);
             }
             while (!stopping);
 

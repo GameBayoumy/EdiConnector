@@ -14,20 +14,25 @@ namespace EdiConnectorService_C_Sharp
         string recordCode;
         XDocument xDoc;
 
-        public ProcessMessage(string _connectedServer, string _filePath, string _fileName)
+        public ProcessMessage(string _connectedServer, string _fileName)
         {
             connectedServer = _connectedServer;
-            filePath = _filePath;
             fileName = _fileName;
         }
 
         public void execute()
         {
+            filePath = ConnectionManager.getInstance().GetConnection(connectedServer).MessagesFilePath;
             xDoc = XDocument.Load(filePath + fileName);
             XElement xMessages = xDoc.Element("Messages");
             EdiDocument ediDocument = new EdiDocument();
             Object ediDocumentData = new Object();
             AddIncomingXmlMessage("Processing..", "Loaded new document: " + fileName, DateTime.Now);
+            if (System.IO.File.Exists(filePath + fileName))
+            {
+                System.IO.File.Copy((filePath + fileName), (filePath + EdiConnectorData.getInstance().sProcessedDirName + @"\" + fileName), true);
+                System.IO.File.Delete((filePath + fileName));
+            }
 
             // Checks which kind of document type gets through the system
             try
@@ -69,7 +74,7 @@ namespace EdiConnectorService_C_Sharp
             if(exS != null)
             {
                 UpdateIncomingXmlMessage("Error!", "Saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exS.Message);
-                EventLogger.getInstance().EventError("Error saving document - Error saving document" + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exS.Message);
+                EventLogger.getInstance().EventError("Error saving document - Error saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exS.Message);
             }
             else
                 UpdateIncomingXmlMessage("Processed.", "Saved document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString());
