@@ -91,27 +91,23 @@ namespace EdiConnectorService_C_Sharp
                 if (Company.Connect() == 0)
                 {
                     EventLogger.getInstance().EventInfo("Connected to SAP - Server: " + Company.Server);
-                    ConnectedToSAP = true;
-                    return ConnectedToSAP;
+                    return ConnectedToSAP = true;
                 }
                 else if (Company.Connected == true)
                 {
                     EventLogger.getInstance().EventInfo("Already connected to SAP - Server: " + Company.Server);
-                    ConnectedToSAP = true;
-                    return ConnectedToSAP;
+                    return ConnectedToSAP = true;
                 }
                 else
                 {
                     EventLogger.getInstance().EventError(Company.GetLastErrorDescription() + Company.Server);
-                    ConnectedToSAP = false;
-                    return ConnectedToSAP;
+                    return ConnectedToSAP = false;
                 }
             }
             catch (Exception e)
             {
                 EventLogger.getInstance().EventError(e.Message);
-                ConnectedToSAP = false;
-                return ConnectedToSAP;
+                return ConnectedToSAP = false;
             }
         }
 
@@ -119,14 +115,18 @@ namespace EdiConnectorService_C_Sharp
         {
             try
             {
-                Company.Disconnect();
-                EventLogger.getInstance().EventInfo("Disconnected to SAP - Server: " + Company.Server);
-                ConnectedToSAP = false;
+                if (Company.Connected == true)
+                {
+                    Company.Disconnect();
+                    EventLogger.getInstance().EventInfo("Disconnected to SAP - Server: " + Company.Server);
+                    ConnectedToSAP = false;
+                }
                 return ConnectedToSAP;
             }
-            catch
+            catch (Exception e)
             {
-                return ConnectedToSAP;
+                EventLogger.getInstance().EventError(e.Message);
+                return ConnectedToSAP = false;
             }
         }
 

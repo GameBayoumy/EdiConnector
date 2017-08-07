@@ -127,7 +127,7 @@ namespace EdiConnectorService_C_Sharp
         protected override void OnStop()
         {
             //Add code here to perform any tear-down necessary to stop your service.
-            DisconnectToSAP();
+            ConnectionManager.getInstance().DisconnectAll();
 
             //Log a service stop message to the Application log.
             this.eventLog1.WriteEntry("EdiService in OnStop.");
