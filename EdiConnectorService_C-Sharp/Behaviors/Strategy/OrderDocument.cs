@@ -133,6 +133,8 @@ namespace EdiConnectorService_C_Sharp
 
                     if(oOrd.Add() == 0)
                     {
+                        string serviceCallID = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetNewObjectKey();
+                        oOrd.GetByKey(Convert.ToInt32(serviceCallID));
                         ConnectionManager.getInstance().GetConnection(_connectedServer).SendMailNotification("New sales order created:" + oOrd.DocNum, "", buyerMailAddress);
                         EventLogger.getInstance().EventInfo("Succesfully added Sales Order: " + oOrd.DocNum);
                     }
