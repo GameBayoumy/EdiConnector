@@ -28,7 +28,11 @@ namespace EdiConnectorService_C_Sharp
             EdiDocument ediDocument = new EdiDocument();
             Object ediDocumentData = new Object();
             AddIncomingXmlMessage("Processing..", "Loaded new document: " + fileName, DateTime.Now);
-            System.IO.File.Move((filePath + fileName), (filePath + EdiConnectorData.getInstance().sProcessedDirName + @"\" + fileName));
+            if (System.IO.File.Exists(filePath + fileName))
+            {
+                System.IO.File.Copy((filePath + fileName), (filePath + EdiConnectorData.getInstance().sProcessedDirName + @"\" + fileName), true);
+                System.IO.File.Delete((filePath + fileName));
+            }
 
             // Checks which kind of document type gets through the system
             try
