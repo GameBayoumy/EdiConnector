@@ -84,6 +84,10 @@ namespace EdiConnectorService_C_Sharp
             }
         }
 
+        /// <summary>
+        /// Connects this instance.
+        /// </summary>
+        /// <returns></returns>
         public override bool Connect()
         {
             try
@@ -111,6 +115,10 @@ namespace EdiConnectorService_C_Sharp
             }
         }
 
+        /// <summary>
+        /// Disconnects this instance.
+        /// </summary>
+        /// <returns></returns>
         public override bool Disconnect()
         {
             try
@@ -130,6 +138,12 @@ namespace EdiConnectorService_C_Sharp
             }
         }
 
+        /// <summary>
+        /// Sends the mail notification through SBO Mailer.
+        /// </summary>
+        /// <param name="_subject">The subject.</param>
+        /// <param name="_body">The body.</param>
+        /// <param name="_mailAddress">The mail address.</param>
         public void SendMailNotification(string _subject, string _body, string _mailAddress)
         {
             Messages objMsg = (Messages)Company.GetBusinessObject(BoObjectTypes.oMessages);
