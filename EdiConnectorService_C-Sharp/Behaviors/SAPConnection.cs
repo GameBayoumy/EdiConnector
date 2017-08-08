@@ -122,8 +122,9 @@ namespace EdiConnectorService_C_Sharp
             {
                 if (Company.Connected == true)
                 {
+                    string serverName = Company.Server;
                     Company.Disconnect();
-                    EventLogger.getInstance().EventInfo("Disconnected to SAP - Server: " + Company.Server);
+                    EventLogger.getInstance().EventInfo("Disconnected to SAP - Server: " + serverName);
                     ConnectedToSAP = false;
                 }
                 return ConnectedToSAP;
