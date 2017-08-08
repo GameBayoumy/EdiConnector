@@ -52,8 +52,8 @@ namespace EdiConnectorService_C_Sharp
             }
             catch (Exception e)
             {
-                UpdateIncomingXmlMessage("Error!", "Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". Exception: " + e.Message);
-                EventLogger.getInstance().EventError("Error setting message - Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". Exception: " + e.Message);
+                UpdateIncomingXmlMessage("Error!", "Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". EXCEPTION: " + e.Message);
+                EventLogger.getInstance().EventError("Error setting message - Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". EXCEPTION: " + e.Message);
             }
 
 
@@ -61,8 +61,8 @@ namespace EdiConnectorService_C_Sharp
             ediDocumentData = ediDocument.ReadXMLData(xMessages, out Exception exR);
             if (exR != null)
             {
-                UpdateIncomingXmlMessage("Error!", "Error reading document with type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exR.Message + " XML node probably missing/incorrect!!!");
-                EventLogger.getInstance().EventError("Error reading message - Error reading document with type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exR.Message + " XML node probably missing / incorrect!!!");
+                UpdateIncomingXmlMessage("Error!", "Error reading document with type: " + ediDocument.GetDocumentType().ToString() + " ERROR: " + exR.Message + " XML node probably missing/incorrect!!!");
+                EventLogger.getInstance().EventError("Error reading message - Error reading document with type: " + ediDocument.GetDocumentType().ToString() + " ERROR: " + exR.Message + " XML node probably missing / incorrect!!!");
             }
             else
                 UpdateIncomingXmlMessage("Processing..", "Read document with type: " + ediDocument.GetDocumentType().ToString());
@@ -71,8 +71,8 @@ namespace EdiConnectorService_C_Sharp
             ediDocument.SaveToSAP(ediDocumentData, connectedServer, out Exception exS);
             if(exS != null)
             {
-                UpdateIncomingXmlMessage("Error!", "Saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exS.Message);
-                EventLogger.getInstance().EventError("Error saving document - Error saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " Error: " + exS.Message);
+                UpdateIncomingXmlMessage("Error!", "Saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " ERROR: " + exS.Message);
+                EventLogger.getInstance().EventError("Error saving document - Error saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " ERROR: " + exS.Message);
             }
             else
                 UpdateIncomingXmlMessage("Processed.", "Saved document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString());
@@ -88,7 +88,7 @@ namespace EdiConnectorService_C_Sharp
                 oUDT.Name = fileName;
                 oUDT.UserFields.Fields.Item("U_XML_ATTACHMENT").Value = xDoc.ToString();
                 oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
-                oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = _logMessage;
+                oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = _createDateTime.ToString("yy-MM-dd HH:mm:ss : ") + _logMessage;
                 oUDT.UserFields.Fields.Item("U_CREATE_DATE").Value = _createDateTime.Date;
                 oUDT.UserFields.Fields.Item("U_CREATE_TIME").Value = _createDateTime.ToShortTimeString();
 
@@ -124,7 +124,7 @@ namespace EdiConnectorService_C_Sharp
             oUDT.GetByKey(recordCode);
 
             oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
-            oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = _logMessage;
+            oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value += Environment.NewLine + DateTime.Now.ToString("yy-MM-dd HH:mm:ss : ") + _logMessage;
 
             if (oUDT.Update() != 0)
             {
