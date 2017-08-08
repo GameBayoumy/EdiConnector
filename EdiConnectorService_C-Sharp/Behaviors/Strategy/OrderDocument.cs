@@ -143,7 +143,7 @@ namespace EdiConnectorService_C_Sharp
                     else
                     {
                         ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
-                        EventLogger.getInstance().EventError("Error adding Sales Order: (" + errCode + ") " + errMsg);
+                        EventLogger.getInstance().EventError("Server: " + _connectedServer + " Error adding Sales Order: (" + errCode + ") " + errMsg);
                         EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error adding Sales Order: (" + errCode + ") " + errMsg, "Error!");
                     }
                 }

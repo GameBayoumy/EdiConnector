@@ -162,7 +162,7 @@ namespace EdiConnectorService_C_Sharp
             if (objMsg.Add() != 0)
                 EventLogger.getInstance().EventInfo("Error sending mail notification from: " + Company.Server);
             else
-                EventLogger.getInstance().EventInfo("Message send from: " + Company.Server);
+                EventLogger.getInstance().EventInfo("Server: " + Company.Server + ". Message send from: " + Company.Server);
 
             EdiConnectorService.ClearObject(objMsg);
         }
