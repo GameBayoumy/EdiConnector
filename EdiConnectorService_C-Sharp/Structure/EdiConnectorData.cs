@@ -21,6 +21,7 @@ namespace EdiConnectorService_C_Sharp
 
         public string sApplicationPath;
         public string sProcessedDirName;
+        public string sRecordReference;
 
         public SAPbobsCOM.Documents oOrder;
         public string CARDCODE;

@@ -117,7 +117,10 @@ namespace EdiConnectorService_C_Sharp
                         if (oRs.RecordCount > 0)
                             oOrd.Lines.ItemCode = oRs.Fields.Item(0).Value.ToString();
                         else
-                            EventLogger.getInstance().EventError("Error CodeBars:" + article.GTIN + " not found!");
+                        {
+                            EventLogger.getInstance().EventError("Error CodeBars: " + article.GTIN + " not found!");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error CodeBars: " + article.GTIN + " not found!", "Error!");
+                        }
 
                         oOrd.Lines.UserFields.Fields.Item("U_EdiLineNumber").Value = article.LineNumber;
                         oOrd.Lines.ItemDescription = article.ArticleDescription;
@@ -135,22 +138,25 @@ namespace EdiConnectorService_C_Sharp
                         oOrd.GetByKey(Convert.ToInt32(serviceCallID));
                         ConnectionManager.getInstance().GetConnection(_connectedServer).SendMailNotification("New sales order created:" + oOrd.DocNum, "", buyerMailAddress);
                         EventLogger.getInstance().EventInfo("Succesfully added Sales Order: " + oOrd.DocNum);
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Succesfully added Sales Order: " + oOrd.DocNum, "Processing..");
                     }
                     else
                     {
                         ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
                         EventLogger.getInstance().EventError("Error adding Sales Order: (" + errCode + ") " + errMsg);
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error adding Sales Order: (" + errCode + ") " + errMsg, "Error!");
                     }
                 }
                 catch (Exception e)
                 {
                     ex = e;
                     EventLogger.getInstance().EventError("Error saving to SAP: " + e.Message + " with order document: " + orderDocument);
+                    EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error saving to SAP: " + e.Message + " with order document: " + orderDocument, "Error!");
                 }
-
-                EdiConnectorService.ClearObject(oOrd);
-                EdiConnectorService.ClearObject(oRs);
             }
+
+            EdiConnectorService.ClearObject(oOrd);
+            EdiConnectorService.ClearObject(oRs);
         }
     }
 
