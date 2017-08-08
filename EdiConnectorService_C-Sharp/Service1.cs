@@ -27,9 +27,6 @@ namespace EdiConnectorService_C_Sharp
             agent = new Agent();
 
             EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp\";
-
-            agent.QueueCommand(new CreateConnectionsCommand());
-            ConnectionManager.getInstance().ConnectAll();
         }
 
         /// <summary>
