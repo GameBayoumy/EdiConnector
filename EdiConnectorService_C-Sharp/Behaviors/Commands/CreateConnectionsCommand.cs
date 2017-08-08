@@ -1,8 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml;
+﻿using System.Linq;
+using System.Xml.Linq;
 
 namespace EdiConnectorService_C_Sharp
 {
@@ -20,13 +17,11 @@ namespace EdiConnectorService_C_Sharp
         public void execute()
         {
             // Create and set connections from config.xml
-            XmlDocument xmlDoc = new XmlDocument();
-            xmlDoc.Load(EdiConnectorData.getInstance().sApplicationPath + @"config.xml");
-            XmlNodeList xmlList = xmlDoc.SelectNodes("/Connections/Connection");
-            for (int i = 0; i < xmlList.Count; i++)
+            XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"config.xml");
+            foreach (XElement xEle in xDoc.Element("Connections").Elements("Connection"))
             {
-                ConnectionManager.getInstance().Connections.Add(xmlList[i]["Server"].InnerText, new SAPConnection());
-                ConnectionManager.getInstance().Connections.Last().Value.Set(xmlList[i]);
+                ConnectionManager.getInstance().Connections.Add(xEle.Element("Server").Value, new SAPConnection());
+                ConnectionManager.getInstance().Connections.Last().Value.Set(xEle);
             }
         }
     }

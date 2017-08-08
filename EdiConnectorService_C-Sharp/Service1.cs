@@ -1,18 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Diagnostics;
-using System.Linq;
 using System.ServiceProcess;
-using System.Text;
 using System.Threading;
 using System.IO;
-using System.Data.SqlClient;
 using SAPbobsCOM;
 using System.Net.Mail;
 using System.Net;
-using System.Xml.Linq;
 
 namespace EdiConnectorService_C_Sharp
 {
@@ -36,6 +28,8 @@ namespace EdiConnectorService_C_Sharp
 
             EdiConnectorData.getInstance().sApplicationPath = @"H:\Projecten\Sharif\GitKraken\EdiConnector\EdiConnectorService_C-Sharp\";
 
+            agent.QueueCommand(new CreateConnectionsCommand());
+            ConnectionManager.getInstance().ConnectAll();
         }
 
         /// <summary>

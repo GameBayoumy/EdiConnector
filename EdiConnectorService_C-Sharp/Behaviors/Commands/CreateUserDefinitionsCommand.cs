@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml;
-
-namespace EdiConnectorService_C_Sharp
+﻿namespace EdiConnectorService_C_Sharp
 {
     /// <summary>
     /// Concrete Command class

@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Xml;
 using SAPbobsCOM;
+using System.Xml.Linq;
 
 namespace EdiConnectorService_C_Sharp
 {
@@ -40,34 +37,34 @@ namespace EdiConnectorService_C_Sharp
         /// <summary>
         /// Sets the specified XML node.
         /// </summary>
-        /// <param name="_xmlNode">The XML node.</param>
-        public override void Set(XmlNode _xmlNode)
+        /// <param name="_xEle">The XML node.</param>
+        public override void Set(XElement _xEle)
         {
             try
             {
-                XmlNode xmlNode = _xmlNode;
-                Company.Server = xmlNode["Server"].InnerText;
-                Company.LicenseServer = xmlNode["LicenceServer"].InnerText;
-                Company.UserName = xmlNode["Username"].InnerText;
-                Company.Password = xmlNode["Password"].InnerText;
-                Company.CompanyDB = xmlNode["CompanyDB"].InnerText;
-                if (xmlNode["Test"].InnerText == "Y")
+                XElement xEle = _xEle;
+                Company.Server = xEle.Element("Server").Value;
+                Company.LicenseServer = xEle.Element("LicenceServer").Value;
+                Company.UserName = xEle.Element("Username").Value;
+                Company.Password = xEle.Element("Password").Value;
+                Company.CompanyDB = xEle.Element("CompanyDB").Value;
+                if (xEle.Element("Test").Value == "Y")
                     Company.CompanyDB = "TEST_" + Company.CompanyDB;
-                if (xmlNode["DbServerType"].InnerText == "HANA")
+                if (xEle.Element("DbServerType").Value == "HANA")
                     Company.DbServerType = BoDataServerTypes.dst_HANADB;
-                else if (xmlNode["DbServerType"].InnerText == "2005")
+                else if (xEle.Element("DbServerType").Value == "2005")
                     Company.DbServerType = BoDataServerTypes.dst_MSSQL2005;
-                else if (xmlNode["DbServerType"].InnerText == "2008")
+                else if (xEle.Element("DbServerType").Value == "2008")
                     Company.DbServerType = BoDataServerTypes.dst_MSSQL2008;
-                else if (xmlNode["DbServerType"].InnerText == "2012")
+                else if (xEle.Element("DbServerType").Value == "2012")
                     Company.DbServerType = BoDataServerTypes.dst_MSSQL2012;
                 else
                     Company.DbServerType = BoDataServerTypes.dst_MSSQL;
-                Company.DbUserName = xmlNode["DbUsername"].InnerText;
-                Company.DbPassword = xmlNode["DbPassword"].InnerText;
+                Company.DbUserName = xEle.Element("DbUsername").Value;
+                Company.DbPassword = xEle.Element("DbPassword").Value;
                 Company.UseTrusted = true;
 
-                MessagesFilePath = xmlNode["MessagesFilePath"].InnerText;
+                MessagesFilePath = xEle.Element("MessagesFilePath").Value;
                 if (System.IO.Directory.Exists(MessagesFilePath))
                 {
                     if (!System.IO.Directory.Exists(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName))
