@@ -117,7 +117,7 @@ namespace EdiConnectorService_C_Sharp
                         if (oRs.RecordCount > 0)
                             oOrd.Lines.ItemCode = oRs.Fields.Item(0).Value.ToString();
                         else
-                            EventLogger.getInstance().EventError("Error CodeBars:" + article.GTIN + " not found!");
+                            EventLogger.getInstance().EventError("Error CodeBars: " + article.GTIN + " not found!");
 
                         oOrd.Lines.UserFields.Fields.Item("U_EdiLineNumber").Value = article.LineNumber;
                         oOrd.Lines.ItemDescription = article.ArticleDescription;
@@ -147,10 +147,10 @@ namespace EdiConnectorService_C_Sharp
                     ex = e;
                     EventLogger.getInstance().EventError("Error saving to SAP: " + e.Message + " with order document: " + orderDocument);
                 }
-
-                EdiConnectorService.ClearObject(oOrd);
-                EdiConnectorService.ClearObject(oRs);
             }
+
+            EdiConnectorService.ClearObject(oOrd);
+            EdiConnectorService.ClearObject(oRs);
         }
     }
 
