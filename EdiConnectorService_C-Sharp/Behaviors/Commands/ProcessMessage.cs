@@ -9,7 +9,6 @@ namespace EdiConnectorService_C_Sharp
         string filePath;
         string fileName;
         string connectedServer;
-        string recordCode;
         XDocument xDoc;
 
         public ProcessMessage(string _connectedServer, string _fileName)
@@ -25,7 +24,8 @@ namespace EdiConnectorService_C_Sharp
             XElement xMessages = xDoc.Element("Messages");
             EdiDocument ediDocument = new EdiDocument();
             Object ediDocumentData = new Object();
-            AddIncomingXmlMessage("Processing..", "Loaded new document: " + fileName, DateTime.Now);
+            string recordReference = EventLogger.getInstance().CreateSAPLogMessage(connectedServer, fileName, xDoc, "Loaded new document: " + fileName, "Processing..");
+            EdiConnectorData.getInstance().sRecordReference = recordReference;
             if (System.IO.File.Exists(filePath + fileName))
             {
                 System.IO.File.Copy((filePath + fileName), (filePath + EdiConnectorData.getInstance().sProcessedDirName + @"\" + fileName), true);
@@ -48,11 +48,11 @@ namespace EdiConnectorService_C_Sharp
                     ediDocument.SetDocumentType(new InvoiceDocument());
                 }
 
-                UpdateIncomingXmlMessage("Processing..", "Set document type to: " + ediDocument.GetDocumentType().ToString());
+                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Set document type to: " + ediDocument.GetDocumentType().ToString(), "Processing..");
             }
             catch (Exception e)
             {
-                UpdateIncomingXmlMessage("Error!", "Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". EXCEPTION: " + e.Message);
+                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". EXCEPTION: " + e.Message, "Error!");
                 EventLogger.getInstance().EventError("Error setting message - Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". EXCEPTION: " + e.Message);
             }
 
@@ -61,77 +61,21 @@ namespace EdiConnectorService_C_Sharp
             ediDocumentData = ediDocument.ReadXMLData(xMessages, out Exception exR);
             if (exR != null)
             {
-                UpdateIncomingXmlMessage("Error!", "Error reading document with type: " + ediDocument.GetDocumentType().ToString() + " ERROR: " + exR.Message + " XML node probably missing/incorrect!!!");
+                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error reading document with type: " + ediDocument.GetDocumentType().ToString() + " ERROR: " + exR.Message + " XML node probably missing/incorrect!!!", "Error!");
                 EventLogger.getInstance().EventError("Error reading message - Error reading document with type: " + ediDocument.GetDocumentType().ToString() + " ERROR: " + exR.Message + " XML node probably missing / incorrect!!!");
             }
             else
-                UpdateIncomingXmlMessage("Processing..", "Read document with type: " + ediDocument.GetDocumentType().ToString());
+                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Read document with type: " + ediDocument.GetDocumentType().ToString(), "Processing..");
 
             // Save the data object for the specified document type to SAP
             ediDocument.SaveToSAP(ediDocumentData, connectedServer, out Exception exS);
             if(exS != null)
             {
-                UpdateIncomingXmlMessage("Error!", "Saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " ERROR: " + exS.Message);
+                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " ERROR: " + exS.Message, "Error!");
                 EventLogger.getInstance().EventError("Error saving document - Error saving document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString() + " ERROR: " + exS.Message);
             }
             else
-                UpdateIncomingXmlMessage("Processed.", "Saved document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString());
-        }
-
-        private void AddIncomingXmlMessage(string _status, string _logMessage, DateTime _createDateTime)
-        {
-            SAPbobsCOM.UserTable oUDT = ConnectionManager.getInstance().GetConnection(connectedServer).Company.UserTables.Item("0_SWS_EDI_LOG");
-            SAPbobsCOM.Recordset oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
-
-            try
-            {
-                oUDT.Name = fileName;
-                oUDT.UserFields.Fields.Item("U_XML_ATTACHMENT").Value = xDoc.ToString();
-                oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
-                oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = _createDateTime.ToString("yy-MM-dd HH:mm:ss : ") + _logMessage;
-                oUDT.UserFields.Fields.Item("U_CREATE_DATE").Value = _createDateTime.Date;
-                oUDT.UserFields.Fields.Item("U_CREATE_TIME").Value = _createDateTime.ToShortTimeString();
-
-                if (oUDT.Add() == 0)
-                {
-                    oRs.DoQuery(@"SELECT Max(""Code"") FROM ""@0_SWS_EDI_LOG""");
-                    EventLogger.getInstance().EventInfo("Succesfully added incoming xml message to UDT: " + oUDT.TableName);
-                    recordCode = oRs.Fields.Item(0).Value.ToString();
-                }
-                else
-                {
-                    EventLogger.getInstance().EventError("Error adding items to UDT: " + ConnectionManager.getInstance().GetConnection(connectedServer).Company.GetLastErrorDescription());
-                    recordCode = null;
-                }
-            }
-            catch
-            {
-                ConnectionManager.getInstance().GetConnection(connectedServer).Company.GetLastError(out var errCode, out var errMsg);
-                EventLogger.getInstance().EventError("Error adding items to UDF: " + errMsg);
-                recordCode = null;
-            }
-            finally
-            {
-                EdiConnectorService.ClearObject(oUDT);
-                EdiConnectorService.ClearObject(oRs);
-            }
-        }
-
-        private void UpdateIncomingXmlMessage(string _status, string _logMessage)
-        {
-            SAPbobsCOM.UserTable oUDT = ConnectionManager.getInstance().GetConnection(connectedServer).Company.UserTables.Item("0_SWS_EDI_LOG");
-
-            oUDT.GetByKey(recordCode);
-
-            oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
-            oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value += Environment.NewLine + DateTime.Now.ToString("yy-MM-dd HH:mm:ss : ") + _logMessage;
-
-            if (oUDT.Update() != 0)
-            {
-                EventLogger.getInstance().EventError("Error updating items to UDT: " + ConnectionManager.getInstance().GetConnection(connectedServer).Company.GetLastErrorDescription());
-            }
-
-            EdiConnectorService.ClearObject(oUDT);
+                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Saved document " + fileName + " with document type: " + ediDocument.GetDocumentType().ToString(), "Processed.");
         }
     }
 }
