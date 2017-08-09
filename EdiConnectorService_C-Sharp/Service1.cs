@@ -90,14 +90,10 @@ namespace EdiConnectorService_C_Sharp
                         {
                             agent.QueueCommand(new ProcessMessage(connectedServer, file.Name));
                         }
-                        //foreach (FileInfo file in Files)
-                        //{
-                        //    agent.QueueCommand(new ProcessMessage(connectedServer, file.Name));
-                        //}
                     }
                     else
                     {
-                        EventLogger.getInstance().EventError("Messages file path does not exist!: " + messagesFilePath);
+                        EventLogger.getInstance().EventError("Server: " + connectedServer + ". Messages file path does not exist!: " + messagesFilePath);
                     }
                 }
 

@@ -160,9 +160,9 @@ namespace EdiConnectorService_C_Sharp
             //objMsg.Attachments.Item(0).FileName = Attachment;
 
             if (objMsg.Add() != 0)
-                EventLogger.getInstance().EventInfo("Error sending mail notification from: " + Company.Server);
+                EventLogger.getInstance().EventInfo("Server: " + Company.Server + ". " + "Error sending mail notification to: " + _mailAddress);
             else
-                EventLogger.getInstance().EventInfo("Server: " + Company.Server + ". Message send from: " + Company.Server);
+                EventLogger.getInstance().EventInfo("Server: " + Company.Server + ". " + "Message send to: " + _mailAddress);
 
             EdiConnectorService.ClearObject(objMsg);
         }

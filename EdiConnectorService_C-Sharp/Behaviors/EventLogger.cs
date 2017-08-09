@@ -57,19 +57,19 @@ namespace EdiConnectorService_C_Sharp
                 if (oUDT.Add() == 0)
                 {
                     oRs.DoQuery(@"SELECT Max(""Code"") FROM ""@0_SWS_EDI_LOG""");
-                    EventLogger.getInstance().EventInfo("Server: " + _connectedServer + " Succesfully added incoming xml message to UDT: " + oUDT.TableName);
+                    EventInfo("Server: " + _connectedServer + ". " + "Succesfully added incoming xml message (" + _fileName + ") to UDT: " + oUDT.TableName);
                     return recordReference = oRs.Fields.Item(0).Value.ToString();
                 }
                 else
                 {
-                    EventLogger.getInstance().EventError("Server: " + _connectedServer + " Error adding items to UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
+                    EventError("Server: " + _connectedServer + ". " + "Error adding items to UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
                     return recordReference = null;
                 }
             }
             catch
             {
                 ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
-                EventLogger.getInstance().EventError("Server: " + _connectedServer + " Error adding items to UDF: " + errMsg);
+                EventError("Server: " + _connectedServer + ". " + "Error adding items to UDF: " + errMsg);
                 return recordReference = null;
             }
             finally
@@ -91,7 +91,7 @@ namespace EdiConnectorService_C_Sharp
 
             if (oUDT.Update() != 0)
             {
-                EventLogger.getInstance().EventError("Server: " + _connectedServer + " Error updating items to UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
+                EventError("Server: " + _connectedServer + ". " + "Error updating items to UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
             }
 
             EdiConnectorService.ClearObject(oUDT);
