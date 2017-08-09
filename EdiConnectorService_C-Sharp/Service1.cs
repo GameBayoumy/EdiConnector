@@ -97,7 +97,7 @@ namespace EdiConnectorService_C_Sharp
                     }
                     else
                     {
-                        EventLogger.getInstance().EventError("Messages file path does not exist!: " + messagesFilePath);
+                        EventLogger.getInstance().EventError("Server: " + connectedServer + ". Messages file path does not exist!: " + messagesFilePath);
                     }
                 }
 

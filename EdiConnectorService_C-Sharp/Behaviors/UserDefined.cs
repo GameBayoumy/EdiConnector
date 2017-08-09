@@ -39,11 +39,11 @@ namespace EdiConnectorService_C_Sharp
 
                 if (oUDT.Add() != 0)
                 {
-                    EventLogger.getInstance().EventError("Server: " + _connectedServer + " Error creating UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
+                    EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
                 }
                 else
                 {
-                    EventLogger.getInstance().EventInfo("Server: " + _connectedServer + " UDT: " + _tableName + " successfully created!");
+                    EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "UDT: " + _tableName + " successfully created!");
                 }
             }
             
@@ -103,11 +103,11 @@ namespace EdiConnectorService_C_Sharp
             if (oUDF.Add() != 0)
             {
                 ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
-                EventLogger.getInstance().EventError("Server: " + _connectedServer + " Error creating UDF: " + errMsg);
+                EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating UDF: " + errMsg);
             }
             else
             {
-                EventLogger.getInstance().EventInfo("Server: " + _connectedServer + " UDF " + _fieldName + " successfully created!");
+                EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "UDF " + _fieldName + " successfully created!");
             }
 
             EdiConnectorService.ClearObject(oUDF);
