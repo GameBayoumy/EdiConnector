@@ -26,6 +26,11 @@ namespace EdiConnectorService_C_Sharp
             return documentType;
         }
 
+        public string GetDocumentTypeName()
+        {
+            return documentType.TypeName;
+        }
+
         public Object ReadXMLData(XElement _xMessages, out Exception _ex)
         {
             return documentType.ReadXMLData(_xMessages, out _ex);

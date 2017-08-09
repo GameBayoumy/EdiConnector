@@ -26,19 +26,16 @@ namespace EdiConnectorService_C_Sharp
         public void EventInfo(string text)
         {
             eventLog1.WriteEntry(text, EventLogEntryType.Information);
-            System.GC.Collect();
         }
 
         public void EventError(string text)
         {
             eventLog1.WriteEntry(text, EventLogEntryType.Error);
-            System.GC.Collect();
         }
 
         public void EventWarning(string text)
         {
             eventLog1.WriteEntry(text, EventLogEntryType.Warning);
-            System.GC.Collect();
         }
 
         public string CreateSAPLogMessage(string _connectedServer, string _fileName, System.Xml.Linq.XDocument _xDoc, string _logMessage, string _status)
@@ -53,7 +50,7 @@ namespace EdiConnectorService_C_Sharp
                 oUDT.Name = _fileName;
                 oUDT.UserFields.Fields.Item("U_XML_ATTACHMENT").Value = _xDoc.ToString();
                 oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
-                oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = createDateTime.ToString("dd-MM-yy HH:mm:ss : ") + oUDT.UserFields.Fields.Item("U_STATUS") + " - " + _logMessage;
+                oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value = createDateTime.ToString("dd-MM-yy HH:mm:ss : ") + oUDT.UserFields.Fields.Item("U_STATUS").Value + " - " + _logMessage;
                 oUDT.UserFields.Fields.Item("U_CREATE_DATE").Value = createDateTime.Date;
                 oUDT.UserFields.Fields.Item("U_CREATE_TIME").Value = createDateTime.ToShortTimeString();
 
@@ -90,7 +87,7 @@ namespace EdiConnectorService_C_Sharp
 
             if(_status != "")
                 oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
-            oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value += System.Environment.NewLine + System.DateTime.Now.ToString("dd-MM-yy HH:mm:ss : ") + oUDT.UserFields.Fields.Item("U_STATUS") + " - " + _logMessage;
+            oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value += System.Environment.NewLine + System.DateTime.Now.ToString("dd-MM-yy HH:mm:ss : ") + oUDT.UserFields.Fields.Item("U_STATUS").Value + " - " + _logMessage;
 
             if (oUDT.Update() != 0)
             {
