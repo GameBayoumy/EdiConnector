@@ -90,10 +90,6 @@ namespace EdiConnectorService_C_Sharp
                         {
                             agent.QueueCommand(new ProcessMessage(connectedServer, file.Name));
                         }
-                        //foreach (FileInfo file in Files)
-                        //{
-                        //    agent.QueueCommand(new ProcessMessage(connectedServer, file.Name));
-                        //}
                     }
                     else
                     {
