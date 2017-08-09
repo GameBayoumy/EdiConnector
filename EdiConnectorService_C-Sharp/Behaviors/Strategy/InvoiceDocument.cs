@@ -7,6 +7,7 @@ namespace EdiConnectorService_C_Sharp
 {
     class InvoiceDocument : IEdiDocumentType
     {
+        public string TypeName { get; set; } = "Invoice Document";
 
         // Data structure
         public string MessageStandard { get; set;}
