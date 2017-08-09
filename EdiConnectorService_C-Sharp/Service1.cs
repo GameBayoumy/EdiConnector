@@ -57,11 +57,11 @@ namespace EdiConnectorService_C_Sharp
             EdiConnectorData.getInstance().sProcessedDirName = "Processed";
 
             // Create connections from config.xml and try to connect all servers
-            agent.QueueCommand(new CreateConnectionsCommand());
+            agent.ExecuteCommand(new CreateConnectionsCommand());
             ConnectionManager.getInstance().ConnectAll();
 
             // Creates udf fields for every connected server
-            agent.QueueCommand(new CreateUserDefinitionsCommand());
+            agent.ExecuteCommand(new CreateUserDefinitionsCommand());
 
             ThreadPool.QueueUserWorkItem(new WaitCallback(ServiceWorkerThread));
         }
@@ -96,6 +96,8 @@ namespace EdiConnectorService_C_Sharp
                         EventLogger.getInstance().EventError("Server: " + connectedServer + ". Messages file path does not exist!: " + messagesFilePath);
                     }
                 }
+
+                agent.ExecuteCommandQueue();
 
                 Thread.Sleep(10000);
             }

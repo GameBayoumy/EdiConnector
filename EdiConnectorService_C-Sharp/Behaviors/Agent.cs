@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 
 namespace EdiConnectorService_C_Sharp
 {
     public class Agent
     {
         private Queue<ICommand> commandsQueue = new Queue<ICommand>();
+        readonly object locker = new object();
 
         public Agent()
         {
@@ -13,8 +15,29 @@ namespace EdiConnectorService_C_Sharp
         public void QueueCommand(ICommand _command)
         {
             commandsQueue.Enqueue(_command);
-            _command.execute();
-            commandsQueue.Dequeue();
         }    
+
+        public void ExecuteCommand(ICommand _command)
+        {
+            _command.execute();
+        }
+
+        public void ExecuteCommandQueue()
+        {
+            foreach(ICommand command in commandsQueue)
+            {
+                ThreadPool.QueueUserWorkItem(new WaitCallback(CommandWorkerThread), command);
+            }
+        }
+
+        private void CommandWorkerThread(System.Object _command)
+        {
+            lock (locker)
+            {
+                ICommand command = (ICommand)_command;
+                command.execute();
+                commandsQueue.Dequeue();
+            }
+        }
     }
 }
