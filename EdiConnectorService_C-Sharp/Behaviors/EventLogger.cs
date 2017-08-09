@@ -57,7 +57,7 @@ namespace EdiConnectorService_C_Sharp
                 if (oUDT.Add() == 0)
                 {
                     oRs.DoQuery(@"SELECT Max(""Code"") FROM ""@0_SWS_EDI_LOG""");
-                    EventInfo("Server: " + _connectedServer + ". " + "Succesfully added incoming xml message to UDT: " + oUDT.TableName);
+                    EventInfo("Server: " + _connectedServer + ". " + "Succesfully added incoming xml message (" + _fileName + ") to UDT: " + oUDT.TableName);
                     return recordReference = oRs.Fields.Item(0).Value.ToString();
                 }
                 else
