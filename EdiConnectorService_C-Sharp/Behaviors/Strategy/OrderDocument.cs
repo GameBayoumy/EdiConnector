@@ -7,6 +7,7 @@ namespace EdiConnectorService_C_Sharp
 {
     class OrderDocument : IEdiDocumentType
     {
+        public string TypeName { get; set; } = "Sales Order Document";
 
         // Data structure
         public string MessageStandard { get; set;}

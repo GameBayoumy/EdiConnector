@@ -26,19 +26,16 @@ namespace EdiConnectorService_C_Sharp
         public void EventInfo(string text)
         {
             eventLog1.WriteEntry(text, EventLogEntryType.Information);
-            System.GC.Collect();
         }
 
         public void EventError(string text)
         {
             eventLog1.WriteEntry(text, EventLogEntryType.Error);
-            System.GC.Collect();
         }
 
         public void EventWarning(string text)
         {
             eventLog1.WriteEntry(text, EventLogEntryType.Warning);
-            System.GC.Collect();
         }
 
         public string CreateSAPLogMessage(string _connectedServer, string _fileName, System.Xml.Linq.XDocument _xDoc, string _logMessage, string _status)
