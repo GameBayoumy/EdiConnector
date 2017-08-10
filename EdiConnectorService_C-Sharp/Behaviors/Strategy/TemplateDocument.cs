@@ -8,6 +8,7 @@ namespace EdiConnectorService_C_Sharp
     class TemplateDocument : IEdiDocumentType
     {
         public string TypeName { get; set; } = "Template Document";
+        public string LogRecordReference { get; set; }
 
         public string MessageStandard { get; set;}
         public string MessageType { get; set; }

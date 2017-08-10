@@ -31,6 +31,16 @@ namespace EdiConnectorService_C_Sharp
             return documentType.TypeName;
         }
 
+        public void SetLogRecordReference(string _logRecordReference)
+        {
+            this.documentType.LogRecordReference = _logRecordReference;
+        }
+
+        public string GetLogRecordReference()
+        {
+            return this.documentType.LogRecordReference;
+        }
+
         public Object ReadXMLData(XElement _xMessages, out Exception _ex)
         {
             return documentType.ReadXMLData(_xMessages, out _ex);
