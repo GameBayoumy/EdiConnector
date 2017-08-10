@@ -29,6 +29,8 @@ namespace EdiConnectorService_C_Sharp
                 ThreadPool.GetAvailableThreads(out var availableThreads, out var i);
                 if (availableThreads > 0)
                     ThreadPool.QueueUserWorkItem(new WaitCallback(CommandWorkerThread), command);
+                else
+                    EventLogger.getInstance().EventWarning("All threads are busy");
             }
         }
 
