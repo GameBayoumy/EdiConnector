@@ -83,17 +83,18 @@ namespace EdiConnectorService_C_Sharp
         {
             SAPbobsCOM.UserTable oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item("0_SWS_EDI_LOG");
 
-            oUDT.GetByKey(_recordReference);
-
-            if(_status != "")
-                oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
-            oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value += System.Environment.NewLine + System.DateTime.Now.ToString("dd-MM-yy HH:mm:ss : ") + oUDT.UserFields.Fields.Item("U_STATUS").Value + " - " + _logMessage;
-
-            if (oUDT.Update() != 0)
+            if (oUDT.GetByKey(_recordReference))
             {
-                EventError("Server: " + _connectedServer + ". " + "Error updating items to UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
-            }
+                if(_status != "")
+                    oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
+                oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value += System.Environment.NewLine + System.DateTime.Now.ToString("dd-MM-yy HH:mm:ss : ") + oUDT.UserFields.Fields.Item("U_STATUS").Value + " - " + _logMessage;
 
+                if (oUDT.Update() != 0)
+                {
+                    EventError("Server: " + _connectedServer + ". " + "Error updating items to UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
+                }
+            }
+            
             EdiConnectorService.ClearObject(oUDT);
         }
     }
