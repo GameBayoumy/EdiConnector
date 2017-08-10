@@ -14,6 +14,8 @@ namespace EdiConnectorService_C_Sharp
         private ManualResetEvent stoppedEvent;
 
         public Agent agent;
+        public static int minThreads = 2;
+        public static int maxThreads = 5;
 
         public EdiConnectorService()
         {
@@ -52,6 +54,9 @@ namespace EdiConnectorService_C_Sharp
         /// </remarks>
         protected override void OnStart(string[] args)
         {
+            // Set values
+            ThreadPool.SetMinThreads(minThreads, 2);
+            ThreadPool.SetMaxThreads(maxThreads , 5);
             EventLogger.getInstance().EventInfo("EdiService in OnStart.");
             EdiConnectorData.getInstance().sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase) + @"\";
             EdiConnectorData.getInstance().sProcessedDirName = "Processed";

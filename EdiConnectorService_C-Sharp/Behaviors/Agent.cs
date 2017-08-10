@@ -24,9 +24,13 @@ namespace EdiConnectorService_C_Sharp
 
         public void ExecuteCommandQueue()
         {
-            foreach(ICommand command in commandsQueue)
+            ThreadPool.GetAvailableThreads(out var availableThreads, out var i);
+            if (availableThreads > 0)
             {
-                ThreadPool.QueueUserWorkItem(new WaitCallback(CommandWorkerThread), command);
+                foreach(ICommand command in commandsQueue)
+                {
+                    ThreadPool.QueueUserWorkItem(new WaitCallback(CommandWorkerThread), command);
+                }
             }
         }
 

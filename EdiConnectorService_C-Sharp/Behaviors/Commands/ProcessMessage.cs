@@ -25,7 +25,9 @@ namespace EdiConnectorService_C_Sharp
             EdiDocument ediDocument = new EdiDocument();
             Object ediDocumentData = new Object();
             string recordReference = EventLogger.getInstance().CreateSAPLogMessage(connectedServer, fileName, xDoc, "Loaded new document: " + fileName, "Processing..");
-            EdiConnectorData.getInstance().sRecordReference = recordReference;
+            EdiConnectorData.getInstance().sRecordReference = recordReference; 
+            // TO DO: Get rid of this data storage that will interfere with multi threading!
+
             if (System.IO.File.Exists(filePath + fileName))
             {
                 System.IO.File.Copy((filePath + fileName), (filePath + EdiConnectorData.getInstance().sProcessedDirName + @"\" + fileName), true);
