@@ -35,7 +35,7 @@ namespace EdiConnectorService_C_Sharp
                     ConnectionManager.getInstance().Connections.Last().Value.Set(xEle);
                 }
                 else
-                    EventLogger.getInstance().EventError("Error creating connections: Empty field found in configuration " + xEle.Element("Server"));
+                    EventLogger.getInstance().EventError("Error creating connections: Empty field found in configuration " + xEle.Element("Server").Value);
             }
         }
     }
