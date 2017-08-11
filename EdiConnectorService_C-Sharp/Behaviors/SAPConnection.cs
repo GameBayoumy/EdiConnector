@@ -9,16 +9,34 @@ namespace EdiConnectorService_C_Sharp
         /// <summary>
         /// Gets or sets the company.
         /// </summary>
+        /// <value>
+        /// The company.
+        /// </value>
         public SAPbobsCOM.Company Company { get; set; }
 
         /// <summary>
         /// Gets or sets the file path.
         /// </summary>
+        /// <value>
+        /// The messages file path.
+        /// </value>
         public string MessagesFilePath { get; set; }
+
+
+        /// <summary>
+        /// Gets or sets the udf file path.
+        /// </summary>
+        /// <value>
+        /// The udf file path.
+        /// </value>
+        public string UdfFilePath { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether [connected to sap].
         /// </summary>
+        /// <value>
+        ///   <c>true</c> if [connected to sap]; otherwise, <c>false</c>.
+        /// </value>
         public bool ConnectedToSAP { get; set; }
 
         public SAPConnection()
@@ -71,6 +89,12 @@ namespace EdiConnectorService_C_Sharp
                     {
                         System.IO.Directory.CreateDirectory(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName);
                     }
+                }
+
+                UdfFilePath = xEle.Element("UdfFilePath").Value;
+                if (!System.IO.File.Exists(UdfFilePath))
+                {
+                    EventLogger.getInstance().EventError("Server: " + Company.Server + ". " + "Udf File Path not found! " + UdfFilePath);
                 }
 
                 EventLogger.getInstance().EventInfo("Set connection - Server: " + Company.Server);
