@@ -56,7 +56,6 @@ namespace EdiConnectorService_C_Sharp
                 EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error setting message - Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". EXCEPTION: " + e.Message);
             }
 
-
             // Reads the XML Data for the specified document type
             ediDocumentData = ediDocument.ReadXMLData(xMessages, out Exception exR);
             if (exR != null)

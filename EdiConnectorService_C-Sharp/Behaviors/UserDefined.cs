@@ -15,7 +15,7 @@ namespace EdiConnectorService_C_Sharp
         {
             try
             {
-                XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"udf.xml");
+                XDocument xDoc = XDocument.Load(ConnectionManager.getInstance().GetConnection(_connectedServer).UdfFilePath);
                 foreach (XElement xEle in xDoc.Element("UserDefined").Element("Tables").Descendants("Udt"))
                 {
                     CreateTable(_connectedServer, xEle.Attribute("name").Value, BoUTBTableType.bott_NoObjectAutoIncrement);
@@ -58,7 +58,7 @@ namespace EdiConnectorService_C_Sharp
         {
             try
             {
-                XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"udf.xml");
+                XDocument xDoc = XDocument.Load(ConnectionManager.getInstance().GetConnection(_connectedServer).UdfFilePath);
                 foreach (XElement xEle in xDoc.Element("UserDefined").Element("Fields").Descendants("Udf"))
                 {
                     var typeAttribute = (string)xEle.Attribute("type") ?? "alpha";
