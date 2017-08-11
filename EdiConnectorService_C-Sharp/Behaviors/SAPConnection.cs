@@ -72,8 +72,18 @@ namespace EdiConnectorService_C_Sharp
                         System.IO.Directory.CreateDirectory(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName);
                     }
                 }
+                else
+                {
+                    EventLogger.getInstance().EventError("Server: " + Company.Server + ". " + "Messages File Path not found! " + MessagesFilePath);
+                }
 
-                EventLogger.getInstance().EventInfo("Set connection - Server: " + Company.Server);
+                UdfFilePath = xEle.Element("UdfFilePath").Value;
+                if (!System.IO.File.Exists(UdfFilePath))
+                {
+                    EventLogger.getInstance().EventError("Server: " + Company.Server + ". " + "Udf File Path not found! " + UdfFilePath);
+                }
+
+                EventLogger.getInstance().EventInfo("Server: " + Company.Server + ". " + "Connection set");
             }
             catch (Exception e)
             {
