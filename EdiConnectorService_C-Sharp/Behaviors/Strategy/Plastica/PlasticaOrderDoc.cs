@@ -25,11 +25,11 @@ namespace EdiConnectorService_C_Sharp
         public string BlanketOrderNumber { get; set; }
         public string ActionNumber { get; set; }
         public string OrderNumberBuyer { get; set; }
-        public string OrderDate { get; set; }
-        public string EarliestDeliveryDate { get; set; }
-        public string LatestDeliveryDate { get; set; }
-        public string RequestedDeliveryDate { get; set; }
-        public string PickUpDate { get; set; }
+        public DateTime OrderDate { get; set; }
+        public DateTime EarliestDeliveryDate { get; set; }
+        public DateTime LatestDeliveryDate { get; set; }
+        public DateTime RequestedDeliveryDate { get; set; }
+        public DateTime PickUpDate { get; set; }
         public string BuyerGLN { get; set; }
         public string Buyer { get; set; }
         public string BuyerID { get; set; }
@@ -116,8 +116,8 @@ namespace EdiConnectorService_C_Sharp
             public string LocationGLN { get; set; }
             public string GrossWeight { get; set; }
             public string GrossWeightUnitCode { get; set; }
-            public string RequestedDeliveryDate { get; set; }
-            public string LatestDeliveryDate { get; set; }
+            public DateTime RequestedDeliveryDate { get; set; }
+            public DateTime LatestDeliveryDate { get; set; }
             public string NetLineAmount { get; set; }
             public string PackagingType { get; set; }
             public string ConsumerReference { get; set; }
@@ -162,11 +162,11 @@ namespace EdiConnectorService_C_Sharp
                         BlanketOrderNumber = x.Element("BlanketOrderNumber").Value ?? "",
                         ActionNumber = x.Element("ActionNumber").Value ?? "",
                         OrderNumberBuyer = x.Element("OrderNumberBuyer").Value,
-                        OrderDate = x.Element("OrderDate").Value ?? "",
-                        EarliestDeliveryDate = x.Element("EarliestDeliveryDate").Value ?? "",
-                        LatestDeliveryDate = x.Element("LatestDeliveryDate").Value ?? "",
-                        RequestedDeliveryDate = x.Element("RequestedDeliveryDate").Value ?? "",
-                        PickUpDate = x.Element("PickUpDate").Value ?? "",
+                        OrderDate = DateTime.ParseExact(x.Element("OrderDate").Value ?? "000101010000", "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture),
+                        EarliestDeliveryDate = DateTime.ParseExact(x.Element("EarliestDeliveryDate").Value ?? "000101010000", "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture),
+                        LatestDeliveryDate = DateTime.ParseExact(x.Element("LatestDeliveryDate").Value ?? "000101010000", "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture),
+                        RequestedDeliveryDate = DateTime.ParseExact(x.Element("RequestedDeliveryDate").Value ?? "000101010000", "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture),
+                        PickUpDate = DateTime.ParseExact(x.Element("PickUpDate").Value ?? "000101010000", "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture),
                         BuyerGLN = x.Element("BuyerGLN").Value,
                         Buyer = x.Element("Buyer").Value ?? "",
                         BuyerID = x.Element("BuyerID").Value ?? "",
@@ -251,8 +251,8 @@ namespace EdiConnectorService_C_Sharp
                             LocationGLN = a.Element("LocationGLN").Value ?? "",
                             GrossWeight = a.Element("GrossWeight").Value ?? "",
                             GrossWeightUnitCode = a.Element("GrossWeightUnitCode").Value ?? "",
-                            RequestedDeliveryDate = a.Element("RequestedDeliveryDate").Value ?? "",
-                            LatestDeliveryDate = a.Element("LatestDeliveryDate").Value ?? "",
+                            RequestedDeliveryDate = DateTime.ParseExact(a.Element("RequestedDeliveryDate").Value ?? "000101010000", "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture),
+                            LatestDeliveryDate = DateTime.ParseExact(a.Element("LatestDeliveryDate").Value ?? "000101010000", "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture),
                             NetLineAmount = a.Element("NetLineAmount").Value ?? "",
                             PackagingType = a.Element("PackagingType").Value ?? "",
                             ConsumerReference = a.Element("ConsumerReference").Value ?? "",
@@ -342,16 +342,63 @@ namespace EdiConnectorService_C_Sharp
                             EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error CodeBars: " + article.GTIN + " not found!");
                             EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error CodeBars: " + article.GTIN + " not found!", "Error!");
                         }
-
-                        oOrd.Lines.UserFields.Fields.Item("U_EdiLineNumber").Value = article.LineNumber;
                         oOrd.Lines.ItemDescription = article.ArticleDescription;
                         oOrd.Lines.Quantity = Convert.ToDouble(article.OrderedQuantity);
 
+                        oOrd.Lines.UserFields.Fields.Item("U_EdiLineNumber").Value = article.LineNumber;
+                        oOrd.Lines.UserFields.Fields.Item("U_DEUAC").Value = article.GTIN;
+                        oOrd.Lines.UserFields.Fields.Item("U_QTY").Value = article.OrderedQuantity;
+                        //oOrd.Lines.UserFields.Fields.Item("U_LEVARTCODE").Value = article.ArticleCodeSupplier;
+                        oOrd.Lines.UserFields.Fields.Item("U_DEARTOM").Value = article.ArticleDescription;
+                        oOrd.Lines.UserFields.Fields.Item("U_KLEUR").Value = article.ColourCode;
+                        oOrd.Lines.UserFields.Fields.Item("U_LENGTE").Value = article.Length;
+                        oOrd.Lines.UserFields.Fields.Item("U_BREEDTE").Value = article.Width;
+                        oOrd.Lines.UserFields.Fields.Item("U_HOOGTE").Value = article.Height;
+                        oOrd.Lines.UserFields.Fields.Item("U_CUX").Value = article.PurchasePriceCurrencyCode;
+                        oOrd.Lines.UserFields.Fields.Item("U_PIA").Value = article.PromotionVariantCode;
+                        //oOrd.Lines.UserFields.Fields.Item("U_RFFLI1").Value = article.; // Ordernummer voor onderregel identificatie
+                        oOrd.Lines.UserFields.Fields.Item("U_RFFLI2").Value = article.RequestedDeliveryDate.ToString("yyyy-MM-dd"); // Onderregel identificatie
+                        //oOrd.Lines.UserFields.Fields.Item("U_LINNR").Value = article.; // Regelnummer (alleen inkomend)
+                        oOrd.Lines.UserFields.Fields.Item("U_PRI").Value = article.RetailPrice;
+
                         oOrd.Lines.Add();
                     }
-                    oOrd.NumAtCard = orderDocument.OrderNumberBuyer;
-                    oOrd.DocDueDate = Convert.ToDateTime(orderDocument.RequestedDeliveryDate);
                     oOrd.UserFields.Fields.Item("U_IsTestMessage").Value = orderDocument.IsTestMessage;
+                    oOrd.NumAtCard = orderDocument.OrderNumberBuyer;
+                    oOrd.UserFields.Fields.Item("U_BGM").Value = orderDocument.OrderNumberBuyer;
+                    oOrd.DocDate = orderDocument.OrderDate;
+                    oOrd.TaxDate = orderDocument.OrderDate;
+                    oOrd.DocDueDate = orderDocument.RequestedDeliveryDate;
+                    oOrd.UserFields.Fields.Item("U_DTM_2").Value = orderDocument.RequestedDeliveryDate.ToString("yyyy-MM-dd");
+                    oOrd.UserFields.Fields.Item("U_TIJD_2").Value = orderDocument.RequestedDeliveryDate.ToString("HH:mm");
+                    oOrd.UserFields.Fields.Item("U_DTM_17").Value = orderDocument.OrderDate.ToString("yyyy-MM-dd");
+                    oOrd.UserFields.Fields.Item("U_TIJD_17").Value = orderDocument.OrderDate.ToString("HH:mm");
+                    oOrd.UserFields.Fields.Item("U_DTM_64").Value = orderDocument.EarliestDeliveryDate.ToString("yyyy-MM-dd");
+                    oOrd.UserFields.Fields.Item("U_TIJD_64").Value = orderDocument.EarliestDeliveryDate.ToString("HH:mm");
+                    oOrd.UserFields.Fields.Item("U_DTM_63").Value = orderDocument.LatestDeliveryDate.ToString("yyyy-MM-dd");
+                    oOrd.UserFields.Fields.Item("U_TIJD_63").Value = orderDocument.LatestDeliveryDate.ToString("HH:mm");
+                    oOrd.UserFields.Fields.Item("U_RFF_BO").Value = orderDocument.BlanketOrderNumber;
+                    oOrd.UserFields.Fields.Item("U_RFF_CR").Value = orderDocument.ConsumerReference;
+                    oOrd.UserFields.Fields.Item("U_RFF_PD").Value = orderDocument.ActionNumber;
+                    //oOrd.UserFields.Fields.Item("U_RFFCT").Value = orderDocument.; // Contractnummer
+                    //oOrd.UserFields.Fields.Item("U_DTMCT").Value = orderDocument.; // Contractdatum
+                    oOrd.UserFields.Fields.Item("U_FLAGS0").Value = orderDocument.IsShopInstallation; // Winkelinstallatie
+                    //oOrd.UserFields.Fields.Item("U_FLAGS1").Value = orderDocument.; // Geheellevering
+                    //oOrd.UserFields.Fields.Item("U_FLAGS2").Value = orderDocument.; // Nul-order
+                    //oOrd.UserFields.Fields.Item("U_FLAGS3").Value = orderDocument.; // Aperak gevraagd
+                    oOrd.UserFields.Fields.Item("U_FLAGS4").Value = orderDocument.IsCrossdock; // Crossdock order
+                    //oOrd.UserFields.Fields.Item("U_FLAGS5").Value = orderDocument.; // Raamorder
+                    //oOrd.UserFields.Fields.Item("U_FLAGS6").Value = orderDocument.; // Geimproviseerde order
+                    oOrd.UserFields.Fields.Item("U_FLAGS7").Value = orderDocument.IsDutyFree; // Accijnsvrije levering
+                    oOrd.UserFields.Fields.Item("U_FLAGS8").Value = orderDocument.IsUrgent; // Spoed
+                    oOrd.UserFields.Fields.Item("U_FLAGS9").Value = orderDocument.IsBackhauling; // Backhauling ophalen
+                    oOrd.UserFields.Fields.Item("U_FLAGS10").Value = orderDocument.IsAcknowledgementRequested; // Bevest. met regels
+                    oOrd.UserFields.Fields.Item("U_FTXDSI").Value = orderDocument.OrderAdditionalDetails; // Text voor pakbon
+                    oOrd.UserFields.Fields.Item("U_NAD_SF").Value = orderDocument.BuyerGLN; // Eancode haaladres
+                    oOrd.UserFields.Fields.Item("U_NAD_SU").Value = orderDocument.SupplierGLN; // Eancode leverancier
+                    oOrd.UserFields.Fields.Item("U_NAD_UC").Value = orderDocument.UltimateConsigneeGLN; // Eancode eindbestemming
+                    //oOrd.UserFields.Fields.Item("U_NAD_BCO").Value = orderDocument.; // Eancode inkoopcombinatie afnemer
+                    //oOrd.UserFields.Fields.Item("ONTVANGER").Value = orderDocument.; // Identificatie van uzelf in het EDI-bericht
 
                     if (oOrd.Add() == 0)
                     {
