@@ -37,15 +37,24 @@ namespace EdiConnectorService_C_Sharp
             {
                 if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Count() > 0)
                 {
-                    ediDocument.SetDocumentType(new OrderDocument());
+                    if(ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "demo")
+                        ediDocument.SetDocumentType(new OrderDocument());
+                    else if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "plastica")
+                        ediDocument.SetDocumentType(new PlasticaOrderDoc());
                 }
                 else if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "5").Count() > 0)
                 {
-                    ediDocument.SetDocumentType(new OrderResponseDocument());
+                    if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "demo")
+                        ediDocument.SetDocumentType(new OrderResponseDocument());
+                    //else if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "plastica")
+                        //ediDocument.SetDocumentType(new PlasticaResponseDoc());
                 }
                 else if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "8").Count() > 0)
                 {
-                    ediDocument.SetDocumentType(new InvoiceDocument());
+                    if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "demo")
+                        ediDocument.SetDocumentType(new InvoiceDocument());
+                    //else if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "plastica")
+                        //ediDocument.SetDocumentType(new PlasticaInvoiceDoc());
                 }
 
                 EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Set document type to: " + ediDocument.GetDocumentTypeName(), "Processing..");

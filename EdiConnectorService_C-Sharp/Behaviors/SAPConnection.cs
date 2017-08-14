@@ -7,6 +7,14 @@ namespace EdiConnectorService_C_Sharp
     class SAPConnection : AConnection
     {
         /// <summary>
+        /// Gets or sets the edi profile.
+        /// </summary>
+        /// <value>
+        /// The edi profile.
+        /// </value>
+        public string EdiProfile { get; set; }
+
+        /// <summary>
         /// Gets or sets the company.
         /// </summary>
         /// <value>
@@ -61,6 +69,7 @@ namespace EdiConnectorService_C_Sharp
             try
             {
                 XElement xEle = _xEle;
+                EdiProfile = xEle.Element("EdiProfile").Value;
                 Company.Server = xEle.Element("Server").Value;
                 Company.LicenseServer = xEle.Element("LicenceServer").Value;
                 Company.UserName = xEle.Element("Username").Value;
