@@ -68,9 +68,9 @@ namespace EdiConnectorService_C_Sharp
                         Convert.ToInt32(sizeAttribute), GetFieldType(typeAttribute), GetFieldSubType(subTypeAttribute), false, false, "");
                 }
             }
-            catch
+            catch(Exception e)
             {
-                //EventLogger.getInstance().EventError("Error creating UDF: " + e.Message);
+                EventLogger.getInstance().EventError("Error creating UDF: " + e.Message);
             }
         }
 
@@ -78,12 +78,19 @@ namespace EdiConnectorService_C_Sharp
             BoFieldTypes _boType, BoFldSubTypes _boSubType, bool _mandatory, bool _default, string _defaultValue)
         {
             IUserFieldsMD oUDF = (IUserFieldsMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserFields);
-            UserTable oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item(_tableName);
-
-            foreach(IField existingUDF in oUDT.UserFields.Fields)
+            try
             {
-                if (existingUDF.Name == "U_"+_fieldName)
-                    return;
+                UserTable oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item(_tableName);
+                foreach (IField existingUDF in oUDT.UserFields.Fields)
+                {
+                    if (existingUDF.Name == "U_"+_fieldName)
+                        return;
+                }
+                EdiConnectorService.ClearObject(oUDT);
+            }
+            catch
+            {
+
             }
             oUDF.TableName = _tableName;
             oUDF.Name = _fieldName;
@@ -102,8 +109,8 @@ namespace EdiConnectorService_C_Sharp
 
             if (oUDF.Add() != 0)
             {
-                ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
-                EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating UDF: " + errMsg);
+                //ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
+                //EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating UDF: " + errMsg);
             }
             else
             {
@@ -111,7 +118,6 @@ namespace EdiConnectorService_C_Sharp
             }
 
             EdiConnectorService.ClearObject(oUDF);
-            EdiConnectorService.ClearObject(oUDT);
         }
 
         /// <summary>
