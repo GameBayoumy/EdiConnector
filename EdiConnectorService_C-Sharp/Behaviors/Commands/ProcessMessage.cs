@@ -62,7 +62,7 @@ namespace EdiConnectorService_C_Sharp
             catch (Exception e)
             {
                 EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". EXCEPTION: " + e.Message, "Error!");
-                EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error setting message - Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". EXCEPTION: " + e.Message);
+                EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". EXCEPTION: " + e.Message);
             }
 
             // Reads the XML Data for the specified document type
@@ -70,20 +70,28 @@ namespace EdiConnectorService_C_Sharp
             if (exR != null)
             {
                 EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error reading document with type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exR.Message + " XML node probably missing/incorrect!!!", "Error!");
-                EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error reading message - Error reading document with type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exR.Message + " XML node probably missing / incorrect!!!");
+                EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error reading document with type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exR.Message + " XML node probably missing / incorrect!!!");
             }
             else
                 EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Read document with type: " + ediDocument.GetDocumentTypeName(), "Processing..");
 
             // Save the data object for the specified document type to SAP
-            ediDocument.SaveToSAP(ediDocumentData, connectedServer, out Exception exS);
-            if(exS != null)
+            if(ediDocumentData != null)
             {
-                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Saving document " + fileName + " with document type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exS.Message, "Error!");
-                EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error saving document - Error saving document " + fileName + " with document type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exS.Message);
+                ediDocument.SaveToSAP(ediDocumentData, connectedServer, out Exception exS);
+                if(exS != null)
+                {
+                    EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error saving document: " + fileName + " with document type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exS.Message, "Error!");
+                    EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error saving document: " + fileName + " with document type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exS.Message);
+                }
+                else
+                    EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Saved document " + fileName + " with document type: " + ediDocument.GetDocumentTypeName(), "Processed.");
             }
             else
-                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Saved document " + fileName + " with document type: " + ediDocument.GetDocumentTypeName(), "Processed.");
+            {
+                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error saving document: " + fileName + " data object is empty!", "Error!");
+                EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error saving document: " + fileName + " data object is empty!");
+            }
         }
     }
 }
