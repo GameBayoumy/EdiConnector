@@ -287,22 +287,21 @@ namespace EdiConnectorService_C_Sharp
             {
                 try
                 {
-                    //oOrd.CardName = orderDocument.Sender;
-                    oRs.DoQuery(@"SELECT T0.""Address"", T1.""CardCode"", T1.""CardName"" FROM CRD1 T0 INNER JOIN OCRD T1 ON T0.""CardCode"" = T1.""CardCode"" WHERE T0.""GlblLocNum"" = '" + orderDocument.SupplierGLN + "'");
+                    oRs.DoQuery(@"SELECT T0.""Address"", T1.""CardCode"", T1.""CardName"" FROM CRD1 T0 INNER JOIN OCRD T1 ON T0.""CardCode"" = T1.""CardCode"" WHERE T0.""GlblLocNum"" = '" + orderDocument.InvoiceeGLN + "'");
                     if (oRs.RecordCount > 0)
                     {
                         if (oRs.Fields.Item(0).Size > 0)
                             oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString();
                         else
                         {
-                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To Address not found! With GlblLocNum: " + orderDocument.SupplierGLN);
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To Address not found! With GlblLocNum: " + orderDocument.SupplierGLN, "Error!");
+                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To Address not found! With GlblLocNum: " + orderDocument.InvoiceeGLN);
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To Address not found! With GlblLocNum: " + orderDocument.InvoiceeGLN, "Error!");
                         }
                     }
                     else
                     {
-                        EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To GlblLocNum: " + orderDocument.SupplierGLN + " not found!");
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.SupplierGLN + " not found!", "Error!");
+                        EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!");
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!", "Error!");
                     }
 
                     oRs.DoQuery(@"SELECT T2.""Address"", T0.""CardCode"", T0.""CardName"", T1.""E_MailL"" FROM OCRD T0 INNER JOIN OCPR T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN CRD1 T2 ON T0.""CardCode"" = T2.""CardCode"" WHERE T2.""GlblLocNum"" = '" + orderDocument.BuyerGLN + "'");
@@ -332,6 +331,46 @@ namespace EdiConnectorService_C_Sharp
                         EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Ship To GlblLocNum: " + orderDocument.BuyerGLN + " not found!");
                         EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Ship To GlblLocNum: " + orderDocument.SupplierGLN + " not found!", "Error!");
                     }
+
+                    oOrd.UserFields.Fields.Item("U_TEST").Value = orderDocument.IsTestMessage;
+                    oOrd.NumAtCard = orderDocument.OrderNumberBuyer;
+                    oOrd.UserFields.Fields.Item("U_DTM_2").Value = orderDocument.RequestedDeliveryDate.ToString("yyyy-MM-dd");
+                    oOrd.UserFields.Fields.Item("U_TIJD_2").Value = orderDocument.RequestedDeliveryDate.ToString("HH:mm");
+                    oOrd.UserFields.Fields.Item("U_DTM_17").Value = orderDocument.OrderDate.ToString("yyyy-MM-dd");
+                    oOrd.UserFields.Fields.Item("U_TIJD_17").Value = orderDocument.OrderDate.ToString("HH:mm");
+                    oOrd.UserFields.Fields.Item("U_FLAGS0").Value = orderDocument.IsShopInstallation; // Winkelinstallatie
+                    oOrd.UserFields.Fields.Item("U_FLAGS4").Value = orderDocument.IsCrossdock; // Crossdock order
+                    oOrd.UserFields.Fields.Item("U_FLAGS7").Value = orderDocument.IsDutyFree; // Accijnsvrije levering
+                    oOrd.UserFields.Fields.Item("U_FLAGS8").Value = orderDocument.IsUrgent; // Spoed
+                    oOrd.UserFields.Fields.Item("U_FLAGS9").Value = orderDocument.IsBackhauling; // Backhauling ophalen
+                    oOrd.UserFields.Fields.Item("U_FLAGS10").Value = orderDocument.IsAcknowledgementRequested; // Bevest. met regels
+                    oOrd.DocDueDate = orderDocument.RequestedDeliveryDate;
+                    //oOrd.CardName = orderDocument.Sender;
+                    //oOrd.UserFields.Fields.Item("U_IsTestMessage").Value = orderDocument.IsTestMessage;
+                    //oOrd.UserFields.Fields.Item("U_BGM").Value = orderDocument.OrderNumberBuyer;
+                    //oOrd.DocDate = orderDocument.OrderDate;
+                    //oOrd.TaxDate = orderDocument.OrderDate;
+                    //oOrd.UserFields.Fields.Item("U_DTM_64").Value = orderDocument.EarliestDeliveryDate.ToString("yyyy-MM-dd");
+                    //oOrd.UserFields.Fields.Item("U_TIJD_64").Value = orderDocument.EarliestDeliveryDate.ToString("HH:mm");
+                    //oOrd.UserFields.Fields.Item("U_DTM_63").Value = orderDocument.LatestDeliveryDate.ToString("yyyy-MM-dd");
+                    //oOrd.UserFields.Fields.Item("U_TIJD_63").Value = orderDocument.LatestDeliveryDate.ToString("HH:mm");
+                    //oOrd.UserFields.Fields.Item("U_RFF_BO").Value = orderDocument.BlanketOrderNumber;
+                    //oOrd.UserFields.Fields.Item("U_RFF_CR").Value = orderDocument.ConsumerReference;
+                    //oOrd.UserFields.Fields.Item("U_RFF_PD").Value = orderDocument.ActionNumber;
+                    //oOrd.UserFields.Fields.Item("U_RFFCT").Value = orderDocument.; // Contractnummer
+                    //oOrd.UserFields.Fields.Item("U_DTMCT").Value = orderDocument.; // Contractdatum
+                    //oOrd.UserFields.Fields.Item("U_FLAGS1").Value = orderDocument.; // Geheellevering
+                    //oOrd.UserFields.Fields.Item("U_FLAGS2").Value = orderDocument.; // Nul-order
+                    //oOrd.UserFields.Fields.Item("U_FLAGS3").Value = orderDocument.; // Aperak gevraagd
+                    //oOrd.UserFields.Fields.Item("U_FLAGS5").Value = orderDocument.; // Raamorder
+                    //oOrd.UserFields.Fields.Item("U_FLAGS6").Value = orderDocument.; // Geimproviseerde order
+                    //oOrd.UserFields.Fields.Item("U_FTXDSI").Value = orderDocument.OrderAdditionalDetails; // Text voor pakbon
+                    //oOrd.UserFields.Fields.Item("U_NAD_SF").Value = orderDocument.BuyerGLN; // Eancode haaladres
+                    //oOrd.UserFields.Fields.Item("U_NAD_SU").Value = orderDocument.SupplierGLN; // Eancode leverancier
+                    //oOrd.UserFields.Fields.Item("U_NAD_UC").Value = orderDocument.UltimateConsigneeGLN; // Eancode eindbestemming
+                    //oOrd.UserFields.Fields.Item("U_NAD_BCO").Value = orderDocument.; // Eancode inkoopcombinatie afnemer
+                    //oOrd.UserFields.Fields.Item("ONTVANGER").Value = orderDocument.; // Identificatie van uzelf in het EDI-bericht
+
                     foreach (Article article in orderDocument.Articles)
                     {
                         oRs.DoQuery(@"SELECT ""ItemCode"" FROM OITM WHERE ""CodeBars"" = '" + article.GTIN + "'");
@@ -344,11 +383,10 @@ namespace EdiConnectorService_C_Sharp
                         }
                         oOrd.Lines.ItemDescription = article.ArticleDescription;
                         oOrd.Lines.Quantity = Convert.ToDouble(article.OrderedQuantity);
-
-                        oOrd.Lines.UserFields.Fields.Item("U_EdiLineNumber").Value = article.LineNumber;
-                        //oOrd.Lines.UserFields.Fields.Item("U_DEUAC").Value = article.GTIN;
-                        //oOrd.Lines.UserFields.Fields.Item("U_QTY").Value = article.OrderedQuantity;
-                        //oOrd.Lines.UserFields.Fields.Item("U_LEVARTCODE").Value = article.ArticleCodeSupplier;
+                        oOrd.Lines.UserFields.Fields.Item("U_LINNR").Value = article.LineNumber;
+                        oOrd.Lines.UserFields.Fields.Item("U_LEVARTCODE").Value = article.ArticleCodeSupplier;
+                        oOrd.Lines.UserFields.Fields.Item("U_DEUAC").Value = article.GTIN;
+                        //oOrd.Lines.UserFields.Fields.Item("U_EdiLineNumber").Value = article.LineNumber;
                         //oOrd.Lines.UserFields.Fields.Item("U_DEARTOM").Value = article.ArticleDescription;
                         //oOrd.Lines.UserFields.Fields.Item("U_KLEUR").Value = article.ColourCode;
                         //oOrd.Lines.UserFields.Fields.Item("U_LENGTE").Value = article.Length;
@@ -358,47 +396,10 @@ namespace EdiConnectorService_C_Sharp
                         //oOrd.Lines.UserFields.Fields.Item("U_PIA").Value = article.PromotionVariantCode;
                         //oOrd.Lines.UserFields.Fields.Item("U_RFFLI1").Value = article.; // Ordernummer voor onderregel identificatie
                         //oOrd.Lines.UserFields.Fields.Item("U_RFFLI2").Value = article.RequestedDeliveryDate.ToString("yyyy-MM-dd"); // Onderregel identificatie
-                        //oOrd.Lines.UserFields.Fields.Item("U_LINNR").Value = article.; // Regelnummer (alleen inkomend)
                         //oOrd.Lines.UserFields.Fields.Item("U_PRI").Value = article.RetailPrice;
 
                         oOrd.Lines.Add();
                     }
-                    oOrd.UserFields.Fields.Item("U_IsTestMessage").Value = orderDocument.IsTestMessage;
-                    oOrd.NumAtCard = orderDocument.OrderNumberBuyer;
-                    //oOrd.UserFields.Fields.Item("U_BGM").Value = orderDocument.OrderNumberBuyer;
-                    //oOrd.DocDate = orderDocument.OrderDate;
-                    //oOrd.TaxDate = orderDocument.OrderDate;
-                    oOrd.DocDueDate = orderDocument.RequestedDeliveryDate;
-                    //oOrd.UserFields.Fields.Item("U_DTM_2").Value = orderDocument.RequestedDeliveryDate.ToString("yyyy-MM-dd");
-                    //oOrd.UserFields.Fields.Item("U_TIJD_2").Value = orderDocument.RequestedDeliveryDate.ToString("HH:mm");
-                    //oOrd.UserFields.Fields.Item("U_DTM_17").Value = orderDocument.OrderDate.ToString("yyyy-MM-dd");
-                    //oOrd.UserFields.Fields.Item("U_TIJD_17").Value = orderDocument.OrderDate.ToString("HH:mm");
-                    //oOrd.UserFields.Fields.Item("U_DTM_64").Value = orderDocument.EarliestDeliveryDate.ToString("yyyy-MM-dd");
-                    //oOrd.UserFields.Fields.Item("U_TIJD_64").Value = orderDocument.EarliestDeliveryDate.ToString("HH:mm");
-                    //oOrd.UserFields.Fields.Item("U_DTM_63").Value = orderDocument.LatestDeliveryDate.ToString("yyyy-MM-dd");
-                    //oOrd.UserFields.Fields.Item("U_TIJD_63").Value = orderDocument.LatestDeliveryDate.ToString("HH:mm");
-                    //oOrd.UserFields.Fields.Item("U_RFF_BO").Value = orderDocument.BlanketOrderNumber;
-                    //oOrd.UserFields.Fields.Item("U_RFF_CR").Value = orderDocument.ConsumerReference;
-                    //oOrd.UserFields.Fields.Item("U_RFF_PD").Value = orderDocument.ActionNumber;
-                    //oOrd.UserFields.Fields.Item("U_RFFCT").Value = orderDocument.; // Contractnummer
-                    //oOrd.UserFields.Fields.Item("U_DTMCT").Value = orderDocument.; // Contractdatum
-                    //oOrd.UserFields.Fields.Item("U_FLAGS0").Value = orderDocument.IsShopInstallation; // Winkelinstallatie
-                    //oOrd.UserFields.Fields.Item("U_FLAGS1").Value = orderDocument.; // Geheellevering
-                    //oOrd.UserFields.Fields.Item("U_FLAGS2").Value = orderDocument.; // Nul-order
-                    //oOrd.UserFields.Fields.Item("U_FLAGS3").Value = orderDocument.; // Aperak gevraagd
-                    //oOrd.UserFields.Fields.Item("U_FLAGS4").Value = orderDocument.IsCrossdock; // Crossdock order
-                    //oOrd.UserFields.Fields.Item("U_FLAGS5").Value = orderDocument.; // Raamorder
-                    //oOrd.UserFields.Fields.Item("U_FLAGS6").Value = orderDocument.; // Geimproviseerde order
-                    //oOrd.UserFields.Fields.Item("U_FLAGS7").Value = orderDocument.IsDutyFree; // Accijnsvrije levering
-                    //oOrd.UserFields.Fields.Item("U_FLAGS8").Value = orderDocument.IsUrgent; // Spoed
-                    //oOrd.UserFields.Fields.Item("U_FLAGS9").Value = orderDocument.IsBackhauling; // Backhauling ophalen
-                    //oOrd.UserFields.Fields.Item("U_FLAGS10").Value = orderDocument.IsAcknowledgementRequested; // Bevest. met regels
-                    //oOrd.UserFields.Fields.Item("U_FTXDSI").Value = orderDocument.OrderAdditionalDetails; // Text voor pakbon
-                    //oOrd.UserFields.Fields.Item("U_NAD_SF").Value = orderDocument.BuyerGLN; // Eancode haaladres
-                    //oOrd.UserFields.Fields.Item("U_NAD_SU").Value = orderDocument.SupplierGLN; // Eancode leverancier
-                    //oOrd.UserFields.Fields.Item("U_NAD_UC").Value = orderDocument.UltimateConsigneeGLN; // Eancode eindbestemming
-                    //oOrd.UserFields.Fields.Item("U_NAD_BCO").Value = orderDocument.; // Eancode inkoopcombinatie afnemer
-                    //oOrd.UserFields.Fields.Item("ONTVANGER").Value = orderDocument.; // Identificatie van uzelf in het EDI-bericht
 
                     if (oOrd.Add() == 0)
                     {
