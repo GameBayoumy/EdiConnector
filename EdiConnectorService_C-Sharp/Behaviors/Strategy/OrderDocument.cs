@@ -41,7 +41,7 @@ namespace EdiConnectorService_C_Sharp
         /// <returns>
         /// List of OrderDocuments
         /// </returns>
-        public Object ReadXMLData(XElement _xMessages, out Exception errMsg)
+        public Object ReadXMLData(XElement _xMessages, out string errMsg)
         {
             // Checks if the MessageType is for a Order Response Document.
             // Then it will create new OrderDocuments for every message
@@ -81,7 +81,7 @@ namespace EdiConnectorService_C_Sharp
             }
             catch (Exception e)
             {
-                errMsg = e;
+                errMsg = e.Message;
                 return null;
             }
         }
@@ -91,15 +91,15 @@ namespace EdiConnectorService_C_Sharp
         /// </summary>
         /// <param name="_dataObject">The data object.</param>
         /// <param name="_connectedServer">The connected server.</param>
-        /// <param name="ex">The ex.</param>
-        public void SaveToSAP(Object _dataObject, string _connectedServer, out Exception ex)
+        /// <param name="exception">The exception.</param>
+        public void SaveToSAP(Object _dataObject, string _connectedServer, out string exception)
         {
             SAPbobsCOM.Recordset oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
             SAPbobsCOM.Documents oOrd = (SAPbobsCOM.Documents)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oOrders));
             string buyerMailAddress ="";
             string buyerMailBody = "";
             int buyerOrderDocumentCount = 0;
-            ex = null;
+            exception = null;
 
             foreach (OrderDocument orderDocument in (List<OrderDocument>)_dataObject)
             {
@@ -189,9 +189,9 @@ namespace EdiConnectorService_C_Sharp
                 }
                 catch (Exception e)
                 {
-                    ex = e;
-                    EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error saving to SAP: " + e.Message + " with order document: " + orderDocument);
-                    EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error saving to SAP: " + e.Message + " with order document: " + orderDocument, "Error!");
+                    exception = e.Message;
+                    EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error saving to SAP: " + exception + " with order document: " + orderDocument);
+                    EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error saving to SAP: " + exception + " with order document: " + orderDocument, "Error!");
                 }
             }
             ConnectionManager.getInstance().GetConnection(_connectedServer).SendMailNotification("New sales order(s) created:" + buyerOrderDocumentCount, buyerMailBody, buyerMailAddress);

@@ -128,15 +128,15 @@ namespace EdiConnectorService_C_Sharp
         /// Reads the XML data.
         /// </summary>
         /// <param name="_xMessages">The incoming XML messages.</param>
-        /// <param name="errMsg">The error MSG.</param>
+        /// <param name="_exception">The error message.</param>
         /// <returns>
         /// List of OrderDocuments
         /// </returns>
-        public Object ReadXMLData(XElement _xMessages, out Exception errMsg)
+        public Object ReadXMLData(XElement _xMessages, out string _exception)
         {
             // Checks if the MessageType is for a Order Response Document.
             // Then it will create new OrderDocuments for every message
-            errMsg = null;
+            _exception = null;
             try
             {
                 /// <summary>
@@ -263,7 +263,7 @@ namespace EdiConnectorService_C_Sharp
             }
             catch (Exception e)
             {
-                errMsg = e;
+                _exception = e.Message;
                 return null;
             }
         }
@@ -273,15 +273,15 @@ namespace EdiConnectorService_C_Sharp
         /// </summary>
         /// <param name="_dataObject">The data object.</param>
         /// <param name="_connectedServer">The connected server.</param>
-        /// <param name="ex">The ex.</param>
-        public void SaveToSAP(Object _dataObject, string _connectedServer, out Exception ex)
+        /// <param name="exception">The exception.</param>
+        public void SaveToSAP(Object _dataObject, string _connectedServer, out string exception)
         {
             SAPbobsCOM.Recordset oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
             SAPbobsCOM.Documents oOrd = (SAPbobsCOM.Documents)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oOrders));
             string buyerMailAddress = "";
             string buyerMailBody = "";
             int buyerOrderDocumentCount = 0;
-            ex = null;
+            exception = null;
 
             foreach (PlasticaOrderDoc orderDocument in (List<PlasticaOrderDoc>)_dataObject)
             {
@@ -415,15 +415,18 @@ namespace EdiConnectorService_C_Sharp
                         ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
                         EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating Sales Order: (" + errCode + ") " + errMsg);
                         EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error creating Sales Order: (" + errCode + ") " + errMsg, "Error!");
+                        exception = "(" + errCode + ") " + errMsg;
                     }
                 }
                 catch (Exception e)
                 {
-                    ex = e;
+                    exception = e.Message;
                     EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error saving to SAP: " + e.Message + " with order document: " + orderDocument);
                     EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error saving to SAP: " + e.Message + " with order document: " + orderDocument, "Error!");
                 }
             }
+
+            //TODO: Check if order is created
             ConnectionManager.getInstance().GetConnection(_connectedServer).SendMailNotification("New sales order(s) created:" + buyerOrderDocumentCount, buyerMailBody, buyerMailAddress);
 
             EdiConnectorService.ClearObject(oOrd);

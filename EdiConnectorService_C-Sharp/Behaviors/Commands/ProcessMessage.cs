@@ -66,26 +66,26 @@ namespace EdiConnectorService_C_Sharp
             }
 
             // Reads the XML Data for the specified document type
-            ediDocumentData = ediDocument.ReadXMLData(xMessages, out Exception exR);
-            if (exR != null)
-            {
-                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error reading document with type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exR.Message + " XML node probably missing/incorrect!!!", "Error!");
-                EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error reading document with type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exR.Message + " XML node probably missing / incorrect!!!");
-            }
-            else
+            ediDocumentData = ediDocument.ReadXMLData(xMessages, out string exceptionRead);
+            if (string.IsNullOrWhiteSpace(exceptionRead))
                 EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Read document with type: " + ediDocument.GetDocumentTypeName(), "Processing..");
+            else
+            {
+                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error reading document with type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exceptionRead + " XML node probably missing/incorrect!!!", "Error!");
+                EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error reading document with type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exceptionRead + " XML node probably missing / incorrect!!!");
+            }
 
             // Save the data object for the specified document type to SAP
             if(ediDocumentData != null)
             {
-                ediDocument.SaveToSAP(ediDocumentData, connectedServer, out Exception exS);
-                if(exS != null)
-                {
-                    EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error saving document: " + fileName + " with document type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exS.Message, "Error!");
-                    EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error saving document: " + fileName + " with document type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exS.Message);
-                }
-                else
+                ediDocument.SaveToSAP(ediDocumentData, connectedServer, out string exceptionSave);
+                if(string.IsNullOrWhiteSpace(exceptionSave))
                     EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Saved document " + fileName + " with document type: " + ediDocument.GetDocumentTypeName(), "Processed.");
+                else
+                {
+                    EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error saving document: " + fileName + " with document type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exceptionSave, "Error!");
+                    EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error saving document: " + fileName + " with document type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exceptionSave);
+                }
             }
             else
             {
