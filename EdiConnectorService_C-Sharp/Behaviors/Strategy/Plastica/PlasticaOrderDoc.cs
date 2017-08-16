@@ -403,8 +403,8 @@ namespace EdiConnectorService_C_Sharp
 
                     if (oOrd.Add() == 0)
                     {
-                        string serviceCallID = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetNewObjectKey();
-                        oOrd.GetByKey(Convert.ToInt32(serviceCallID));
+                        string orderDocNum = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetNewObjectKey();
+                        oOrd.GetByKey(Convert.ToInt32(orderDocNum));
                         buyerOrderDocumentCount++;
                         buyerMailBody += buyerOrderDocumentCount + " - New Sales Order created with DocNum: " + oOrd.DocNum + System.Environment.NewLine;
                         EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "Succesfully created Sales Order: " + oOrd.DocNum);
@@ -426,8 +426,8 @@ namespace EdiConnectorService_C_Sharp
                 }
             }
 
-            //TODO: Check if order is created
-            ConnectionManager.getInstance().GetConnection(_connectedServer).SendMailNotification("New sales order(s) created:" + buyerOrderDocumentCount, buyerMailBody, buyerMailAddress);
+            if(buyerOrderDocumentCount > 0)
+                ConnectionManager.getInstance().GetConnection(_connectedServer).SendMailNotification("New sales order(s) created:" + buyerOrderDocumentCount, buyerMailBody, buyerMailAddress);
 
             EdiConnectorService.ClearObject(oOrd);
             EdiConnectorService.ClearObject(oRs);
