@@ -304,6 +304,7 @@ namespace EdiConnectorService_C_Sharp
                         EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!", "Error!");
                     }
 
+                    //TODO: Ship to code fix when query finds more than 1 address (Incl Bill To for ex.)
                     string shipToGLN = orderDocument.BuyerGLN;
                     if (orderDocument.DeliveryPartyGLN != "")
                         shipToGLN = orderDocument.DeliveryPartyGLN;
@@ -376,9 +377,12 @@ namespace EdiConnectorService_C_Sharp
 
                     foreach (Article article in orderDocument.Articles)
                     {
-                        oRs.DoQuery(@"SELECT ""ItemCode"" FROM OITM WHERE ""CodeBars"" = '" + article.GTIN + "'");
+                        oRs.DoQuery(@"SELECT ""ItemCode"", ""ItemName"" FROM OITM WHERE ""CodeBars"" = '" + article.GTIN + "'");
                         if (oRs.RecordCount > 0)
+                        {
                             oOrd.Lines.ItemCode = oRs.Fields.Item(0).Value.ToString();
+                            oOrd.Lines.ItemDescription = oRs.Fields.Item(1).Value.ToString();
+                        }
                         else
                         {
                             EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error CodeBars: " + article.GTIN + " not found!");
