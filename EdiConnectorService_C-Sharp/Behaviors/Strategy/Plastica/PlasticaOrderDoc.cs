@@ -14,12 +14,12 @@ namespace EdiConnectorService_C_Sharp
         public string MessageType { get; set; }
         public string MessageReference { get; set; }
         public string IsTestMessage { get; set; }
-        public string IsCrossdock { get; set; }
+        public string IsCrossDock { get; set; }
         public string IsUrgent { get; set; }
         public string IsShopInstallation { get; set; }
         public string IsAcknowledgementRequested { get; set; }
         public string IsCallOffOrder { get; set; }
-        public string IsBackhauling { get; set; }
+        public string IsBackHauling { get; set; }
         public string IsDutyFree { get; set; }
         public string IsDropShipment { get; set; }
         public string BlanketOrderNumber { get; set; }
@@ -151,12 +151,12 @@ namespace EdiConnectorService_C_Sharp
                         MessageType = x.Element("MessageType").Value ?? "",
                         MessageReference = x.Element("MessageReference")?.Value ?? "",
                         IsTestMessage = x.Element("IsTestMessage")?.Value ?? "",
-                        IsCrossdock = x.Element("IsCrossdock")?.Value ?? "",
+                        IsCrossDock = x.Element("IsCrossDock")?.Value ?? "",
                         IsUrgent = x.Element("IsUrgent")?.Value ?? "",
                         IsShopInstallation = x.Element("IsShopInstallation")?.Value ?? "",
                         IsAcknowledgementRequested = x.Element("IsAcknowledgementRequested")?.Value ?? "",
                         IsCallOffOrder = x.Element("IsCallOffOrder")?.Value ?? "",
-                        IsBackhauling = x.Element("IsBackhauling")?.Value ?? "",
+                        IsBackHauling = x.Element("IsBackHauling")?.Value ?? "",
                         IsDutyFree = x.Element("IsDutyFree")?.Value ?? "",
                         IsDropShipment = x.Element("IsDropShipment")?.Value ?? "",
                         BlanketOrderNumber = x.Element("BlanketOrderNumber")?.Value ?? "",
@@ -304,21 +304,24 @@ namespace EdiConnectorService_C_Sharp
                         EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!", "Error!");
                     }
 
-                    oRs.DoQuery(@"SELECT T2.""Address"", T0.""CardCode"", T0.""CardName"", T1.""E_MailL"" FROM OCRD T0 INNER JOIN OCPR T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN CRD1 T2 ON T0.""CardCode"" = T2.""CardCode"" WHERE T2.""GlblLocNum"" = '" + orderDocument.BuyerGLN + "'");
+                    string shipToGLN = orderDocument.BuyerGLN;
+                    if (orderDocument.DeliveryPartyGLN != "")
+                        shipToGLN = orderDocument.DeliveryPartyGLN;
+                    oRs.DoQuery(@"SELECT T2.""Address"", T0.""CardCode"", T0.""CardName"", T1.""E_MailL"" FROM OCRD T0 INNER JOIN OCPR T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN CRD1 T2 ON T0.""CardCode"" = T2.""CardCode"" WHERE T2.""GlblLocNum"" = '" + shipToGLN + "'");
                     if (oRs.RecordCount > 0)
                     {
                         string fieldNotFound = "";
                         if (oRs.Fields.Item(0).Size > 0) oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString();
-                        else fieldNotFound += "Error Ship To Address not found! With GlblLocNum: " + orderDocument.BuyerGLN + ". ";
+                        else fieldNotFound += "Error Ship To Address not found! With GlblLocNum: " + shipToGLN + ". ";
 
                         if (oRs.Fields.Item(1).Size > 0) oOrd.CardCode = oRs.Fields.Item(1).Value.ToString();
-                        else fieldNotFound += "Error Ship To CardCode not found! With GlblLocNum: " + orderDocument.BuyerGLN + ". ";
+                        else fieldNotFound += "Error Ship To CardCode not found! With GlblLocNum: " + shipToGLN + ". ";
 
                         if (oRs.Fields.Item(2).Size > 0) oOrd.CardName = oRs.Fields.Item(2).Value.ToString();
-                        else fieldNotFound += "Error Ship To CardName not found! With GlblLocNum: " + orderDocument.BuyerGLN + ". ";
+                        else fieldNotFound += "Error Ship To CardName not found! With GlblLocNum: " + shipToGLN + ". ";
 
                         if (oRs.Fields.Item(3).Size > 0) buyerMailAddress = oRs.Fields.Item(3).Value.ToString();
-                        else fieldNotFound += "Error Ship To E_MailL not found! With GlblLocNum: " + orderDocument.BuyerGLN + ". ";
+                        else fieldNotFound += "Error Ship To E_MailL not found! With GlblLocNum: " + shipToGLN + ". ";
 
                         if (fieldNotFound.Length > 0)
                         {
@@ -328,8 +331,8 @@ namespace EdiConnectorService_C_Sharp
                     }
                     else
                     {
-                        EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Ship To GlblLocNum: " + orderDocument.BuyerGLN + " not found!");
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Ship To GlblLocNum: " + orderDocument.SupplierGLN + " not found!", "Error!");
+                        EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Ship To GlblLocNum: " + shipToGLN + " not found!");
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Ship To GlblLocNum: " + shipToGLN + " not found!", "Error!");
                     }
 
                     oOrd.UserFields.Fields.Item("U_TEST").Value = orderDocument.IsTestMessage;
@@ -339,10 +342,10 @@ namespace EdiConnectorService_C_Sharp
                     oOrd.UserFields.Fields.Item("U_DTM_17").Value = orderDocument.OrderDate.ToString("yyyy-MM-dd");
                     oOrd.UserFields.Fields.Item("U_TIJD_17").Value = orderDocument.OrderDate.ToString("HH:mm");
                     oOrd.UserFields.Fields.Item("U_FLAGS0").Value = orderDocument.IsShopInstallation; // Winkelinstallatie
-                    oOrd.UserFields.Fields.Item("U_FLAGS4").Value = orderDocument.IsCrossdock; // Crossdock order
+                    oOrd.UserFields.Fields.Item("U_FLAGS4").Value = orderDocument.IsCrossDock; // Crossdock order
                     oOrd.UserFields.Fields.Item("U_FLAGS7").Value = orderDocument.IsDutyFree; // Accijnsvrije levering
                     oOrd.UserFields.Fields.Item("U_FLAGS8").Value = orderDocument.IsUrgent; // Spoed
-                    oOrd.UserFields.Fields.Item("U_FLAGS9").Value = orderDocument.IsBackhauling; // Backhauling ophalen
+                    oOrd.UserFields.Fields.Item("U_FLAGS9").Value = orderDocument.IsBackHauling; // Backhauling ophalen
                     oOrd.UserFields.Fields.Item("U_FLAGS10").Value = orderDocument.IsAcknowledgementRequested; // Bevest. met regels
                     oOrd.DocDueDate = orderDocument.RequestedDeliveryDate;
                     //oOrd.CardName = orderDocument.Sender;
