@@ -287,7 +287,7 @@ namespace EdiConnectorService_C_Sharp
             {
                 try
                 {
-                    oRs.DoQuery(@"SELECT T0.""Address"", T1.""CardCode"", T1.""CardName"" FROM CRD1 T0 INNER JOIN OCRD T1 ON T0.""CardCode"" = T1.""CardCode"" WHERE T0.""GlblLocNum"" = '" + orderDocument.InvoiceeGLN + "'");
+                    oRs.DoQuery(@"SELECT T0.""Address"", T1.""CardCode"", T1.""CardName"" FROM CRD1 T0 INNER JOIN OCRD T1 ON T0.""CardCode"" = T1.""CardCode"" WHERE T0.""GlblLocNum"" = '" + orderDocument.InvoiceeGLN + @"' AND T0.""AdresType"" = 'B'");
                     if (oRs.RecordCount > 0)
                     {
                         if (oRs.Fields.Item(0).Size > 0)
@@ -303,12 +303,11 @@ namespace EdiConnectorService_C_Sharp
                         EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!");
                         EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!", "Error!");
                     }
-
-                    //TODO: Ship to code fix when query finds more than 1 address (Incl Bill To for ex.)
+                    
                     string shipToGLN = orderDocument.BuyerGLN;
                     if (orderDocument.DeliveryPartyGLN != "")
                         shipToGLN = orderDocument.DeliveryPartyGLN;
-                    oRs.DoQuery(@"SELECT T2.""Address"", T0.""CardCode"", T0.""CardName"", T1.""E_MailL"" FROM OCRD T0 INNER JOIN OCPR T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN CRD1 T2 ON T0.""CardCode"" = T2.""CardCode"" WHERE T2.""GlblLocNum"" = '" + shipToGLN + "'");
+                    oRs.DoQuery(@"SELECT T2.""Address"", T0.""CardCode"", T0.""CardName"", T1.""E_MailL"" FROM OCRD T0 INNER JOIN OCPR T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN CRD1 T2 ON T0.""CardCode"" = T2.""CardCode"" WHERE T2.""GlblLocNum"" = '" + shipToGLN + @"' AND T2.""AdresType"" = 'S'");
                     if (oRs.RecordCount > 0)
                     {
                         string fieldNotFound = "";
