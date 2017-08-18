@@ -304,24 +304,31 @@ namespace EdiConnectorService_C_Sharp
                         EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!", "Error!");
                     }
                     
-                    string shipToGLN = orderDocument.BuyerGLN;
-                    if (orderDocument.DeliveryPartyGLN != "")
-                        shipToGLN = orderDocument.DeliveryPartyGLN;
+                    string shipToGLN = orderDocument.DeliveryPartyGLN != "" ? orderDocument.DeliveryPartyGLN : orderDocument.BuyerGLN;
+
                     oRs.DoQuery(@"SELECT T2.""Address"", T0.""CardCode"", T0.""CardName"", T1.""E_MailL"" FROM OCRD T0 INNER JOIN OCPR T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN CRD1 T2 ON T0.""CardCode"" = T2.""CardCode"" WHERE T2.""GlblLocNum"" = '" + shipToGLN + @"' AND T2.""AdresType"" = 'S'");
                     if (oRs.RecordCount > 0)
                     {
                         string fieldNotFound = "";
-                        if (oRs.Fields.Item(0).Size > 0) oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString();
-                        else fieldNotFound += "Error Ship To Address not found! With GlblLocNum: " + shipToGLN + ". ";
+                        if (oRs.Fields.Item(0).Size > 0)
+                            oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString();
+                        else
+                            fieldNotFound += "Error Ship To Address not found! With GlblLocNum: " + shipToGLN + ". ";
 
-                        if (oRs.Fields.Item(1).Size > 0) oOrd.CardCode = oRs.Fields.Item(1).Value.ToString();
-                        else fieldNotFound += "Error Ship To CardCode not found! With GlblLocNum: " + shipToGLN + ". ";
+                        if (oRs.Fields.Item(1).Size > 0)
+                            oOrd.CardCode = oRs.Fields.Item(1).Value.ToString();
+                        else
+                            fieldNotFound += "Error Ship To CardCode not found! With GlblLocNum: " + shipToGLN + ". ";
 
-                        if (oRs.Fields.Item(2).Size > 0) oOrd.CardName = oRs.Fields.Item(2).Value.ToString();
-                        else fieldNotFound += "Error Ship To CardName not found! With GlblLocNum: " + shipToGLN + ". ";
+                        if (oRs.Fields.Item(2).Size > 0)
+                            oOrd.CardName = oRs.Fields.Item(2).Value.ToString();
+                        else
+                            fieldNotFound += "Error Ship To CardName not found! With GlblLocNum: " + shipToGLN + ". ";
 
-                        if (oRs.Fields.Item(3).Size > 0) buyerMailAddress = oRs.Fields.Item(3).Value.ToString();
-                        else fieldNotFound += "Error Ship To E_MailL not found! With GlblLocNum: " + shipToGLN + ". ";
+                        if (oRs.Fields.Item(3).Size > 0)
+                            buyerMailAddress = oRs.Fields.Item(3).Value.ToString();
+                        else
+                            fieldNotFound += "Error Ship To E_MailL not found! With GlblLocNum: " + shipToGLN + ". ";
 
                         if (fieldNotFound.Length > 0)
                         {
@@ -380,14 +387,13 @@ namespace EdiConnectorService_C_Sharp
                         if (oRs.RecordCount > 0)
                         {
                             oOrd.Lines.ItemCode = oRs.Fields.Item(0).Value.ToString();
-                            oOrd.Lines.ItemDescription = oRs.Fields.Item(1).Value.ToString();
+                            oOrd.Lines.ItemDescription = article.ArticleDescription != "" ? article.ArticleDescription : oRs.Fields.Item(1).Value.ToString();
                         }
                         else
                         {
                             EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error CodeBars: " + article.GTIN + " not found!");
                             EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error CodeBars: " + article.GTIN + " not found!", "Error!");
                         }
-                        oOrd.Lines.ItemDescription = article.ArticleDescription;
                         oOrd.Lines.Quantity = Convert.ToDouble(article.OrderedQuantity);
                         oOrd.Lines.UserFields.Fields.Item("U_LINNR").Value = article.LineNumber;
                         oOrd.Lines.UserFields.Fields.Item("U_LEVARTCODE").Value = article.ArticleCodeSupplier;
