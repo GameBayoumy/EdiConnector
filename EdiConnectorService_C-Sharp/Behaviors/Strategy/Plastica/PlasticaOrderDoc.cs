@@ -344,6 +344,7 @@ namespace EdiConnectorService_C_Sharp
 
                     oOrd.UserFields.Fields.Item("U_TEST").Value = orderDocument.IsTestMessage;
                     oOrd.NumAtCard = orderDocument.OrderNumberBuyer;
+                    oOrd.DocDueDate = orderDocument.RequestedDeliveryDate;
                     oOrd.UserFields.Fields.Item("U_DTM_2").Value = orderDocument.RequestedDeliveryDate.ToString("yyyy-MM-dd");
                     oOrd.UserFields.Fields.Item("U_TIJD_2").Value = orderDocument.RequestedDeliveryDate.ToString("HH:mm");
                     oOrd.UserFields.Fields.Item("U_DTM_17").Value = orderDocument.OrderDate.ToString("yyyy-MM-dd");
@@ -354,7 +355,8 @@ namespace EdiConnectorService_C_Sharp
                     oOrd.UserFields.Fields.Item("U_FLAGS8").Value = orderDocument.IsUrgent; // Spoed
                     oOrd.UserFields.Fields.Item("U_FLAGS9").Value = orderDocument.IsBackHauling; // Backhauling ophalen
                     oOrd.UserFields.Fields.Item("U_FLAGS10").Value = orderDocument.IsAcknowledgementRequested; // Bevest. met regels
-                    oOrd.DocDueDate = orderDocument.RequestedDeliveryDate;
+                    oOrd.DocDate = orderDocument.OrderDate;
+                    oOrd.TaxDate = orderDocument.OrderDate;
                     //oOrd.CardName = orderDocument.Sender;
                     //oOrd.UserFields.Fields.Item("U_IsTestMessage").Value = orderDocument.IsTestMessage;
                     //oOrd.UserFields.Fields.Item("U_BGM").Value = orderDocument.OrderNumberBuyer;
