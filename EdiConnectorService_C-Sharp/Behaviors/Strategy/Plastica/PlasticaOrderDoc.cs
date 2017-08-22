@@ -306,7 +306,7 @@ namespace EdiConnectorService_C_Sharp
                     
                     string shipToGLN = orderDocument.DeliveryPartyGLN != "" ? orderDocument.DeliveryPartyGLN : orderDocument.BuyerGLN;
 
-                    oRs.DoQuery(@"SELECT T2.""Address"", T0.""CardCode"", T0.""CardName"", T1.""E_MailL"" FROM OCRD T0 INNER JOIN OCPR T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN CRD1 T2 ON T0.""CardCode"" = T2.""CardCode"" WHERE T2.""GlblLocNum"" = '" + shipToGLN + @"' AND T2.""AdresType"" = 'S'");
+                    oRs.DoQuery(@"SELECT T2.""Address"", T0.""CardCode"", T0.""CardName"" FROM OCRD T0 INNER JOIN CRD1 T2 ON T0.""CardCode"" = T2.""CardCode"" WHERE T2.""GlblLocNum"" = '" + shipToGLN + @"' AND T2.""AdresType"" = 'S'");
                     if (oRs.RecordCount > 0)
                     {
                         string fieldNotFound = "";
@@ -325,8 +325,9 @@ namespace EdiConnectorService_C_Sharp
                         else
                             fieldNotFound += "Error Ship To CardName not found! With GlblLocNum: " + shipToGLN + ". ";
 
-                        if (oRs.Fields.Item(3).Size > 0)
-                            buyerMailAddress = oRs.Fields.Item(3).Value.ToString();
+                        oRs.DoQuery(@"SELECT T0.""E_MailL"" FROM OCPR T0 WHERE T0.""CardCode"" = '" + oOrd.CardCode + "'");
+                        if (oRs.Fields.Item(0).Size > 0)
+                            buyerMailAddress = oRs.Fields.Item(0).Value.ToString();
                         else
                             fieldNotFound += "Error Ship To E_MailL not found! With GlblLocNum: " + shipToGLN + ". ";
 
