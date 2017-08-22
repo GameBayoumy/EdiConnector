@@ -79,7 +79,7 @@ namespace EdiConnectorService_C_Sharp
             }
         }
 
-        public void UpdateSAPLogMessage(string _connectedServer, string _recordReference, string _logMessage, string _status = "")
+        public void UpdateSAPLogMessage(string _connectedServer, string _recordReference, string _logMessage, string _status = "", string _docNumber = "")
         {
             SAPbobsCOM.UserTable oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item("0_SWS_EDI_LOG");
 
@@ -87,6 +87,8 @@ namespace EdiConnectorService_C_Sharp
 
             if(_status != "")
                 oUDT.UserFields.Fields.Item("U_STATUS").Value = _status;
+            if (_docNumber != "")
+                oUDT.UserFields.Fields.Item("U_DOC_NR").Value = _docNumber;
             oUDT.UserFields.Fields.Item("U_LOG_MESSAGE").Value += System.Environment.NewLine + System.DateTime.Now.ToString("dd-MM-yy HH:mm:ss : ") + oUDT.UserFields.Fields.Item("U_STATUS").Value + " - " + _logMessage;
 
             if (oUDT.Update() != 0)

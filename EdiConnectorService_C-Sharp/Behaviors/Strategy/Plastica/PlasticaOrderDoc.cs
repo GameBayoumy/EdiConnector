@@ -7,7 +7,7 @@ namespace EdiConnectorService_C_Sharp
 {
     class PlasticaOrderDoc : IEdiDocumentType
     {
-        public string TypeName { get; set; } = "Sales Order Document";
+        public string TypeName { get; set; } = "Plastica Sales Order Document";
 
         // Data structure
         public string MessageFormat { get; set; }
@@ -422,7 +422,7 @@ namespace EdiConnectorService_C_Sharp
                         buyerOrderDocumentCount++;
                         buyerMailBody += buyerOrderDocumentCount + " - New Sales Order created with DocNum: " + oOrd.DocNum + System.Environment.NewLine;
                         EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "Succesfully created Sales Order: " + oOrd.DocNum);
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Succesfully created Sales Order: " + oOrd.DocNum, "Processing..");
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Succesfully created Sales Order: " + oOrd.DocNum, "Processing..", oOrd.DocNum.ToString());
                     }
                     else
                     {
