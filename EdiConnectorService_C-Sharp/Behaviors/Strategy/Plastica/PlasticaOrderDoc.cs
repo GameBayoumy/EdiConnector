@@ -305,7 +305,6 @@ namespace EdiConnectorService_C_Sharp
                     }
                     
                     string shipToGLN = orderDocument.DeliveryPartyGLN != "" ? orderDocument.DeliveryPartyGLN : orderDocument.BuyerGLN;
-
                     oRs.DoQuery(@"SELECT T2.""Address"", T0.""CardCode"", T0.""CardName"" FROM OCRD T0 INNER JOIN CRD1 T2 ON T0.""CardCode"" = T2.""CardCode"" WHERE T2.""GlblLocNum"" = '" + shipToGLN + @"' AND T2.""AdresType"" = 'S'");
                     if (oRs.RecordCount > 0)
                     {
@@ -342,6 +341,10 @@ namespace EdiConnectorService_C_Sharp
                         EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Ship To GlblLocNum: " + shipToGLN + " not found!");
                         EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Ship To GlblLocNum: " + shipToGLN + " not found!", "Error!");
                     }
+
+                    oRs.DoQuery(@"SELECT T0.""SlpCode"" FROM OSLP T0 WHERE T0.""SlpName"" = 'EDI'");
+                    if(oRs.RecordCount > 0)
+                        oOrd.SalesPersonCode = Convert.ToInt32(oRs.Fields.Item(0).Value);
 
                     oOrd.UserFields.Fields.Item("U_TEST").Value = orderDocument.IsTestMessage;
                     oOrd.NumAtCard = orderDocument.OrderNumberBuyer;
