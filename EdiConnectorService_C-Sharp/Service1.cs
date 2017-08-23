@@ -61,7 +61,7 @@ namespace EdiConnectorService_C_Sharp
             ConnectionManager.getInstance().ConnectAll();
 
             // Creates udf fields for every connected server
-            //agent.QueueCommand(new CreateUserDefinitionsCommand());
+            agent.QueueCommand(new CreateUserDefinitionsCommand());
 
             ThreadPool.QueueUserWorkItem(new WaitCallback(ServiceWorkerThread));
         }
