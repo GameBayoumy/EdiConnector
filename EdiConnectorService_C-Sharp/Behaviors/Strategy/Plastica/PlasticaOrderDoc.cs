@@ -134,12 +134,13 @@ namespace EdiConnectorService_C_Sharp
         /// </returns>
         public Object ReadXMLData(XElement _xMessages, out string _exception)
         {
-            // Checks if the MessageType is for a Order Response Document.
-            // Then it will create new OrderDocuments for every message
             _exception = null;
             try
             {
                 /// <summary>
+                /// Checks if the MessageType is for a Order Response Document.
+                /// Then it will create new OrderDocuments for every message
+                /// 
                 /// ?? "" null-coalescing operator is used to check if the xml element is existant, else it will return ""
                 /// By not using this operator this will not fill the document and return an empty list.
                 /// This method is used to make sure the important values are read from the xml files and optional values will be set to ""
@@ -276,6 +277,7 @@ namespace EdiConnectorService_C_Sharp
         /// <param name="exception">The exception.</param>
         public void SaveToSAP(Object _dataObject, string _connectedServer, out string exception)
         {
+            // Initialize values
             SAPbobsCOM.Recordset oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
             SAPbobsCOM.Documents oOrd = (SAPbobsCOM.Documents)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oOrders));
             string buyerMailAddress = "";
@@ -283,63 +285,67 @@ namespace EdiConnectorService_C_Sharp
             int buyerOrderDocumentCount = 0;
             exception = null;
 
+            // Iterate through every message in the data object
             foreach (PlasticaOrderDoc orderDocument in (List<PlasticaOrderDoc>)_dataObject)
             {
                 try
                 {
-                    oRs.DoQuery(@"SELECT T0.""Address"", T1.""CardCode"", T1.""CardName"" FROM CRD1 T0 INNER JOIN OCRD T1 ON T0.""CardCode"" = T1.""CardCode"" WHERE T0.""GlblLocNum"" = '" + orderDocument.InvoiceeGLN + @"' AND T0.""AdresType"" = 'B'");
-                    if (oRs.RecordCount > 0)
+                    // Execute query to search for CardCode, CardName, Email in OCRD, Email in OCPR by looking up the Buyer GLN in OCRD or CRD1
+                    oRs.DoQuery(@"SELECT T0.""CardCode"", T0.""CardName"", T0.""E_Mail"", T2.""E_MailL"" FROM OCRD T0 INNER JOIN CRD1 T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN OCPR T2 ON T1.""CardCode"" = T2.""CardCode"" WHERE T1.""GlblLocNum"" = '" + orderDocument.BuyerGLN + @"' OR T0.""GlblLocNum"" = '" + orderDocument.BuyerGLN + @"' GROUP BY T0.""CardName"", T0.""CardCode"", T0.""E_Mail"", T2.""E_MailL""");
+                    if(oRs.RecordCount > 0)
                     {
-                        if (oRs.Fields.Item(0).Size > 0)
-                            oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString();
+                        // Set email to query result "E_Mail" if its not null or empty else use "E_MailL"
+                        string email = !String.IsNullOrEmpty(oRs.Fields.Item(2).Value.ToString()) ? oRs.Fields.Item(2).Value.ToString() : oRs.Fields.Item(3).Value.ToString();
+                        string cardName = oRs.Fields.Item(1).Value.ToString();
+                        string cardCode = oRs.Fields.Item(0).Value.ToString();
+                        
+                        buyerMailAddress = email;
+                        oOrd.CardName = cardName;
+                        oOrd.CardCode = cardCode;
+
+                        // Execute query to search for Pay To Address by looking up the Invoicee GLN and the Address Type "B"
+                        oRs.DoQuery(@"SELECT T0.""Address"" FROM CRD1 T0 WHERE T0.""CardCode"" = '" + cardCode + @"' AND T0.""GlblLocNum"" = '" + orderDocument.InvoiceeGLN + @"' AND T0.""AdresType"" = 'B'");
+                        if (oRs.RecordCount > 0)
+                        {
+                            if (oRs.Fields.Item(0).Size > 0)
+                                // Set PayToCode when query found a result
+                                oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString();
+                            else
+                            {
+                                EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To Address not found! With GlblLocNum: " + orderDocument.InvoiceeGLN);
+                                EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To Address not found! With GlblLocNum: " + orderDocument.InvoiceeGLN, "Error!");
+                            }
+                        }
                         else
                         {
-                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To Address not found! With GlblLocNum: " + orderDocument.InvoiceeGLN);
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To Address not found! With GlblLocNum: " + orderDocument.InvoiceeGLN, "Error!");
+                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!", "Error!");
+                        }
+
+                        // For the Ship To GLN use DeliveryPartyGLN if it contains a result, otherwise use BuyerGLN
+                        string shipToGLN = orderDocument.DeliveryPartyGLN != "" ? orderDocument.DeliveryPartyGLN : orderDocument.BuyerGLN;
+                        //Execute query to search for Ship To Address by looking up the shipToGLN and the Address Type "S"
+                        oRs.DoQuery(@"SELECT T0.""Address"" FROM CRD1 T0 WHERE T0.""CardCode"" = '" + cardCode + @"' AND T0.""GlblLocNum"" = '" + shipToGLN + @"' AND T0.""AdresType"" = 'S'");
+                        if (oRs.RecordCount > 0)
+                        {
+                            if (oRs.Fields.Item(0).Size > 0)
+                                oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString();
+                            else
+                            {
+                                EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Ship To Address not found! With GlblLocNum: " + shipToGLN);
+                                EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Ship To Address not found! With GlblLocNum: " + shipToGLN, "Error!");
+                            }
+                        }
+                        else
+                        {
+                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Ship To GlblLocNum: " + shipToGLN + " not found!");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Ship To GlblLocNum: " + shipToGLN + " not found!", "Error!");
                         }
                     }
                     else
                     {
-                        EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!");
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!", "Error!");
-                    }
-                    
-                    string shipToGLN = orderDocument.DeliveryPartyGLN != "" ? orderDocument.DeliveryPartyGLN : orderDocument.BuyerGLN;
-                    oRs.DoQuery(@"SELECT T2.""Address"", T0.""CardCode"", T0.""CardName"" FROM OCRD T0 INNER JOIN CRD1 T2 ON T0.""CardCode"" = T2.""CardCode"" WHERE T2.""GlblLocNum"" = '" + shipToGLN + @"' AND T2.""AdresType"" = 'S'");
-                    if (oRs.RecordCount > 0)
-                    {
-                        string fieldNotFound = "";
-                        if (oRs.Fields.Item(0).Size > 0)
-                            oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString();
-                        else
-                            fieldNotFound += "Error Ship To Address not found! With GlblLocNum: " + shipToGLN + ". ";
-
-                        if (oRs.Fields.Item(1).Size > 0)
-                            oOrd.CardCode = oRs.Fields.Item(1).Value.ToString();
-                        else
-                            fieldNotFound += "Error Ship To CardCode not found! With GlblLocNum: " + shipToGLN + ". ";
-
-                        if (oRs.Fields.Item(2).Size > 0)
-                            oOrd.CardName = oRs.Fields.Item(2).Value.ToString();
-                        else
-                            fieldNotFound += "Error Ship To CardName not found! With GlblLocNum: " + shipToGLN + ". ";
-
-                        oRs.DoQuery(@"SELECT T0.""E_MailL"" FROM OCPR T0 WHERE T0.""CardCode"" = '" + oOrd.CardCode + "'");
-                        if (oRs.Fields.Item(0).Size > 0)
-                            buyerMailAddress = oRs.Fields.Item(0).Value.ToString();
-                        else
-                            fieldNotFound += "Error Ship To E_MailL not found! With GlblLocNum: " + shipToGLN + ". ";
-
-                        if (fieldNotFound.Length > 0)
-                        {
-                            EventLogger.getInstance().EventError("Server: " + _connectedServer + " " + fieldNotFound);
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, fieldNotFound, "Error!");
-                        }
-                    }
-                    else
-                    {
-                        EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Ship To GlblLocNum: " + shipToGLN + " not found!");
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Ship To GlblLocNum: " + shipToGLN + " not found!", "Error!");
+                        EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error GlblLocNum: " + orderDocument.BuyerGLN + " not found! Cannot find CardCode, CardName or email");
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.BuyerGLN + " not found! Cannot find CardCode, CardName or email", "Error!");
                     }
 
                     oRs.DoQuery(@"SELECT T0.""SlpCode"" FROM OSLP T0 WHERE T0.""SlpName"" = 'EDI'");
