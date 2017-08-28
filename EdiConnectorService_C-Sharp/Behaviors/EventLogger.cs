@@ -124,7 +124,7 @@ namespace EdiConnectorService_C_Sharp
 
             if (oUDT.Update() != 0)
             {
-                EventError("Server: " + _connectedServer + ". " + "Error updating items to UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
+                EventError($"Server: {_connectedServer}.  Error updating items to UDT: {ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription()}");
             }
 
             EdiConnectorService.ClearObject(oUDT);

@@ -291,7 +291,7 @@ namespace EdiConnectorService_C_Sharp
                 try
                 {
                     // Execute query to search for CardCode, CardName, Email in OCRD, Email in OCPR by looking up the Buyer GLN in OCRD or CRD1
-                    oRs.DoQuery(@"SELECT T0.""CardCode"", T0.""CardName"", T0.""E_Mail"", T2.""E_MailL"" FROM OCRD T0 INNER JOIN CRD1 T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN OCPR T2 ON T1.""CardCode"" = T2.""CardCode"" WHERE T1.""GlblLocNum"" = '" + orderDocument.BuyerGLN + @"' OR T0.""GlblLocNum"" = '" + orderDocument.BuyerGLN + @"' GROUP BY T0.""CardName"", T0.""CardCode"", T0.""E_Mail"", T2.""E_MailL""");
+                    oRs.DoQuery($@"SELECT T0.""CardCode"", T0.""CardName"", T0.""E_Mail"", T2.""E_MailL"" FROM OCRD T0 INNER JOIN CRD1 T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN OCPR T2 ON T1.""CardCode"" = T2.""CardCode"" WHERE T1.""GlblLocNum"" = '{orderDocument.BuyerGLN}' OR T0.""GlblLocNum"" = '{orderDocument.BuyerGLN}' GROUP BY T0.""CardName"", T0.""CardCode"", T0.""E_Mail"", T2.""E_MailL""");
                     if(oRs.RecordCount > 0)
                     {
                         // Set email to query result "E_Mail" if its not null or empty else use "E_MailL"
@@ -304,32 +304,32 @@ namespace EdiConnectorService_C_Sharp
                         oOrd.CardCode = cardCode;
 
                         // Execute query to search for Pay To Address by looking up the CardCode, Invoicee GLN and the Address Type "B"
-                        oRs.DoQuery(@"SELECT T0.""Address"" FROM CRD1 T0 WHERE T0.""CardCode"" = '" + cardCode + @"' AND T0.""GlblLocNum"" = '" + orderDocument.InvoiceeGLN + @"' AND T0.""AdresType"" = 'B'");
+                        oRs.DoQuery($@"SELECT T0.""Address"" FROM CRD1 T0 WHERE T0.""CardCode"" = '{cardCode}' AND T0.""GlblLocNum"" = '{orderDocument.InvoiceeGLN}' AND T0.""AdresType"" = 'B'");
                         if (oRs.RecordCount > 0)
                             oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString(); // Set PayToCode when query found a result
                         else
                         {
-                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To Address not found! With GlblLocNum: " + orderDocument.InvoiceeGLN);
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To Address not found! With GlblLocNum: " + orderDocument.InvoiceeGLN, "Error!");
+                            EventLogger.getInstance().EventError($"Server: {_connectedServer}.  Error Pay To Address not found! With GlblLocNum: {orderDocument.InvoiceeGLN}");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, $"Error Pay To Address not found! With GlblLocNum: {orderDocument.InvoiceeGLN}", "Error!");
                         }
 
                         // For the Ship To GLN use DeliveryPartyGLN if it contains a result, otherwise use BuyerGLN
                         string shipToGLN = orderDocument.DeliveryPartyGLN != "" ? orderDocument.DeliveryPartyGLN : orderDocument.BuyerGLN;
 
                         // Execute query to search for Ship To Address by looking up the CardCode, shipToGLN and the Address Type "S"
-                        oRs.DoQuery(@"SELECT T0.""Address"" FROM CRD1 T0 WHERE T0.""CardCode"" = '" + cardCode + @"' AND T0.""GlblLocNum"" = '" + shipToGLN + @"' AND T0.""AdresType"" = 'S'");
+                        oRs.DoQuery($@"SELECT T0.""Address"" FROM CRD1 T0 WHERE T0.""CardCode"" = '{cardCode}' AND T0.""GlblLocNum"" = '{shipToGLN}' AND T0.""AdresType"" = 'S'");
                         if (oRs.RecordCount > 0)
                             oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString(); // Set ShipToCode when query found a result
                         else
                         {
-                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Ship To Address not found! With GlblLocNum: " + shipToGLN);
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Ship To Address not found! With GlblLocNum: " + shipToGLN, "Error!");
+                            EventLogger.getInstance().EventError($"Server: {_connectedServer}.  Error Ship To Address not found! With GlblLocNum: {shipToGLN}");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, $"Error Ship To Address not found! With GlblLocNum: {shipToGLN}", "Error!");
                         }
                     }
                     else
                     {
-                        EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error GlblLocNum: " + orderDocument.BuyerGLN + " not found! Cannot find CardCode, CardName or email");
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.BuyerGLN + " not found! Cannot find CardCode, CardName or email", "Error!");
+                        EventLogger.getInstance().EventError($"Server: {_connectedServer}.  Error GlblLocNum: {orderDocument.BuyerGLN} not found! Cannot find CardCode, CardName or email");
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, $"Error Pay To GlblLocNum: {orderDocument.BuyerGLN} not found! Cannot find CardCode, CardName or email", "Error!");
                     }
 
                     // Execute query to search for Sales Employee code by looking up the Sales employee name "EDI"
@@ -347,8 +347,8 @@ namespace EdiConnectorService_C_Sharp
                         }
                         else
                         {
-                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error CodeBars: " + article.GTIN + " not found!");
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error CodeBars: " + article.GTIN + " not found!", "Error!");
+                            EventLogger.getInstance().EventError($"Server: {_connectedServer}.  Error CodeBars: {article.GTIN} not found!");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, $"Error CodeBars: {article.GTIN} not found!", "Error!");
                         }
                         oOrd.Lines.Quantity = Convert.ToDouble(article.OrderedQuantity);
                         oOrd.Lines.UserFields.Fields.Item("U_LINNR").Value = article.LineNumber;
@@ -421,23 +421,23 @@ namespace EdiConnectorService_C_Sharp
                         // Keep up with the created document count in the data object
                         buyerOrderDocumentCount++;
                         // Build up the mail body with the created document
-                        buyerMailBody += buyerOrderDocumentCount + " - New Sales Order created with DocNum: " + oOrd.DocNum + System.Environment.NewLine;
-                        EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "Succesfully created Sales Order: " + oOrd.DocNum);
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Succesfully created Sales Order: " + oOrd.DocNum, "Processing..", oOrd.DocNum.ToString());
+                        buyerMailBody += $"{buyerOrderDocumentCount} - New Sales Order created with DocNum: {oOrd.DocNum}{Environment.NewLine}";
+                        EventLogger.getInstance().EventInfo($"Server: {_connectedServer}.  Succesfully created Sales Order: {oOrd.DocNum}");
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, $"Succesfully created Sales Order: {oOrd.DocNum}", "Processing..", oOrd.DocNum.ToString());
                     }
                     else
                     {
                         ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
-                        EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating Sales Order: (" + errCode + ") " + errMsg);
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error creating Sales Order: (" + errCode + ") " + errMsg, "Error!");
-                        exception = "(" + errCode + ") " + errMsg;
+                        EventLogger.getInstance().EventError($"Server: {_connectedServer}.  Error creating Sales Order: ({errCode}) {errMsg}");
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, $"Error creating Sales Order: ({errCode}) {errMsg}", "Error!");
+                        exception = $"({errCode}) {errMsg}";
                     }
                 }
                 catch (Exception e)
                 {
                     exception = e.Message;
-                    EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error saving to SAP: " + e.Message + " with order document: " + orderDocument);
-                    EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error saving to SAP: " + e.Message + " with order document: " + orderDocument, "Error!");
+                    EventLogger.getInstance().EventError($"Server: {_connectedServer}.  Error saving to SAP: {e.Message} with order document: {orderDocument}");
+                    EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, $"Error saving to SAP: {e.Message} with order document: {orderDocument}", "Error!");
                 }
             }
 

@@ -101,16 +101,16 @@ namespace EdiConnectorService_C_Sharp
                 }
                 else
                 {
-                    EventLogger.getInstance().EventWarning("Server: " + Company.Server + ". " + "Messages File Path not found! " + MessagesFilePath);
+                    EventLogger.getInstance().EventWarning($"Server: {Company.Server}.  Messages File Path not found! {MessagesFilePath}");
                 }
 
                 UdfFilePath = xEle.Element("UdfFilePath").Value;
                 if (!System.IO.File.Exists(UdfFilePath))
                 {
-                    EventLogger.getInstance().EventWarning("Server: " + Company.Server + ". " + "Udf File Path not found! " + UdfFilePath);
+                    EventLogger.getInstance().EventWarning($"Server: {Company.Server}.  Udf File Path not found! {UdfFilePath}");
                 }
 
-                EventLogger.getInstance().EventInfo("Server: " + Company.Server + ". " + "Connection set");
+                EventLogger.getInstance().EventInfo($"Server: {Company.Server}.  Connection set");
             }
             catch (Exception e)
             {

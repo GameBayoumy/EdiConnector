@@ -82,8 +82,8 @@ namespace EdiConnectorService_C_Sharp
             }
             catch (Exception e)
             {
-                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". EXCEPTION: " + e.Message, "Error!");
-                EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error setting document type with XML MessageType: " + xDoc.Element("MessageType").Value.ToString() + ". EXCEPTION: " + e.Message);
+                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, $"Error setting document type with XML MessageType: {xDoc.Element("MessageType").Value.ToString()}. EXCEPTION: {e.Message}", "Error!");
+                EventLogger.getInstance().EventError($"Server: {connectedServer}. Error setting document type with XML MessageType: {xDoc.Element("MessageType").Value.ToString()}. EXCEPTION: {e.Message}");
             }
 
 
@@ -95,8 +95,8 @@ namespace EdiConnectorService_C_Sharp
                 EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Read document with type: " + ediDocument.GetDocumentTypeName(), "Processing..");
             else
             {
-                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error reading document with type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exceptionRead + " XML node probably missing/incorrect!!!", "Error!");
-                EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error reading document with type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exceptionRead + " XML node probably missing / incorrect!!!");
+                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, $"Error reading document with type: {ediDocument.GetDocumentTypeName()} ERROR: {exceptionRead} XML node probably missing/incorrect!!!", "Error!");
+                EventLogger.getInstance().EventError($"Server: {connectedServer}. Error reading document with type: {ediDocument.GetDocumentTypeName()} ERROR: {exceptionRead} XML node probably missing / incorrect!!!");
             }
 
             // Check if the data object is not empty
@@ -107,17 +107,17 @@ namespace EdiConnectorService_C_Sharp
 
                 // Check if saving data object has caught an exception and log its error to SAP
                 if (string.IsNullOrWhiteSpace(exceptionSave))
-                    EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Saved document " + fileName + " with document type: " + ediDocument.GetDocumentTypeName(), "Processed.");
+                    EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, $"Saved document {fileName} with document type: {ediDocument.GetDocumentTypeName()}", "Processed.");
                 else
                 {
-                    EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error saving document: " + fileName + " with document type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exceptionSave, "Error!");
-                    EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error saving document: " + fileName + " with document type: " + ediDocument.GetDocumentTypeName() + " ERROR: " + exceptionSave);
+                    EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, $"Error saving document: {fileName} with document type: {ediDocument.GetDocumentTypeName()} ERROR: {exceptionSave}", "Error!");
+                    EventLogger.getInstance().EventError($"Server: {connectedServer}. Error saving document: {fileName} with document type: {ediDocument.GetDocumentTypeName()} ERROR: {exceptionSave}");
                 }
             }
             else
             {
-                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, "Error saving document: " + fileName + " data object is empty!", "Error!");
-                EventLogger.getInstance().EventError("Server: " + connectedServer + ". Error saving document: " + fileName + " data object is empty!");
+                EventLogger.getInstance().UpdateSAPLogMessage(connectedServer, recordReference, $"Error saving document: {fileName} data object is empty!", "Error!");
+                EventLogger.getInstance().EventError($"Server: {connectedServer}. Error saving document: {fileName} data object is empty!");
             }
         }
     }
