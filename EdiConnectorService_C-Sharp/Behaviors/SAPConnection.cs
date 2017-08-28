@@ -101,16 +101,16 @@ namespace EdiConnectorService_C_Sharp
                 }
                 else
                 {
-                    EventLogger.getInstance().EventWarning($"Server: {Company.Server}.  Messages File Path not found! {MessagesFilePath}");
+                    EventLogger.getInstance().EventWarning($"Server: {Company.Server}. Messages File Path not found! {MessagesFilePath}");
                 }
 
                 UdfFilePath = xEle.Element("UdfFilePath").Value;
                 if (!System.IO.File.Exists(UdfFilePath))
                 {
-                    EventLogger.getInstance().EventWarning($"Server: {Company.Server}.  Udf File Path not found! {UdfFilePath}");
+                    EventLogger.getInstance().EventWarning($"Server: {Company.Server}. Udf File Path not found! {UdfFilePath}");
                 }
 
-                EventLogger.getInstance().EventInfo($"Server: {Company.Server}.  Connection set");
+                EventLogger.getInstance().EventInfo($"Server: {Company.Server}. Connection set");
             }
             catch (Exception e)
             {
@@ -197,9 +197,9 @@ namespace EdiConnectorService_C_Sharp
             //objMsg.Attachments.Item(0).FileName = Attachment;
 
             if (objMsg.Add() != 0)
-                EventLogger.getInstance().EventInfo("Server: " + Company.Server + ". " + "Error sending mail notification to: " + _mailAddress);
+                EventLogger.getInstance().EventInfo($"Server: {Company.Server}. Error sending mail notification to: {_mailAddress}");
             else
-                EventLogger.getInstance().EventInfo("Server: " + Company.Server + ". " + "Message send to: " + _mailAddress);
+                EventLogger.getInstance().EventInfo($"Server: {Company.Server}. Message send to: {_mailAddress}");
 
             EdiConnectorService.ClearObject(objMsg);
         }

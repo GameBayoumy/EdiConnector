@@ -116,7 +116,7 @@ namespace EdiConnectorService_C_Sharp
             }
             else
             {
-                EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "UDF " + _fieldName + " successfully created!");
+                EventLogger.getInstance().EventInfo($"Server: {_connectedServer}. UDF: {_fieldName} successfully created!");
             }
 
             EdiConnectorService.ClearObject(oUDF);
