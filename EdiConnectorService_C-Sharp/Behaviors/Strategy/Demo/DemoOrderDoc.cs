@@ -5,9 +5,9 @@ using System.Xml.Linq;
 
 namespace EdiConnectorService_C_Sharp
 {
-    class PlasticaOrderDoc : IEdiDocumentType
+    class DemoOrderDoc : IEdiDocumentType
     {
-        public string TypeName { get; set; } = "Plastica Sales Order Document";
+        public string TypeName { get; set; } = "Demo Sales Order Document";
 
         // Data structure
         public string MessageFormat { get; set; }
@@ -145,8 +145,8 @@ namespace EdiConnectorService_C_Sharp
                 /// By not using this operator this will not fill the document and return an empty list.
                 /// This method is used to make sure the important values are read from the xml files and optional values will be set to ""
                 /// </summary>
-                List<PlasticaOrderDoc> OrderMsgList = _xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Select(x =>
-                    new PlasticaOrderDoc()
+                List<DemoOrderDoc> OrderMsgList = _xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Select(x =>
+                    new DemoOrderDoc()
                     {
                         MessageFormat = x.Element("MessageFormat").Value ?? "",
                         MessageType = x.Element("MessageType").Value ?? "",
@@ -286,7 +286,7 @@ namespace EdiConnectorService_C_Sharp
             exception = null;
 
             // Iterate through every message in the data object
-            foreach (PlasticaOrderDoc orderDocument in (List<PlasticaOrderDoc>)_dataObject)
+            foreach (DemoOrderDoc orderDocument in (List<DemoOrderDoc>)_dataObject)
             {
                 try
                 {

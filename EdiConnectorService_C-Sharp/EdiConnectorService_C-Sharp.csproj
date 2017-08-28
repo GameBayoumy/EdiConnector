@@ -65,7 +65,7 @@
     <Compile Include="Behaviors\Strategy\EdiDocument.cs" />
     <Compile Include="Behaviors\Strategy\InvoiceDocument.cs" />
     <Compile Include="Behaviors\Strategy\OrderDocument.cs" />
-    <Compile Include="Behaviors\Strategy\Plastica\PlasticaOrderDoc.cs" />
+    <Compile Include="Behaviors\Strategy\Demo\DemoOrderDoc.cs" />
     <Compile Include="Behaviors\Strategy\TemplateDocument.cs" />
     <Compile Include="Behaviors\Strategy\OrderResponseDocument.cs" />
     <Compile Include="Behaviors\UserDefined.cs" />

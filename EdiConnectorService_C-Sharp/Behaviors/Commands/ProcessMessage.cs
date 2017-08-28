@@ -58,21 +58,21 @@ namespace EdiConnectorService_C_Sharp
             {
                 if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "3").Count() > 0)
                 {
-                    if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "demo")
+                    if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "norm")
                         ediDocument.SetDocumentType(new OrderDocument());
-                    else if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "plastica")
-                        ediDocument.SetDocumentType(new PlasticaOrderDoc());
+                    else if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "demo")
+                        ediDocument.SetDocumentType(new DemoOrderDoc());
                 }
                 else if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "5").Count() > 0)
                 {
-                    if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "demo")
+                    if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "norm")
                         ediDocument.SetDocumentType(new OrderResponseDocument());
                     //else if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "plastica")
                     //ediDocument.SetDocumentType(new PlasticaResponseDoc());
                 }
                 else if (xMessages.Elements().Where(x => x.Element("MessageType").Value == "8").Count() > 0)
                 {
-                    if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "demo")
+                    if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "norm")
                         ediDocument.SetDocumentType(new InvoiceDocument());
                     //else if (ConnectionManager.getInstance().GetConnection(connectedServer).EdiProfile == "plastica")
                     //ediDocument.SetDocumentType(new PlasticaInvoiceDoc());
