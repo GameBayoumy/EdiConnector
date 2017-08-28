@@ -31,19 +31,21 @@ namespace EdiConnectorService_C_Sharp
         {
             UserTablesMD oUDT = (UserTablesMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserTables);
 
+            // Check whether the user defined table is non-existent
             if (!oUDT.GetByKey(_tableName))
             {
                 oUDT.TableName = _tableName;
                 oUDT.TableDescription = _tableName;
                 oUDT.TableType = _tableType;
 
-                if (oUDT.Add() != 0)
+                // Create new user defined table
+                if (oUDT.Add() == 0)
                 {
-                    EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
+                    EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "UDT: " + _tableName + " successfully created!");
                 }
                 else
                 {
-                    EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "UDT: " + _tableName + " successfully created!");
+                    EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
                 }
             }
             

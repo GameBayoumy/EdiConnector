@@ -303,43 +303,27 @@ namespace EdiConnectorService_C_Sharp
                         oOrd.CardName = cardName;
                         oOrd.CardCode = cardCode;
 
-                        // Execute query to search for Pay To Address by looking up the Invoicee GLN and the Address Type "B"
+                        // Execute query to search for Pay To Address by looking up the CardCode, Invoicee GLN and the Address Type "B"
                         oRs.DoQuery(@"SELECT T0.""Address"" FROM CRD1 T0 WHERE T0.""CardCode"" = '" + cardCode + @"' AND T0.""GlblLocNum"" = '" + orderDocument.InvoiceeGLN + @"' AND T0.""AdresType"" = 'B'");
                         if (oRs.RecordCount > 0)
-                        {
-                            if (oRs.Fields.Item(0).Size > 0)
-                                // Set PayToCode when query found a result
-                                oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString();
-                            else
-                            {
-                                EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To Address not found! With GlblLocNum: " + orderDocument.InvoiceeGLN);
-                                EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To Address not found! With GlblLocNum: " + orderDocument.InvoiceeGLN, "Error!");
-                            }
-                        }
+                            oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString(); // Set PayToCode when query found a result
                         else
                         {
-                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!");
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.InvoiceeGLN + " not found!", "Error!");
+                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To Address not found! With GlblLocNum: " + orderDocument.InvoiceeGLN);
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To Address not found! With GlblLocNum: " + orderDocument.InvoiceeGLN, "Error!");
                         }
 
                         // For the Ship To GLN use DeliveryPartyGLN if it contains a result, otherwise use BuyerGLN
                         string shipToGLN = orderDocument.DeliveryPartyGLN != "" ? orderDocument.DeliveryPartyGLN : orderDocument.BuyerGLN;
-                        //Execute query to search for Ship To Address by looking up the shipToGLN and the Address Type "S"
+
+                        // Execute query to search for Ship To Address by looking up the CardCode, shipToGLN and the Address Type "S"
                         oRs.DoQuery(@"SELECT T0.""Address"" FROM CRD1 T0 WHERE T0.""CardCode"" = '" + cardCode + @"' AND T0.""GlblLocNum"" = '" + shipToGLN + @"' AND T0.""AdresType"" = 'S'");
                         if (oRs.RecordCount > 0)
-                        {
-                            if (oRs.Fields.Item(0).Size > 0)
-                                oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString();
-                            else
-                            {
-                                EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Ship To Address not found! With GlblLocNum: " + shipToGLN);
-                                EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Ship To Address not found! With GlblLocNum: " + shipToGLN, "Error!");
-                            }
-                        }
+                            oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString(); // Set ShipToCode when query found a result
                         else
                         {
-                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Ship To GlblLocNum: " + shipToGLN + " not found!");
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Ship To GlblLocNum: " + shipToGLN + " not found!", "Error!");
+                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Ship To Address not found! With GlblLocNum: " + shipToGLN);
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Ship To Address not found! With GlblLocNum: " + shipToGLN, "Error!");
                         }
                     }
                     else
@@ -348,10 +332,44 @@ namespace EdiConnectorService_C_Sharp
                         EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.BuyerGLN + " not found! Cannot find CardCode, CardName or email", "Error!");
                     }
 
+                    // Execute query to search for Sales Employee code by looking up the Sales employee name "EDI"
                     oRs.DoQuery(@"SELECT T0.""SlpCode"" FROM OSLP T0 WHERE T0.""SlpName"" = 'EDI'");
                     if(oRs.RecordCount > 0)
-                        oOrd.SalesPersonCode = Convert.ToInt32(oRs.Fields.Item(0).Value);
+                        oOrd.SalesPersonCode = Convert.ToInt32(oRs.Fields.Item(0).Value); // Set Sales person code when query found a result
 
+                    foreach (Article article in orderDocument.Articles)
+                    {
+                        oRs.DoQuery(@"SELECT ""ItemCode"", ""ItemName"" FROM OITM WHERE ""CodeBars"" = '" + article.GTIN + "'");
+                        if (oRs.RecordCount > 0)
+                        {
+                            oOrd.Lines.ItemCode = oRs.Fields.Item(0).Value.ToString();
+                            oOrd.Lines.ItemDescription = article.ArticleDescription != "" ? article.ArticleDescription : oRs.Fields.Item(1).Value.ToString();
+                        }
+                        else
+                        {
+                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error CodeBars: " + article.GTIN + " not found!");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error CodeBars: " + article.GTIN + " not found!", "Error!");
+                        }
+                        oOrd.Lines.Quantity = Convert.ToDouble(article.OrderedQuantity);
+                        oOrd.Lines.UserFields.Fields.Item("U_LINNR").Value = article.LineNumber;
+                        oOrd.Lines.UserFields.Fields.Item("U_LEVARTCODE").Value = article.ArticleCodeSupplier;
+                        oOrd.Lines.UserFields.Fields.Item("U_DEUAC").Value = article.GTIN;
+                        //oOrd.Lines.UserFields.Fields.Item("U_EdiLineNumber").Value = article.LineNumber;
+                        //oOrd.Lines.UserFields.Fields.Item("U_DEARTOM").Value = article.ArticleDescription;
+                        //oOrd.Lines.UserFields.Fields.Item("U_KLEUR").Value = article.ColourCode;
+                        //oOrd.Lines.UserFields.Fields.Item("U_LENGTE").Value = article.Length;
+                        //oOrd.Lines.UserFields.Fields.Item("U_BREEDTE").Value = article.Width;
+                        //oOrd.Lines.UserFields.Fields.Item("U_HOOGTE").Value = article.Height;
+                        //oOrd.Lines.UserFields.Fields.Item("U_CUX").Value = article.PurchasePriceCurrencyCode;
+                        //oOrd.Lines.UserFields.Fields.Item("U_PIA").Value = article.PromotionVariantCode;
+                        //oOrd.Lines.UserFields.Fields.Item("U_RFFLI1").Value = article.; // Ordernummer voor onderregel identificatie
+                        //oOrd.Lines.UserFields.Fields.Item("U_RFFLI2").Value = article.RequestedDeliveryDate.ToString("yyyy-MM-dd"); // Onderregel identificatie
+                        //oOrd.Lines.UserFields.Fields.Item("U_PRI").Value = article.RetailPrice;
+
+                        oOrd.Lines.Add();
+                    }
+
+                    // Fill in data from order document to defined fields in SAP
                     oOrd.UserFields.Fields.Item("U_TEST").Value = orderDocument.IsTestMessage;
                     oOrd.NumAtCard = orderDocument.OrderNumberBuyer;
                     oOrd.DocDueDate = orderDocument.RequestedDeliveryDate;
@@ -393,43 +411,16 @@ namespace EdiConnectorService_C_Sharp
                     //oOrd.UserFields.Fields.Item("U_NAD_BCO").Value = orderDocument.; // Eancode inkoopcombinatie afnemer
                     //oOrd.UserFields.Fields.Item("ONTVANGER").Value = orderDocument.; // Identificatie van uzelf in het EDI-bericht
 
-                    foreach (Article article in orderDocument.Articles)
-                    {
-                        oRs.DoQuery(@"SELECT ""ItemCode"", ""ItemName"" FROM OITM WHERE ""CodeBars"" = '" + article.GTIN + "'");
-                        if (oRs.RecordCount > 0)
-                        {
-                            oOrd.Lines.ItemCode = oRs.Fields.Item(0).Value.ToString();
-                            oOrd.Lines.ItemDescription = article.ArticleDescription != "" ? article.ArticleDescription : oRs.Fields.Item(1).Value.ToString();
-                        }
-                        else
-                        {
-                            EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error CodeBars: " + article.GTIN + " not found!");
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error CodeBars: " + article.GTIN + " not found!", "Error!");
-                        }
-                        oOrd.Lines.Quantity = Convert.ToDouble(article.OrderedQuantity);
-                        oOrd.Lines.UserFields.Fields.Item("U_LINNR").Value = article.LineNumber;
-                        oOrd.Lines.UserFields.Fields.Item("U_LEVARTCODE").Value = article.ArticleCodeSupplier;
-                        oOrd.Lines.UserFields.Fields.Item("U_DEUAC").Value = article.GTIN;
-                        //oOrd.Lines.UserFields.Fields.Item("U_EdiLineNumber").Value = article.LineNumber;
-                        //oOrd.Lines.UserFields.Fields.Item("U_DEARTOM").Value = article.ArticleDescription;
-                        //oOrd.Lines.UserFields.Fields.Item("U_KLEUR").Value = article.ColourCode;
-                        //oOrd.Lines.UserFields.Fields.Item("U_LENGTE").Value = article.Length;
-                        //oOrd.Lines.UserFields.Fields.Item("U_BREEDTE").Value = article.Width;
-                        //oOrd.Lines.UserFields.Fields.Item("U_HOOGTE").Value = article.Height;
-                        //oOrd.Lines.UserFields.Fields.Item("U_CUX").Value = article.PurchasePriceCurrencyCode;
-                        //oOrd.Lines.UserFields.Fields.Item("U_PIA").Value = article.PromotionVariantCode;
-                        //oOrd.Lines.UserFields.Fields.Item("U_RFFLI1").Value = article.; // Ordernummer voor onderregel identificatie
-                        //oOrd.Lines.UserFields.Fields.Item("U_RFFLI2").Value = article.RequestedDeliveryDate.ToString("yyyy-MM-dd"); // Onderregel identificatie
-                        //oOrd.Lines.UserFields.Fields.Item("U_PRI").Value = article.RetailPrice;
-
-                        oOrd.Lines.Add();
-                    }
-
+                    // Try to create a document
                     if (oOrd.Add() == 0)
                     {
+                        // Get latest created document to log the document number
                         string orderDocNum = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetNewObjectKey();
                         oOrd.GetByKey(Convert.ToInt32(orderDocNum));
+
+                        // Keep up with the created document count in the data object
                         buyerOrderDocumentCount++;
+                        // Build up the mail body with the created document
                         buyerMailBody += buyerOrderDocumentCount + " - New Sales Order created with DocNum: " + oOrd.DocNum + System.Environment.NewLine;
                         EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "Succesfully created Sales Order: " + oOrd.DocNum);
                         EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Succesfully created Sales Order: " + oOrd.DocNum, "Processing..", oOrd.DocNum.ToString());
@@ -450,6 +441,7 @@ namespace EdiConnectorService_C_Sharp
                 }
             }
 
+            // Send a mail notification if a document has been created
             if(buyerOrderDocumentCount > 0)
                 ConnectionManager.getInstance().GetConnection(_connectedServer).SendMailNotification("New sales order(s) created:" + buyerOrderDocumentCount, buyerMailBody, buyerMailAddress);
 
