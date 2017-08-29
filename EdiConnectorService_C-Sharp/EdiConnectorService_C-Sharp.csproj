@@ -62,6 +62,7 @@
     <Compile Include="Behaviors\Commands\CreateConnectionsCommand.cs" />
     <Compile Include="Behaviors\EventLogger.cs" />
     <Compile Include="Behaviors\SAPConnection.cs" />
+    <Compile Include="Behaviors\Strategy\Plastica\PlasticaOrderDoc.cs" />
     <Compile Include="Behaviors\Strategy\EdiDocument.cs" />
     <Compile Include="Behaviors\Strategy\InvoiceDocument.cs" />
     <Compile Include="Behaviors\Strategy\OrderDocument.cs" />
