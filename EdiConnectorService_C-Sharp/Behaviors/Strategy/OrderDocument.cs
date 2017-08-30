@@ -41,7 +41,7 @@ namespace EdiConnectorService_C_Sharp
         /// <returns>
         /// List of OrderDocuments
         /// </returns>
-        public Object ReadXMLData(XElement _xMessages, out Exception errMsg)
+        public Object ReadXMLData(XElement _xMessages, out string errMsg)
         {
             // Checks if the MessageType is for a Order Response Document.
             // Then it will create new OrderDocuments for every message
@@ -81,7 +81,7 @@ namespace EdiConnectorService_C_Sharp
             }
             catch (Exception e)
             {
-                errMsg = e;
+                errMsg = e.Message;
                 return null;
             }
         }
@@ -91,15 +91,15 @@ namespace EdiConnectorService_C_Sharp
         /// </summary>
         /// <param name="_dataObject">The data object.</param>
         /// <param name="_connectedServer">The connected server.</param>
-        /// <param name="ex">The ex.</param>
-        public void SaveToSAP(Object _dataObject, string _connectedServer, out Exception ex)
+        /// <param name="exception">The exception.</param>
+        public void SaveToSAP(Object _dataObject, string _connectedServer, out string exception)
         {
             SAPbobsCOM.Recordset oRs = (SAPbobsCOM.Recordset)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.BoRecordset));
             SAPbobsCOM.Documents oOrd = (SAPbobsCOM.Documents)(ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(SAPbobsCOM.BoObjectTypes.oOrders));
             string buyerMailAddress ="";
             string buyerMailBody = "";
             int buyerOrderDocumentCount = 0;
-            ex = null;
+            exception = null;
 
             foreach (OrderDocument orderDocument in (List<OrderDocument>)_dataObject)
             {
@@ -114,13 +114,13 @@ namespace EdiConnectorService_C_Sharp
                         else
                         {
                             EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To Address not found! With GlblLocNum: " + orderDocument.SenderGLN);
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To Address not found! With GlblLocNum: " + orderDocument.SenderGLN, "Error!");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, "Error Pay To Address not found! With GlblLocNum: " + orderDocument.SenderGLN, "Error!");
                         }
                     }
                     else
                     {
                         EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Pay To GlblLocNum: " + orderDocument.SenderGLN + " not found!");
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Pay To GlblLocNum: " + orderDocument.SenderGLN + " not found!", "Error!");
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, "Error Pay To GlblLocNum: " + orderDocument.SenderGLN + " not found!", "Error!");
                     }
 
                     oRs.DoQuery(@"SELECT T2.""Address"", T0.""CardCode"", T0.""CardName"", T1.""E_MailL"" FROM OCRD T0 INNER JOIN OCPR T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN CRD1 T2 ON T0.""CardCode"" = T2.""CardCode"" WHERE T2.""GlblLocNum"" = '" + orderDocument.BuyerGLN + "'");
@@ -142,13 +142,13 @@ namespace EdiConnectorService_C_Sharp
                         if(fieldNotFound.Length > 0)
                         {
                             EventLogger.getInstance().EventError("Server: " + _connectedServer + " " + fieldNotFound);
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, fieldNotFound, "Error!");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, fieldNotFound, "Error!");
                         }
                     }
                     else
                     {
                         EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error Ship To GlblLocNum: " + orderDocument.BuyerGLN + " not found!");
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error Ship To GlblLocNum: " + orderDocument.SenderGLN + " not found!", "Error!");
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, "Error Ship To GlblLocNum: " + orderDocument.SenderGLN + " not found!", "Error!");
                     }
                     foreach (Article article in orderDocument.Articles)
                     {
@@ -158,7 +158,7 @@ namespace EdiConnectorService_C_Sharp
                         else
                         {
                             EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error CodeBars: " + article.GTIN + " not found!");
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error CodeBars: " + article.GTIN + " not found!", "Error!");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, "Error CodeBars: " + article.GTIN + " not found!", "Error!");
                         }
 
                         oOrd.Lines.UserFields.Fields.Item("U_EdiLineNumber").Value = article.LineNumber;
@@ -178,20 +178,20 @@ namespace EdiConnectorService_C_Sharp
                         buyerOrderDocumentCount++;
                         buyerMailBody += buyerOrderDocumentCount + " - New Sales Order created with DocNum: " + oOrd.DocNum + System.Environment.NewLine;
                         EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "Succesfully created Sales Order: " + oOrd.DocNum);
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Succesfully created Sales Order: " + oOrd.DocNum, "Processing..");
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, "Succesfully created Sales Order: " + oOrd.DocNum, "Processing..");
                     }
                     else
                     {
                         ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
                         EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating Sales Order: (" + errCode + ") " + errMsg);
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error creating Sales Order: (" + errCode + ") " + errMsg, "Error!");
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, "Error creating Sales Order: (" + errCode + ") " + errMsg, "Error!");
                     }
                 }
                 catch (Exception e)
                 {
-                    ex = e;
-                    EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error saving to SAP: " + e.Message + " with order document: " + orderDocument);
-                    EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.getInstance().sRecordReference, "Error saving to SAP: " + e.Message + " with order document: " + orderDocument, "Error!");
+                    exception = e.Message;
+                    EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error saving to SAP: " + exception + " with order document: " + orderDocument);
+                    EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, "Error saving to SAP: " + exception + " with order document: " + orderDocument, "Error!");
                 }
             }
             ConnectionManager.getInstance().GetConnection(_connectedServer).SendMailNotification("New sales order(s) created:" + buyerOrderDocumentCount, buyerMailBody, buyerMailAddress);

@@ -31,19 +31,21 @@ namespace EdiConnectorService_C_Sharp
         {
             UserTablesMD oUDT = (UserTablesMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserTables);
 
+            // Check whether the user defined table is non-existent
             if (!oUDT.GetByKey(_tableName))
             {
                 oUDT.TableName = _tableName;
                 oUDT.TableDescription = _tableName;
                 oUDT.TableType = _tableType;
 
-                if (oUDT.Add() != 0)
+                // Create new user defined table
+                if (oUDT.Add() == 0)
                 {
-                    EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
+                    EventLogger.getInstance().EventInfo($"Server: {_connectedServer}. UDT: {_tableName} successfully created!");
                 }
                 else
                 {
-                    EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "UDT: " + _tableName + " successfully created!");
+                    EventLogger.getInstance().EventError($"Server: {_connectedServer}. Error creating UDT: {ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription()}");
                 }
             }
             
@@ -58,19 +60,22 @@ namespace EdiConnectorService_C_Sharp
         {
             try
             {
-                XDocument xDoc = XDocument.Load(ConnectionManager.getInstance().GetConnection(_connectedServer).UdfFilePath);
-                foreach (XElement xEle in xDoc.Element("UserDefined").Element("Fields").Descendants("Udf"))
+                if (System.IO.File.Exists(ConnectionManager.getInstance().GetConnection(_connectedServer).UdfFilePath))
                 {
-                    var typeAttribute = (string)xEle.Attribute("type") ?? "alpha";
-                    var subTypeAttribute = (string)xEle.Attribute("subtype") ?? "none";
-                    var sizeAttribute = (string)xEle.Attribute("size") ?? "1";
-                    CreateField(_connectedServer, xEle.Attribute("table").Value, xEle.Attribute("name").Value, xEle.Attribute("description").Value, 
-                        Convert.ToInt32(sizeAttribute), GetFieldType(typeAttribute), GetFieldSubType(subTypeAttribute), false, false, "");
+                    XDocument xDoc = XDocument.Load(ConnectionManager.getInstance().GetConnection(_connectedServer).UdfFilePath);
+                    foreach (XElement xEle in xDoc.Element("UserDefined").Element("Fields").Descendants("Udf"))
+                    {
+                        var typeAttribute = (string)xEle.Attribute("type") ?? "alpha";
+                        var subTypeAttribute = (string)xEle.Attribute("subtype") ?? "none";
+                        var sizeAttribute = (string)xEle.Attribute("size") ?? "1";
+                        CreateField(_connectedServer, xEle.Attribute("table").Value, xEle.Attribute("name").Value, xEle.Attribute("description").Value, 
+                            Convert.ToInt32(sizeAttribute), GetFieldType(typeAttribute), GetFieldSubType(subTypeAttribute), false, false, "");
+                    }
                 }
             }
-            catch
+            catch(Exception e)
             {
-                //EventLogger.getInstance().EventError("Error creating UDF: " + e.Message);
+                EventLogger.getInstance().EventError("Error creating UDF: " + e.Message);
             }
         }
 
@@ -78,12 +83,19 @@ namespace EdiConnectorService_C_Sharp
             BoFieldTypes _boType, BoFldSubTypes _boSubType, bool _mandatory, bool _default, string _defaultValue)
         {
             IUserFieldsMD oUDF = (IUserFieldsMD)ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetBusinessObject(BoObjectTypes.oUserFields);
-            UserTable oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item(_tableName);
-
-            foreach(IField existingUDF in oUDT.UserFields.Fields)
+            try
             {
-                if (existingUDF.Name == "U_"+_fieldName)
-                    return;
+                UserTable oUDT = ConnectionManager.getInstance().GetConnection(_connectedServer).Company.UserTables.Item(_tableName);
+                foreach (IField existingUDF in oUDT.UserFields.Fields)
+                {
+                    if (existingUDF.Name == "U_"+_fieldName)
+                        return;
+                }
+                EdiConnectorService.ClearObject(oUDT);
+            }
+            catch
+            {
+
             }
             oUDF.TableName = _tableName;
             oUDF.Name = _fieldName;
@@ -102,16 +114,15 @@ namespace EdiConnectorService_C_Sharp
 
             if (oUDF.Add() != 0)
             {
-                ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
-                EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating UDF: " + errMsg);
+                //ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastError(out var errCode, out var errMsg);
+                //EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating UDF: " + errMsg);
             }
             else
             {
-                EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "UDF " + _fieldName + " successfully created!");
+                EventLogger.getInstance().EventInfo($"Server: {_connectedServer}. UDF: {_fieldName} successfully created!");
             }
 
             EdiConnectorService.ClearObject(oUDF);
-            EdiConnectorService.ClearObject(oUDT);
         }
 
         /// <summary>

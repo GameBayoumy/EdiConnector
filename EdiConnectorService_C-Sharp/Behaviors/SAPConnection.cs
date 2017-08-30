@@ -7,6 +7,14 @@ namespace EdiConnectorService_C_Sharp
     class SAPConnection : AConnection
     {
         /// <summary>
+        /// Gets or sets the edi profile.
+        /// </summary>
+        /// <value>
+        /// The edi profile.
+        /// </value>
+        public string EdiProfile { get; set; }
+
+        /// <summary>
         /// Gets or sets the company.
         /// </summary>
         /// <value>
@@ -61,6 +69,7 @@ namespace EdiConnectorService_C_Sharp
             try
             {
                 XElement xEle = _xEle;
+                EdiProfile = xEle.Element("EdiProfile").Value;
                 Company.Server = xEle.Element("Server").Value;
                 Company.LicenseServer = xEle.Element("LicenceServer").Value;
                 Company.UserName = xEle.Element("Username").Value;
@@ -80,28 +89,28 @@ namespace EdiConnectorService_C_Sharp
                     Company.DbServerType = BoDataServerTypes.dst_MSSQL;
                 Company.DbUserName = xEle.Element("DbUsername").Value;
                 Company.DbPassword = xEle.Element("DbPassword").Value;
-                Company.UseTrusted = true;
-
                 MessagesFilePath = xEle.Element("MessagesFilePath").Value;
+
+                EventLogger.getInstance().EventInfo($"Server: {Company.Server} set. LicenseServer: {Company.LicenseServer} set. Database: {Company.CompanyDB} set. Database type: {Company.DbServerType.ToString()} set.");
+
                 if (System.IO.Directory.Exists(MessagesFilePath))
                 {
-                    if (!System.IO.Directory.Exists(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName))
+                    if (!System.IO.Directory.Exists(MessagesFilePath + EdiConnectorData.GetInstance().ProcessedDirName))
                     {
-                        System.IO.Directory.CreateDirectory(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName);
+                        System.IO.Directory.CreateDirectory(MessagesFilePath + EdiConnectorData.GetInstance().ProcessedDirName);
                     }
                 }
                 else
                 {
-                    EventLogger.getInstance().EventError("Server: " + Company.Server + ". " + "Messages File Path not found! " + MessagesFilePath);
+                    EventLogger.getInstance().EventWarning($"Server: {Company.Server}. Messages File Path not found! {MessagesFilePath}");
                 }
 
                 UdfFilePath = xEle.Element("UdfFilePath").Value;
                 if (!System.IO.File.Exists(UdfFilePath))
                 {
-                    EventLogger.getInstance().EventError("Server: " + Company.Server + ". " + "Udf File Path not found! " + UdfFilePath);
+                    EventLogger.getInstance().EventWarning($"Server: {Company.Server}. Udf File Path not found! {UdfFilePath}");
                 }
 
-                EventLogger.getInstance().EventInfo("Server: " + Company.Server + ". " + "Connection set");
             }
             catch (Exception e)
             {
@@ -188,9 +197,9 @@ namespace EdiConnectorService_C_Sharp
             //objMsg.Attachments.Item(0).FileName = Attachment;
 
             if (objMsg.Add() != 0)
-                EventLogger.getInstance().EventInfo("Server: " + Company.Server + ". " + "Error sending mail notification to: " + _mailAddress);
+                EventLogger.getInstance().EventInfo($"Server: {Company.Server}. Error sending mail notification to: {_mailAddress}");
             else
-                EventLogger.getInstance().EventInfo("Server: " + Company.Server + ". " + "Message send to: " + _mailAddress);
+                EventLogger.getInstance().EventInfo($"Server: {Company.Server}. Message send to: {_mailAddress}");
 
             EdiConnectorService.ClearObject(objMsg);
         }
