@@ -343,7 +343,7 @@ namespace EdiConnectorService_C_Sharp
 
                     foreach (Article article in orderDocument.Articles)
                     {
-                        oRs.DoQuery(@"SELECT ""ItemCode"", ""ItemName"" FROM OITM WHERE ""U_BarCode"" = '" + article.GTIN + "'");
+                        oRs.DoQuery(@"SELECT ""ItemCode"", ""ItemName"" FROM OITM WHERE ""CodeBars"" = '" + article.GTIN + "'");
                         if (oRs.RecordCount > 0)
                         {
                             oOrd.Lines.ItemCode = oRs.Fields.Item(0).Value.ToString();
@@ -445,7 +445,9 @@ namespace EdiConnectorService_C_Sharp
 
             // Send a mail notification if a document has been created
             if(buyerOrderDocumentCount > 0)
-                ConnectionManager.getInstance().GetConnection(_connectedServer).SendMailNotification("New sales order(s) created:" + buyerOrderDocumentCount, buyerMailBody, buyerMailAddress);
+            {
+                //ConnectionManager.getInstance().GetConnection(_connectedServer).SendMailNotification("New sales order(s) created:" + buyerOrderDocumentCount, buyerMailBody, buyerMailAddress);
+            }
 
             EdiConnectorService.ClearObject(oOrd);
             EdiConnectorService.ClearObject(oRs);

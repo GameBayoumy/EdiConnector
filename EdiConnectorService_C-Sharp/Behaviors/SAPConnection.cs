@@ -89,7 +89,6 @@ namespace EdiConnectorService_C_Sharp
                     Company.DbServerType = BoDataServerTypes.dst_MSSQL;
                 Company.DbUserName = xEle.Element("DbUsername").Value;
                 Company.DbPassword = xEle.Element("DbPassword").Value;
-                Company.UseTrusted = true;
 
                 MessagesFilePath = xEle.Element("MessagesFilePath").Value;
                 if (System.IO.Directory.Exists(MessagesFilePath))

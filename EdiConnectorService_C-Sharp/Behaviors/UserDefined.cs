@@ -60,14 +60,17 @@ namespace EdiConnectorService_C_Sharp
         {
             try
             {
-                XDocument xDoc = XDocument.Load(ConnectionManager.getInstance().GetConnection(_connectedServer).UdfFilePath);
-                foreach (XElement xEle in xDoc.Element("UserDefined").Element("Fields").Descendants("Udf"))
+                if (System.IO.File.Exists(ConnectionManager.getInstance().GetConnection(_connectedServer).UdfFilePath))
                 {
-                    var typeAttribute = (string)xEle.Attribute("type") ?? "alpha";
-                    var subTypeAttribute = (string)xEle.Attribute("subtype") ?? "none";
-                    var sizeAttribute = (string)xEle.Attribute("size") ?? "1";
-                    CreateField(_connectedServer, xEle.Attribute("table").Value, xEle.Attribute("name").Value, xEle.Attribute("description").Value, 
-                        Convert.ToInt32(sizeAttribute), GetFieldType(typeAttribute), GetFieldSubType(subTypeAttribute), false, false, "");
+                    XDocument xDoc = XDocument.Load(ConnectionManager.getInstance().GetConnection(_connectedServer).UdfFilePath);
+                    foreach (XElement xEle in xDoc.Element("UserDefined").Element("Fields").Descendants("Udf"))
+                    {
+                        var typeAttribute = (string)xEle.Attribute("type") ?? "alpha";
+                        var subTypeAttribute = (string)xEle.Attribute("subtype") ?? "none";
+                        var sizeAttribute = (string)xEle.Attribute("size") ?? "1";
+                        CreateField(_connectedServer, xEle.Attribute("table").Value, xEle.Attribute("name").Value, xEle.Attribute("description").Value, 
+                            Convert.ToInt32(sizeAttribute), GetFieldType(typeAttribute), GetFieldSubType(subTypeAttribute), false, false, "");
+                    }
                 }
             }
             catch(Exception e)
