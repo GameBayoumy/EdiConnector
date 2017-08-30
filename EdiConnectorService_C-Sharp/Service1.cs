@@ -48,14 +48,15 @@ namespace EdiConnectorService_C_Sharp
             EventLogger.getInstance().EventInfo("EdiService in OnStart.");
 
             // Initialize objects
-            EdiConnectorData.getInstance();
+            EdiConnectorData.GetInstance();
             ConnectionManager.getInstance();
             agent = new Agent();
-            EdiConnectorData.getInstance().sApplicationPath = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase) + @"\";
-            EdiConnectorData.getInstance().sProcessedDirName = "Processed";
+            EdiConnectorData.GetInstance().ApplicationPath = Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().CodeBase) + @"\";
+            EdiConnectorData.GetInstance().ProcessedDirName = "Processed";
 
-            //Create connections from config.xml and try to connect all servers
+            // Create SAP connections
             agent.QueueCommand(new CreateConnectionsCommand());
+            // Try to connect to all servers that are created
             ConnectionManager.getInstance().ConnectAll();
 
             //Creates udf fields for every connected server
@@ -72,10 +73,10 @@ namespace EdiConnectorService_C_Sharp
         /// <param name="state"></param>
         private void ServiceWorkerThread(Object state)
         {
-            //Periodically check if the service is stopping.
+            // Periodically check if the service is stopping.
             do
             {
-                //Perform main service function here...
+                // Perform main service function here...
 
                 // Processes incoming messages
                 foreach (string connectedServer in ConnectionManager.getInstance().GetAllConnectedServers())
@@ -92,10 +93,11 @@ namespace EdiConnectorService_C_Sharp
                     }
                     else
                     {
-                        EventLogger.getInstance().EventError("Server: " + connectedServer + ". Messages file path does not exist!: " + messagesFilePath);
+                        EventLogger.getInstance().EventError($"Server: {connectedServer}. Messages file path does not exist!: {messagesFilePath}");
                     }
                 }
 
+                // After performing functions, put the thread in sleep
                 Thread.Sleep(10000);
             }
             while (!stopping);
@@ -122,10 +124,6 @@ namespace EdiConnectorService_C_Sharp
             this.stopping = true;
             this.stoppedEvent.WaitOne();
         }
-
-        #region
-
-        #endregion
 
         public static void ClearObject(object t)
         {

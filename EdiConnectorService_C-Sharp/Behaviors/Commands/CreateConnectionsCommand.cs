@@ -19,7 +19,7 @@ namespace EdiConnectorService_C_Sharp
         public void execute()
         {
             // Load configuration xml document
-            XDocument xDoc = XDocument.Load(EdiConnectorData.getInstance().sApplicationPath + @"config.xml");
+            XDocument xDoc = XDocument.Load(EdiConnectorData.GetInstance().ApplicationPath + @"config.xml");
 
             // Iterate through every <Connection> element in <Connections>
             foreach (XElement xEle in xDoc.Element("Connections").Elements("Connection"))

@@ -30,7 +30,7 @@ namespace EdiConnectorService_C_Sharp
 
             // Create SAP log message and save it's reference
             recordReference = EventLogger.getInstance().CreateSAPLogMessage(connectedServer, fileName, xDoc, "Loaded new document: " + fileName, "Processing..");
-            EdiConnectorData.getInstance().sRecordReference = recordReference;
+            EdiConnectorData.GetInstance().RecordReference = recordReference;
             
             // Create generalized EdiDocument and data object
             ediDocument = new EdiDocument();
@@ -40,7 +40,7 @@ namespace EdiConnectorService_C_Sharp
             if (System.IO.File.Exists(filePath + fileName))
             {
                 // Copy the xml message to the processed directory and delete the file from the messages file path
-                System.IO.File.Copy((filePath + fileName), (filePath + EdiConnectorData.getInstance().sProcessedDirName + @"\" + fileName), true);
+                System.IO.File.Copy((filePath + fileName), (filePath + EdiConnectorData.GetInstance().ProcessedDirName + @"\" + fileName), true);
                 System.IO.File.Delete((filePath + fileName));
             }
 

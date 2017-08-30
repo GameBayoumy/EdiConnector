@@ -94,9 +94,9 @@ namespace EdiConnectorService_C_Sharp
                 MessagesFilePath = xEle.Element("MessagesFilePath").Value;
                 if (System.IO.Directory.Exists(MessagesFilePath))
                 {
-                    if (!System.IO.Directory.Exists(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName))
+                    if (!System.IO.Directory.Exists(MessagesFilePath + EdiConnectorData.GetInstance().ProcessedDirName))
                     {
-                        System.IO.Directory.CreateDirectory(MessagesFilePath + EdiConnectorData.getInstance().sProcessedDirName);
+                        System.IO.Directory.CreateDirectory(MessagesFilePath + EdiConnectorData.GetInstance().ProcessedDirName);
                     }
                 }
                 else
