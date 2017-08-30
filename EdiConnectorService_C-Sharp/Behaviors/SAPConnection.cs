@@ -89,8 +89,10 @@ namespace EdiConnectorService_C_Sharp
                     Company.DbServerType = BoDataServerTypes.dst_MSSQL;
                 Company.DbUserName = xEle.Element("DbUsername").Value;
                 Company.DbPassword = xEle.Element("DbPassword").Value;
-
                 MessagesFilePath = xEle.Element("MessagesFilePath").Value;
+
+                EventLogger.getInstance().EventInfo($"Server: {Company.Server} set. LicenseServer: {Company.LicenseServer} set. Database: {Company.CompanyDB} set. Database type: {Company.DbServerType.ToString()} set.");
+
                 if (System.IO.Directory.Exists(MessagesFilePath))
                 {
                     if (!System.IO.Directory.Exists(MessagesFilePath + EdiConnectorData.GetInstance().ProcessedDirName))
@@ -109,7 +111,6 @@ namespace EdiConnectorService_C_Sharp
                     EventLogger.getInstance().EventWarning($"Server: {Company.Server}. Udf File Path not found! {UdfFilePath}");
                 }
 
-                EventLogger.getInstance().EventInfo($"Server: {Company.Server}. Connection set");
             }
             catch (Exception e)
             {

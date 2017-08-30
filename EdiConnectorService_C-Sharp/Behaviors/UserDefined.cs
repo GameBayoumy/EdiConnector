@@ -41,11 +41,11 @@ namespace EdiConnectorService_C_Sharp
                 // Create new user defined table
                 if (oUDT.Add() == 0)
                 {
-                    EventLogger.getInstance().EventInfo("Server: " + _connectedServer + ". " + "UDT: " + _tableName + " successfully created!");
+                    EventLogger.getInstance().EventInfo($"Server: {_connectedServer}. UDT: {_tableName} successfully created!");
                 }
                 else
                 {
-                    EventLogger.getInstance().EventError("Server: " + _connectedServer + ". " + "Error creating UDT: " + ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription());
+                    EventLogger.getInstance().EventError($"Server: {_connectedServer}. Error creating UDT: {ConnectionManager.getInstance().GetConnection(_connectedServer).Company.GetLastErrorDescription()}");
                 }
             }
             
