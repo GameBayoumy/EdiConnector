@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Data.SqlClient;
 
 namespace EdiConnectorService_C_Sharp
 {
@@ -51,9 +47,8 @@ namespace EdiConnectorService_C_Sharp
         public string sInvoiceMailToFullName;
 
         //Connections
-        public SqlConnection cn = new SqlConnection();
-        public SAPbobsCOM.Company cmp = new SAPbobsCOM.Company();
-        public SAPbobsCOM.BoDataServerTypes bstDBServerType;
+        //public SAPbobsCOM.Company cmp = new SAPbobsCOM.Company();
+        //public SAPbobsCOM.BoDataServerTypes bstDBServerType;
         public string sSQL;
         public string sDBServerType;
         public string sServer;
