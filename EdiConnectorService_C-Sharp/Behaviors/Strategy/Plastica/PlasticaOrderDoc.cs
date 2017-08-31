@@ -347,35 +347,6 @@ namespace EdiConnectorService_C_Sharp
                     if(oRs.RecordCount > 0)
                         oOrd.SalesPersonCode = Convert.ToInt32(oRs.Fields.Item(0).Value); // Set Sales person code when query found a result
 
-                    foreach (Article article in orderDocument.Articles)
-                    {
-                        oRs.DoQuery(@"SELECT ""ItemCode"", ""ItemName"" FROM OITM WHERE ""CodeBars"" = '" + article.GTIN + "'");
-                        if (oRs.RecordCount > 0)
-                        {
-                            oOrd.Lines.ItemCode = oRs.Fields.Item(0).Value.ToString();
-                            oOrd.Lines.ItemDescription = article.ArticleDescription != "" ? article.ArticleDescription : oRs.Fields.Item(1).Value.ToString();
-                        }
-                        else
-                        {
-                            EventLogger.getInstance().EventError($"Server: {_connectedServer}. Error CodeBars: {article.GTIN} not found!");
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error CodeBars: {article.GTIN} not found!", "Error!");
-                        }
-                        oOrd.Lines.Quantity = Convert.ToDouble(article.OrderedQuantity);
-                        oOrd.Lines.UserFields.Fields.Item("U_LineNumber").Value = article.LineNumber;
-                        oOrd.Lines.UserFields.Fields.Item("U_ArticleCodeSupplier").Value = article.ArticleCodeSupplier;
-                        oOrd.Lines.UserFields.Fields.Item("U_ColourCode").Value = article.ColourCode;
-                        oOrd.Lines.UserFields.Fields.Item("U_ColourSystem").Value = article.ColourSystem;
-                        oOrd.Lines.UserFields.Fields.Item("U_Length").Value = article.Length;
-                        oOrd.Lines.UserFields.Fields.Item("U_LengthUnitCode").Value = article.LengthUnitCode;
-                        oOrd.Lines.UserFields.Fields.Item("U_Width").Value = article.Width;
-                        oOrd.Lines.UserFields.Fields.Item("U_WidthUnitCode").Value = article.WidthUnitCode;
-                        oOrd.Lines.UserFields.Fields.Item("U_Height").Value = article.Height;
-                        oOrd.Lines.UserFields.Fields.Item("U_HeightUnitCode").Value = article.HeightUnitCode;
-                        oOrd.Lines.UserFields.Fields.Item("U_RetailPrice").Value = article.RetailPrice;
-
-                        oOrd.Lines.Add();
-                    }
-
                     // Fill in data from order document to defined fields in SAP
                     oOrd.NumAtCard = orderDocument.OrderNumberBuyer;
                     oOrd.DocDueDate = orderDocument.RequestedDeliveryDate;
@@ -414,9 +385,44 @@ namespace EdiConnectorService_C_Sharp
                     oOrd.UserFields.Fields.Item("U_UltimateConsigneeCity").Value = orderDocument.UltimateConsigneeCity;
                     oOrd.UserFields.Fields.Item("U_UltimateConsigneeCountry").Value = orderDocument.UltimateConsigneeCountry;
                     oOrd.UserFields.Fields.Item("U_IsUrgent").Value = orderDocument.IsUrgent;
+                    oOrd.UserFields.Fields.Item("U_IsDutyFree").Value = orderDocument.IsDutyFree;
                     oOrd.UserFields.Fields.Item("U_IsBackHauling").Value = orderDocument.IsBackHauling;
+                    oOrd.UserFields.Fields.Item("U_IsAcknowledgedRequested").Value = orderDocument.IsAcknowledgementRequested;
                     oOrd.DocDate = orderDocument.OrderDate;
                     oOrd.TaxDate = orderDocument.OrderDate;
+
+                    foreach (Article article in orderDocument.Articles)
+                    {
+                        oRs.DoQuery(@"SELECT ""ItemCode"", ""ItemName"" FROM OITM WHERE ""CodeBars"" = '" + article.GTIN + "'");
+                        if (oRs.RecordCount > 0)
+                        {
+                            oOrd.Lines.ItemCode = oRs.Fields.Item(0).Value.ToString();
+                            oOrd.Lines.ItemDescription = article.ArticleDescription != "" ? article.ArticleDescription : oRs.Fields.Item(1).Value.ToString();
+                        }
+                        else
+                        {
+                            EventLogger.getInstance().EventError($"Server: {_connectedServer}. Error CodeBars: {article.GTIN} not found!");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error CodeBars: {article.GTIN} not found!", "Error!");
+                        }
+                        oOrd.Lines.UserFields.Fields.Item("U_LineNumber").Value = article.LineNumber;
+                        oOrd.Lines.UserFields.Fields.Item("U_ArticleCodeSupplier").Value = article.ArticleCodeSupplier;
+                        oOrd.Lines.Quantity = Convert.ToDouble(article.OrderedQuantity);
+                        oOrd.Lines.UserFields.Fields.Item("U_ColourCode").Value = article.ColourCode;
+                        oOrd.Lines.UserFields.Fields.Item("U_ColourSystem").Value = article.ColourSystem;
+                        oOrd.Lines.UserFields.Fields.Item("U_Length").Value = article.Length;
+                        oOrd.Lines.UserFields.Fields.Item("U_LengthUnitCode").Value = article.LengthUnitCode;
+                        oOrd.Lines.UserFields.Fields.Item("U_Width").Value = article.Width;
+                        oOrd.Lines.UserFields.Fields.Item("U_WidthUnitCode").Value = article.WidthUnitCode;
+                        oOrd.Lines.UserFields.Fields.Item("U_Height").Value = article.Height;
+                        oOrd.Lines.UserFields.Fields.Item("U_HeightUnitCode").Value = article.HeightUnitCode;
+                        oOrd.Lines.UserFields.Fields.Item("U_RetailPrice").Value = article.RetailPrice;
+                        oOrd.Lines.UserFields.Fields.Item("U_PromotionVariantCode").Value = article.PromotionVariantCode;
+                        oOrd.Lines.UserFields.Fields.Item("U_ArticleCodeBuyer").Value = article.ArticleCodeBuyer;
+                        oOrd.Lines.UserFields.Fields.Item("U_ArticleDescription").Value = article.ArticleDescription;
+                        oOrd.Lines.UserFields.Fields.Item("U_LocationGLN").Value = article.LocationGLN;
+
+                        oOrd.Lines.Add();
+                    }
 
                     // Try to create a document
                     if (oOrd.Add() == 0)
