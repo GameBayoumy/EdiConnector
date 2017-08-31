@@ -90,8 +90,8 @@ namespace EdiConnectorService_C_Sharp
                 Company.DbUserName = xEle.Element("DbUsername").Value;
                 Company.DbPassword = xEle.Element("DbPassword").Value;
                 MessagesFilePath = xEle.Element("MessagesFilePath").Value;
-
-                EventLogger.getInstance().EventInfo($"Server: {Company.Server} set. LicenseServer: {Company.LicenseServer} set. Database: {Company.CompanyDB} set. Database type: {Company.DbServerType.ToString()} set.");
+                
+                EventLogger.getInstance().EventInfo($"Server set to: {Company.Server}. LicenseServer set to: {Company.LicenseServer}. Database set to: {Company.CompanyDB}. Database type set to: {Company.DbServerType.ToString()}.");
 
                 if (System.IO.Directory.Exists(MessagesFilePath))
                 {
