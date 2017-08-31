@@ -313,8 +313,11 @@ namespace EdiConnectorService_C_Sharp
                             oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString(); // Set PayToCode when query found a result
                         else
                         {
-                            EventLogger.getInstance().EventError($"Server: {_connectedServer}. Error Pay To Address not found! With U_AddressGLN: {orderDocument.InvoiceeGLN}");
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Pay To Address not found! With U_AddressGLN: {orderDocument.InvoiceeGLN}", "Error!");
+                            EventLogger.getInstance().EventWarning($"Server: {_connectedServer}. Error Pay To Address not found! With U_AddressGLN: {orderDocument.InvoiceeGLN}. Using default address.");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Pay To Address not found! With U_AddressGLN: {orderDocument.InvoiceeGLN}", "Warning");
+                            oRs.DoQuery($@"SELECT T0.""Address"" FROM CRD1 T0.""CardCode"" = '{cardCode}' AND T0.""AdresType"" = 'B'");
+                            if (oRs.RecordCount > 0)
+                                oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString();
                         }
 
                         // For the Ship To GLN use DeliveryPartyGLN if it contains a result, otherwise use BuyerGLN
@@ -326,14 +329,17 @@ namespace EdiConnectorService_C_Sharp
                             oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString(); // Set ShipToCode when query found a result
                         else
                         {
-                            EventLogger.getInstance().EventError($"Server: {_connectedServer}. Error Ship To Address not found! With U_AddressGLN: {shipToGLN}");
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Ship To Address not found! With U_AddressGLN: {shipToGLN}", "Error!");
+                            EventLogger.getInstance().EventWarning($"Server: {_connectedServer}. Error Ship To Address not found! With U_AddressGLN: {shipToGLN}");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Ship To Address not found! With U_AddressGLN: {shipToGLN}", "Warning");
+                            oRs.DoQuery($@"SELECT T0.""Address"" FROM CRD1 T0.""CardCode"" = '{cardCode}' AND T0.""AdresType"" = 'S'");
+                            if (oRs.RecordCount > 0)
+                                oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString();
                         }
                     }
                     else
                     {
-                        EventLogger.getInstance().EventError($"Server: {_connectedServer}. Error U_PartnerGLN: {orderDocument.BuyerGLN} not found! Cannot find CardCode, CardName or email");
-                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Pay To U_PartnerGLN: {orderDocument.BuyerGLN} not found! Cannot find CardCode, CardName or email", "Error!");
+                        EventLogger.getInstance().EventError($"Server: {_connectedServer}. Error U_PLA_EAN: {orderDocument.BuyerGLN} not found! Cannot find CardCode, CardName or email");
+                        EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Pay To U_PLA_EAN: {orderDocument.BuyerGLN} not found! Cannot find CardCode, CardName or email", "Error!");
                     }
 
                     // Execute query to search for Sales Employee code by looking up the Sales employee name "EDI"
