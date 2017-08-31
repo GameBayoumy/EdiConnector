@@ -362,7 +362,6 @@ namespace EdiConnectorService_C_Sharp
                         }
                         oOrd.Lines.Quantity = Convert.ToDouble(article.OrderedQuantity);
                         oOrd.Lines.UserFields.Fields.Item("U_LineNumber").Value = article.LineNumber;
-                        oOrd.Lines.UserFields.Fields.Item("U_GTIN").Value = article.GTIN;
                         oOrd.Lines.UserFields.Fields.Item("U_ArticleCodeSupplier").Value = article.ArticleCodeSupplier;
                         oOrd.Lines.UserFields.Fields.Item("U_ColourCode").Value = article.ColourCode;
                         oOrd.Lines.UserFields.Fields.Item("U_ColourSystem").Value = article.ColourSystem;
