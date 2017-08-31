@@ -295,7 +295,7 @@ namespace EdiConnectorService_C_Sharp
                 try
                 {
                     // Execute query to search for CardCode, CardName, Email in OCRD, Email in OCPR by looking up the Buyer GLN in OCRD or CRD1
-                    oRs.DoQuery($@"SELECT T0.""CardCode"", T0.""CardName"", T0.""E_Mail"", T2.""E_MailL"" FROM OCRD T0 INNER JOIN CRD1 T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN OCPR T2 ON T1.""CardCode"" = T2.""CardCode"" WHERE T0.""U_PartnerGLN"" = '{orderDocument.BuyerGLN}' GROUP BY T0.""CardName"", T0.""CardCode"", T0.""E_Mail"", T2.""E_MailL""");
+                    oRs.DoQuery($@"SELECT T0.""CardCode"", T0.""CardName"", T0.""E_Mail"", T2.""E_MailL"" FROM OCRD T0 INNER JOIN CRD1 T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN OCPR T2 ON T1.""CardCode"" = T2.""CardCode"" WHERE T0.""U_PLA_EAN"" = '{orderDocument.BuyerGLN}' GROUP BY T0.""CardName"", T0.""CardCode"", T0.""E_Mail"", T2.""E_MailL""");
                     if(oRs.RecordCount > 0)
                     {
                         // Set email to query result "E_Mail" if its not null or empty else use "E_MailL"
