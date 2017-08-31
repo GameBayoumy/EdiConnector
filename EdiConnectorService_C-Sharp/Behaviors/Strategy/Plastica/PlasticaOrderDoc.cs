@@ -314,7 +314,7 @@ namespace EdiConnectorService_C_Sharp
                         else
                         {
                             EventLogger.getInstance().EventWarning($"Server: {_connectedServer}. Error Pay To Address not found! With U_AddressGLN: {orderDocument.InvoiceeGLN}. Using default address.");
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Pay To Address not found! With U_AddressGLN: {orderDocument.InvoiceeGLN}", "Warning");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Pay To Address not found! With U_AddressGLN: {orderDocument.InvoiceeGLN}. Using default address", "Warning");
                             oRs.DoQuery($@"SELECT T0.""Address"" FROM CRD1 T0.""CardCode"" = '{cardCode}' AND T0.""AdresType"" = 'B'");
                             if (oRs.RecordCount > 0)
                                 oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString();
@@ -329,8 +329,8 @@ namespace EdiConnectorService_C_Sharp
                             oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString(); // Set ShipToCode when query found a result
                         else
                         {
-                            EventLogger.getInstance().EventWarning($"Server: {_connectedServer}. Error Ship To Address not found! With U_AddressGLN: {shipToGLN}");
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Ship To Address not found! With U_AddressGLN: {shipToGLN}", "Warning");
+                            EventLogger.getInstance().EventWarning($"Server: {_connectedServer}. Error Ship To Address not found! With U_AddressGLN: {shipToGLN}. Using default address");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Ship To Address not found! With U_AddressGLN: {shipToGLN}. Using default address", "Warning");
                             oRs.DoQuery($@"SELECT T0.""Address"" FROM CRD1 T0.""CardCode"" = '{cardCode}' AND T0.""AdresType"" = 'S'");
                             if (oRs.RecordCount > 0)
                                 oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString();
