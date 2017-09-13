@@ -165,11 +165,11 @@ namespace EdiConnectorService_C_Sharp
                         BlanketOrderNumber = x.Element("BlanketOrderNumber")?.Value ?? "",
                         ActionNumber = x.Element("ActionNumber")?.Value ?? "",
                         OrderNumberBuyer = x.Element("OrderNumberBuyer")?.Value ?? "",
-                        OrderDate = DateTime.ParseExact(x.Element("OrderDate")?.Value ?? "000101010000", "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture),
+                        OrderDate = DateTime.ParseExact(x.Element("OrderDate")?.Value ?? "00010101", "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture),
                         EarliestDeliveryDate = DateTime.ParseExact(x.Element("EarliestDeliveryDate")?.Value ?? "00010101", "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture),
                         LatestDeliveryDate = DateTime.ParseExact(x.Element("LatestDeliveryDate")?.Value ?? "00010101", "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture),
                         RequestedDeliveryDate = DateTime.ParseExact(x.Element("RequestedDeliveryDate")?.Value ?? "00010101", "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture),
-                        PickUpDate = DateTime.ParseExact(x.Element("PickUpDate")?.Value ?? "000101010000", "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture),
+                        PickUpDate = DateTime.ParseExact(x.Element("PickUpDate")?.Value ?? "00010101", "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture),
                         BuyerGLN = x.Element("BuyerGLN")?.Value ?? "",
                         Buyer = x.Element("Buyer")?.Value ?? "",
                         BuyerID = x.Element("BuyerID")?.Value ?? "",
@@ -256,8 +256,8 @@ namespace EdiConnectorService_C_Sharp
                             LocationGLN = a.Element("LocationGLN")?.Value ?? "",
                             GrossWeight = a.Element("GrossWeight")?.Value ?? "",
                             GrossWeightUnitCode = a.Element("GrossWeightUnitCode")?.Value ?? "",
-                            RequestedDeliveryDate = DateTime.ParseExact(a.Element("RequestedDeliveryDate")?.Value ?? "000101010000", "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture),
-                            LatestDeliveryDate = DateTime.ParseExact(a.Element("LatestDeliveryDate")?.Value ?? "000101010000", "yyyyMMddHHmm", System.Globalization.CultureInfo.InvariantCulture),
+                            RequestedDeliveryDate = DateTime.ParseExact(a.Element("RequestedDeliveryDate")?.Value ?? "00010101", "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture),
+                            LatestDeliveryDate = DateTime.ParseExact(a.Element("LatestDeliveryDate")?.Value ?? "00010101", "yyyyMMdd", System.Globalization.CultureInfo.InvariantCulture),
                             NetLineAmount = a.Element("NetLineAmount")?.Value ?? "",
                             PackagingType = a.Element("PackagingType")?.Value ?? "",
                             ConsumerReference = a.Element("ConsumerReference")?.Value ?? "",
@@ -295,7 +295,7 @@ namespace EdiConnectorService_C_Sharp
                 try
                 {
                     // Execute query to search for CardCode, CardName, Email in OCRD, Email in OCPR by looking up the Buyer GLN in OCRD or CRD1
-                    oRs.DoQuery($@"SELECT T0.""CardCode"", T0.""CardName"", T0.""E_Mail"", T2.""E_MailL"" FROM OCRD T0 INNER JOIN CRD1 T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN OCPR T2 ON T1.""CardCode"" = T2.""CardCode"" WHERE T0.""U_PLA_EAN"" = '{orderDocument.BuyerGLN}' GROUP BY T0.""CardName"", T0.""CardCode"", T0.""E_Mail"", T2.""E_MailL""");
+                    oRs.DoQuery($@"SELECT T0.""CardCode"", T0.""CardName"", T0.""E_Mail"", T2.""E_MailL"" FROM OCRD T0 INNER JOIN CRD1 T1 ON T0.""CardCode"" = T1.""CardCode"" INNER JOIN OCPR T2 ON T1.""CardCode"" = T2.""CardCode"" WHERE T1.""U_PLA_EAN"" = '{orderDocument.BuyerGLN}' GROUP BY T0.""CardName"", T0.""CardCode"", T0.""E_Mail"", T2.""E_MailL""");
                     if(oRs.RecordCount > 0)
                     {
                         // Set email to query result "E_Mail" if its not null or empty else use "E_MailL"
@@ -308,13 +308,13 @@ namespace EdiConnectorService_C_Sharp
                         oOrd.CardCode = cardCode;
 
                         // Execute query to search for Pay To Address by looking up the CardCode, Invoicee GLN and the Address Type "B"
-                        oRs.DoQuery($@"SELECT T0.""Address"" FROM CRD1 T0 WHERE T0.""CardCode"" = '{cardCode}' AND T0.""U_AddressGLN"" = '{orderDocument.InvoiceeGLN}' AND T0.""AdresType"" = 'B'");
+                        oRs.DoQuery($@"SELECT T0.""Address"", T0.""CardCode"" FROM CRD1 T0 WHERE ""U_PLA_EAN"" = '{orderDocument.InvoiceeGLN}' AND T0.""AdresType"" = 'B'");
                         if (oRs.RecordCount > 0)
                             oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString(); // Set PayToCode when query found a result
                         else
                         {
-                            EventLogger.getInstance().EventWarning($"Server: {_connectedServer}. Error Pay To Address not found! With U_AddressGLN: {orderDocument.InvoiceeGLN}. Using default address.");
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Pay To Address not found! With U_AddressGLN: {orderDocument.InvoiceeGLN}. Using default address", "Warning");
+                            EventLogger.getInstance().EventWarning($"Server: {_connectedServer}. Error Pay To Address not found! With U_PLA_EAN: {orderDocument.InvoiceeGLN}. Using default address.");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Pay To Address not found! With U_PLA_EAN: {orderDocument.InvoiceeGLN}. Using default address", "Warning");
                             oRs.DoQuery($@"SELECT T0.""Address"" FROM CRD1 T0.""CardCode"" = '{cardCode}' AND T0.""AdresType"" = 'B'");
                             if (oRs.RecordCount > 0)
                                 oOrd.PayToCode = oRs.Fields.Item(0).Value.ToString();
@@ -324,13 +324,13 @@ namespace EdiConnectorService_C_Sharp
                         string shipToGLN = orderDocument.DeliveryPartyGLN != "" ? orderDocument.DeliveryPartyGLN : orderDocument.BuyerGLN;
 
                         // Execute query to search for Ship To Address by looking up the CardCode, shipToGLN and the Address Type "S"
-                        oRs.DoQuery($@"SELECT T0.""Address"" FROM CRD1 T0 WHERE T0.""CardCode"" = '{cardCode}' AND T0.""U_AddressGLN"" = '{shipToGLN}' AND T0.""AdresType"" = 'S'");
+                        oRs.DoQuery($@"SELECT T0.""Address"" FROM CRD1 T0 WHERE T0.""U_PLA_EAN"" = '{shipToGLN}' AND T0.""AdresType"" = 'S'");
                         if (oRs.RecordCount > 0)
                             oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString(); // Set ShipToCode when query found a result
                         else
                         {
-                            EventLogger.getInstance().EventWarning($"Server: {_connectedServer}. Error Ship To Address not found! With U_AddressGLN: {shipToGLN}. Using default address");
-                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Ship To Address not found! With U_AddressGLN: {shipToGLN}. Using default address", "Warning");
+                            EventLogger.getInstance().EventWarning($"Server: {_connectedServer}. Error Ship To Address not found! With U_PLA_EAN: {shipToGLN}. Using default address");
+                            EventLogger.getInstance().UpdateSAPLogMessage(_connectedServer, EdiConnectorData.GetInstance().RecordReference, $"Error Ship To Address not found! With U_PLA_EAN: {shipToGLN}. Using default address", "Warning");
                             oRs.DoQuery($@"SELECT T0.""Address"" FROM CRD1 T0.""CardCode"" = '{cardCode}' AND T0.""AdresType"" = 'S'");
                             if (oRs.RecordCount > 0)
                                 oOrd.ShipToCode = oRs.Fields.Item(0).Value.ToString();
@@ -354,7 +354,7 @@ namespace EdiConnectorService_C_Sharp
                     oOrd.UserFields.Fields.Item("U_MessageType").Value = orderDocument.MessageType;
                     oOrd.UserFields.Fields.Item("U_IsTestMessage").Value = orderDocument.IsTestMessage;
                     oOrd.UserFields.Fields.Item("U_MessageReference").Value = orderDocument.MessageReference;
-                    oOrd.UserFields.Fields.Item("U_OrderDate").Value = orderDocument.OrderDate.ToString("yyyy-MM-dd HH:mm");
+                    oOrd.UserFields.Fields.Item("U_OrderDate").Value = orderDocument.OrderDate.ToString("yyyy-MM-dd");
                     oOrd.UserFields.Fields.Item("U_IsCrossDock").Value = orderDocument.IsCrossDock;
                     oOrd.UserFields.Fields.Item("U_IsCallOffOrder").Value = orderDocument.IsCallOffOrder;
                     oOrd.UserFields.Fields.Item("U_RequestedDeliveryDate").Value = orderDocument.RequestedDeliveryDate.ToString("yyyy-MM-dd");
@@ -387,7 +387,7 @@ namespace EdiConnectorService_C_Sharp
                     oOrd.UserFields.Fields.Item("U_IsUrgent").Value = orderDocument.IsUrgent;
                     oOrd.UserFields.Fields.Item("U_IsDutyFree").Value = orderDocument.IsDutyFree;
                     oOrd.UserFields.Fields.Item("U_IsBackHauling").Value = orderDocument.IsBackHauling;
-                    oOrd.UserFields.Fields.Item("U_IsAcknowledgedRequested").Value = orderDocument.IsAcknowledgementRequested;
+                    oOrd.UserFields.Fields.Item("U_IsAcknowledgementRequested").Value = orderDocument.IsAcknowledgementRequested;
                     oOrd.DocDate = orderDocument.OrderDate;
                     oOrd.TaxDate = orderDocument.OrderDate;
 
