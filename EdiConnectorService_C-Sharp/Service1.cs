@@ -86,7 +86,7 @@ namespace EdiConnectorService_C_Sharp
                     {
                         DirectoryInfo dirInfo = new DirectoryInfo(messagesFilePath);
 
-                        foreach (var file in dirInfo.EnumerateFiles("*.xml", SearchOption.TopDirectoryOnly))
+                        foreach (var file in dirInfo.EnumerateFiles("*.mes", SearchOption.TopDirectoryOnly))
                         {
                             agent.QueueCommand(new ProcessMessage(connectedServer, file.Name));
                         }
