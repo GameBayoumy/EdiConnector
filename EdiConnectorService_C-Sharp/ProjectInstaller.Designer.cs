@@ -39,6 +39,8 @@
             // 
             // serviceInstaller1
             // 
+            this.serviceInstaller1.Description = "Edi Connector";
+            this.serviceInstaller1.DisplayName = "Edi Connector";
             this.serviceInstaller1.ServiceName = "EdiConnectorService";
             // 
             // ProjectInstaller
